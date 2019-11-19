@@ -390,12 +390,13 @@ begin
     req  => sound_cs and not cpu_wr_n,
     data => cpu_dout,
 
-    -- ROM interface
+    -- sound ROM #1 interface
     sound_rom_1_cs   => sound_rom_1_cs,
     sound_rom_1_oe   => sound_rom_1_oe,
     sound_rom_1_addr => sound_rom_1_addr,
     sound_rom_1_data => sound_rom_1_data,
 
+    -- sound ROM #2 interface
     sound_rom_2_cs   => sound_rom_2_cs,
     sound_rom_2_oe   => sound_rom_2_oe,
     sound_rom_2_addr => sound_rom_2_addr,

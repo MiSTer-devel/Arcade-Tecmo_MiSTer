@@ -130,7 +130,7 @@ entity rom_controller is
 end rom_controller;
 
 architecture arch of rom_controller is
-  type rom_t is (NONE, PROG_ROM_1, PROG_ROM_2, CHAR_ROM, SPRITE_ROM, FG_ROM, BG_ROM);
+  type rom_t is (NONE, PROG_ROM_1, PROG_ROM_2, CHAR_ROM, SPRITE_ROM, FG_ROM, BG_ROM, SOUND_ROM_1, SOUND_ROM_2);
 
   -- ROM signals
   signal rom, next_rom, pending_rom : rom_t;
@@ -142,6 +142,8 @@ architecture arch of rom_controller is
   signal sprite_rom_ctrl_req : std_logic;
   signal fg_rom_ctrl_req     : std_logic;
   signal bg_rom_ctrl_req     : std_logic;
+  signal sound_rom_1_ctrl_req : std_logic;
+  signal sound_rom_2_ctrl_req : std_logic;
 
   -- ROM acknowledge signals
   signal prog_rom_1_ctrl_ack : std_logic;
@@ -150,6 +152,8 @@ architecture arch of rom_controller is
   signal sprite_rom_ctrl_ack : std_logic;
   signal fg_rom_ctrl_ack     : std_logic;
   signal bg_rom_ctrl_ack     : std_logic;
+  signal sound_rom_1_ctrl_ack : std_logic;
+  signal sound_rom_2_ctrl_ack : std_logic;
 
   -- ROM valid signals
   signal prog_rom_1_ctrl_valid : std_logic;
@@ -158,6 +162,8 @@ architecture arch of rom_controller is
   signal sprite_rom_ctrl_valid : std_logic;
   signal fg_rom_ctrl_valid     : std_logic;
   signal bg_rom_ctrl_valid     : std_logic;
+  signal sound_rom_1_ctrl_valid : std_logic;
+  signal sound_rom_2_ctrl_valid : std_logic;
 
   -- address mux signals
   signal prog_rom_1_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
@@ -166,6 +172,8 @@ architecture arch of rom_controller is
   signal sprite_rom_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
   signal fg_rom_ctrl_addr     : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
   signal bg_rom_ctrl_addr     : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
+  signal sound_rom_1_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
+  signal sound_rom_2_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
 
   -- download signals
   signal download_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
@@ -190,7 +198,6 @@ begin
     valid => download_req
   );
 
-  -- Manages the program ROM #1 memory segment.
   prog_rom_1_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => PROG_ROM_1_ADDR_WIDTH,
@@ -211,7 +218,6 @@ begin
     rom_data   => prog_rom_1_data
   );
 
-  -- Manages the program ROM #2 memory segment.
   prog_rom_2_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => PROG_ROM_2_ADDR_WIDTH,
@@ -232,7 +238,6 @@ begin
     rom_data   => prog_rom_2_data
   );
 
-  -- Manages the character ROM memory segment.
   char_rom_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => CHAR_ROM_ADDR_WIDTH,
@@ -253,7 +258,6 @@ begin
     rom_data   => char_rom_data
   );
 
-  -- Manages the sprite ROM memory segment.
   sprite_rom_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => SPRITE_ROM_ADDR_WIDTH,
@@ -274,7 +278,6 @@ begin
     rom_data   => sprite_rom_data
   );
 
-  -- Manages the foreground ROM memory segment.
   fg_rom_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => FG_ROM_ADDR_WIDTH,
@@ -295,7 +298,6 @@ begin
     rom_data   => fg_rom_data
   );
 
-  -- Manages the background ROM memory segment.
   bg_rom_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => BG_ROM_ADDR_WIDTH,
@@ -316,34 +318,44 @@ begin
     rom_data   => bg_rom_data
   );
 
-  -- sound ROM #1
-  sound_rom_1 : entity work.dual_port_ram
+  sound_rom_1_segment : entity work.segment
   generic map (
-    ADDR_WIDTH => SOUND_ROM_1_ADDR_WIDTH
+    ROM_ADDR_WIDTH => SOUND_ROM_1_ADDR_WIDTH,
+    ROM_DATA_WIDTH => SOUND_ROM_1_DATA_WIDTH,
+    ROM_OFFSET     => SOUND_ROM_1_OFFSET
   )
   port map (
-    clk    => clk,
-    cs     => sound_rom_1_cs or ioctl_download,
-    addr_a => ioctl_addr(SOUND_ROM_1_ADDR_WIDTH-1 downto 0)-SOUND_ROM_1_OFFSET,
-    din_a  => ioctl_data,
-    we_a   => sound_rom_1_we and ioctl_download and ioctl_wr,
-    addr_b => sound_rom_1_addr,
-    dout_b => sound_rom_1_data
+    reset      => reset,
+    clk        => clk,
+    cs         => sound_rom_1_cs and not ioctl_download,
+    oe         => sound_rom_1_oe,
+    ctrl_addr  => sound_rom_1_ctrl_addr,
+    ctrl_req   => sound_rom_1_ctrl_req,
+    ctrl_ack   => sound_rom_1_ctrl_ack,
+    ctrl_valid => sound_rom_1_ctrl_valid,
+    ctrl_data  => sdram_q,
+    rom_addr   => sound_rom_1_addr,
+    rom_data   => sound_rom_1_data
   );
 
-  -- sound ROM #2
-  sound_rom_2 : entity work.dual_port_ram
+  sound_rom_2_segment : entity work.segment
   generic map (
-    ADDR_WIDTH => SOUND_ROM_2_ADDR_WIDTH
+    ROM_ADDR_WIDTH => SOUND_ROM_2_ADDR_WIDTH,
+    ROM_DATA_WIDTH => SOUND_ROM_2_DATA_WIDTH,
+    ROM_OFFSET     => SOUND_ROM_2_OFFSET
   )
   port map (
-    clk    => clk,
-    cs     => sound_rom_2_cs or ioctl_download,
-    addr_a => ioctl_addr(SOUND_ROM_2_ADDR_WIDTH-1 downto 0)-SOUND_ROM_2_OFFSET,
-    din_a  => ioctl_data,
-    we_a   => sound_rom_2_we and ioctl_download and ioctl_wr,
-    addr_b => sound_rom_2_addr,
-    dout_b => sound_rom_2_data
+    reset      => reset,
+    clk        => clk,
+    cs         => sound_rom_2_cs and not ioctl_download,
+    oe         => sound_rom_2_oe,
+    ctrl_addr  => sound_rom_2_ctrl_addr,
+    ctrl_req   => sound_rom_2_ctrl_req,
+    ctrl_ack   => sound_rom_2_ctrl_ack,
+    ctrl_valid => sound_rom_2_ctrl_valid,
+    ctrl_data  => sdram_q,
+    rom_addr   => sound_rom_2_addr,
+    rom_data   => sound_rom_2_data
   );
 
   -- latch the next ROM
@@ -372,10 +384,12 @@ begin
   -- mux the next ROM in priority order
   next_rom <= PROG_ROM_1 when prog_rom_1_ctrl_req = '1' else
               PROG_ROM_2 when prog_rom_2_ctrl_req = '1' else
+              SOUND_ROM_1 when sound_rom_1_ctrl_req = '1' else
               CHAR_ROM   when char_rom_ctrl_req   = '1' else
               SPRITE_ROM when sprite_rom_ctrl_req = '1' else
               FG_ROM     when fg_rom_ctrl_req     = '1' else
               BG_ROM     when bg_rom_ctrl_req     = '1' else
+              SOUND_ROM_2 when sound_rom_2_ctrl_req = '1' else
               NONE;
 
   -- route SDRAM acknowledge signal to the current ROM
@@ -385,6 +399,8 @@ begin
   sprite_rom_ctrl_ack <= sdram_ack when rom = SPRITE_ROM else '0';
   fg_rom_ctrl_ack     <= sdram_ack when rom = FG_ROM     else '0';
   bg_rom_ctrl_ack     <= sdram_ack when rom = BG_ROM     else '0';
+  sound_rom_1_ctrl_ack <= sdram_ack when rom = SOUND_ROM_1 else '0';
+  sound_rom_2_ctrl_ack <= sdram_ack when rom = SOUND_ROM_2 else '0';
 
   -- route SDRAM valid signal to the pending ROM
   prog_rom_1_ctrl_valid <= sdram_valid when pending_rom = PROG_ROM_1 else '0';
@@ -393,6 +409,8 @@ begin
   sprite_rom_ctrl_valid <= sdram_valid when pending_rom = SPRITE_ROM else '0';
   fg_rom_ctrl_valid     <= sdram_valid when pending_rom = FG_ROM     else '0';
   bg_rom_ctrl_valid     <= sdram_valid when pending_rom = BG_ROM     else '0';
+  sound_rom_1_ctrl_valid <= sdram_valid when pending_rom = SOUND_ROM_1 else '0';
+  sound_rom_2_ctrl_valid <= sdram_valid when pending_rom = SOUND_ROM_2 else '0';
 
   -- mux ROM request
   ctrl_req <= prog_rom_1_ctrl_req or
@@ -400,16 +418,20 @@ begin
               char_rom_ctrl_req or
               sprite_rom_ctrl_req or
               fg_rom_ctrl_req or
-              bg_rom_ctrl_req;
+              bg_rom_ctrl_req or
+              sound_rom_1_ctrl_req or
+              sound_rom_2_ctrl_req;
 
   -- mux SDRAM address in priority order
   sdram_addr <= download_addr        when ioctl_download      = '1' else
                 prog_rom_1_ctrl_addr when prog_rom_1_ctrl_req = '1' else
                 prog_rom_2_ctrl_addr when prog_rom_2_ctrl_req = '1' else
+                sound_rom_1_ctrl_addr when sound_rom_1_ctrl_req = '1' else
                 char_rom_ctrl_addr   when char_rom_ctrl_req   = '1' else
                 sprite_rom_ctrl_addr when sprite_rom_ctrl_req = '1' else
                 fg_rom_ctrl_addr     when fg_rom_ctrl_req     = '1' else
                 bg_rom_ctrl_addr     when bg_rom_ctrl_req     = '1' else
+                sound_rom_2_ctrl_addr when sound_rom_2_ctrl_req = '1' else
                 (others => '0');
 
   -- set SDRAM data input
