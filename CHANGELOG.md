@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+## v1.0.0-beta.3 (2020-05-08)
+
 * Centre CRT image
+* Update SDRAM controller
+* Update MiSTer system
 
 ## v1.0.0-beta.2 (2019-11-20)
 
