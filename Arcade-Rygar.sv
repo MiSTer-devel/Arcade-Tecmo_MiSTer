@@ -48,7 +48,7 @@ module emu
   output        VGA_VS,
   output        VGA_DE,    // = ~(VBlank | HBlank)
   output        VGA_F1,
-  output  [1:0] VGA_SL,
+  output [1:0]  VGA_SL,
 
   output        LED_USER,  // 1 - ON, 0 - OFF.
 
@@ -58,6 +58,11 @@ module emu
   output  [1:0] LED_POWER,
   output  [1:0] LED_DISK,
 
+  // I/O board button press simulation (active high)
+  // b[1]: user button
+  // b[0]: osd button
+  output  [1:0] BUTTONS,
+
   output [15:0] AUDIO_L,
   output [15:0] AUDIO_R,
   output        AUDIO_S,   // 1 - signed audio samples, 0 - unsigned
@@ -66,7 +71,7 @@ module emu
   //ADC
   inout   [3:0] ADC_BUS,
 
-  // SD-SPI
+  //SD-SPI
   output        SD_SCK,
   output        SD_MOSI,
   input         SD_MISO,
@@ -109,25 +114,29 @@ module emu
   // Open-drain User port.
   // 0 - D+/RX
   // 1 - D-/TX
-  // 2..5 - USR1..USR4
+  // 2..6 - USR2..USR6
   // Set USER_OUT to 1 to read from USER_IN.
-  input   [5:0] USER_IN,
-  output  [5:0] USER_OUT,
+  input   [6:0] USER_IN,
+  output  [6:0] USER_OUT,
 
   input         OSD_STATUS
 );
 
+assign ADC_BUS  = 'Z;
 assign USER_OUT = '1;
-assign VGA_F1 = 0;
 assign {UART_RTS, UART_TXD, UART_DTR} = 0;
 assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
+assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;
+assign VGA_SL = 0;
+assign VGA_F1 = 0;
 
-assign AUDIO_R   = AUDIO_L;
 assign AUDIO_S   = 1;
+assign AUDIO_R   = AUDIO_L;
+assign AUDIO_MIX = 0;
 
-assign LED_USER  = ioctl_download;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
+assign BUTTONS   = 0;
 
 assign CLK_VIDEO = clk_sys;
 assign VIDEO_ARX = 8'd4;
@@ -148,15 +157,17 @@ localparam CONF_STR = {
   "OF,Allow Continue,Yes,No;",
   "-;",
   "R0,Reset;",
-  "J1,Fire,Jump,Start 1P,Start 2P,Coin;",
+  "J1,Fire,Jump,Start,Coin;",
   "V,v",`BUILD_DATE
 };
 
-////////////////////   CLOCKS   ///////////////////
+////////////////////////////////////////////////////////////////////////////////
+// CLOCKS
+////////////////////////////////////////////////////////////////////////////////
 
-wire locked;
 wire clk_sys;
 wire cen_12;
+wire locked;
 
 pll pll
 (
@@ -166,7 +177,9 @@ pll pll
   .locked(locked)
 );
 
-///////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// HPS IO
+////////////////////////////////////////////////////////////////////////////////
 
 wire [31:0] status;
 wire  [1:0] buttons;
@@ -183,16 +196,18 @@ wire [15:0] joy = joystick_0 | joystick_1;
 
 wire forced_scandoubler;
 
+wire [21:0] gamma_bus;
+
 hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 (
   .clk_sys(clk_sys),
   .HPS_BUS(HPS_BUS),
 
   .conf_str(CONF_STR),
+  .forced_scandoubler(forced_scandoubler),
 
   .buttons(buttons),
   .status(status),
-  .forced_scandoubler(forced_scandoubler),
 
   .ioctl_addr(ioctl_addr),
   .ioctl_dout(ioctl_data),
@@ -201,10 +216,14 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 
   .joystick_0(joystick_0),
   .joystick_1(joystick_1),
-  .ps2_key(ps2_key)
+  .ps2_key(ps2_key),
+
+  .gamma_bus(gamma_bus)
 );
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// VIDEO
+////////////////////////////////////////////////////////////////////////////////
 
 wire [3:0] R, G, B;
 wire HSync, VSync, HBlank, VBlank;
@@ -215,22 +234,26 @@ video_mixer #(.LINE_LENGTH(256), .HALF_DEPTH(1)) video_mixer
 (
   .*,
 
-  .clk_sys(clk_sys),
+  .clk_vid(clk_sys),
   .ce_pix(cen_12),
   .ce_pix_out(CE_PIXEL),
 
-  .scanlines(0),
   .scandoubler(scandoubler),
+  .scanlines(0),
   .hq2x(scale==1),
   .mono(0)
 );
 
+////////////////////////////////////////////////////////////////////////////////
+// SDRAM
+////////////////////////////////////////////////////////////////////////////////
+
 wire [22:0] sdram_addr;
 wire [31:0] sdram_data;
-wire sdram_we;
-wire sdram_req;
-wire sdram_ack;
-wire sdram_valid;
+wire        sdram_we;
+wire        sdram_req;
+wire        sdram_ack;
+wire        sdram_valid;
 wire [31:0] sdram_q;
 
 sdram #(.CLK_FREQ(48.0)) sdram
@@ -260,18 +283,21 @@ sdram #(.CLK_FREQ(48.0)) sdram
   .sdram_dqmh(SDRAM_DQMH)
 );
 
-wire       pressed = ps2_key[9];
-wire [7:0] code    = ps2_key[7:0];
+////////////////////////////////////////////////////////////////////////////////
+// CONTROLS
+////////////////////////////////////////////////////////////////////////////////
 
-reg key_left    = 0;
-reg key_right   = 0;
-reg key_down    = 0;
-reg key_up      = 0;
-reg key_jump    = 0;
-reg key_fire    = 0;
-reg key_start_1 = 0;
-reg key_start_2 = 0;
-reg key_coin    = 0;
+wire pressed    = ps2_key[9];
+wire [7:0] code = ps2_key[7:0];
+
+reg key_left  = 0;
+reg key_right = 0;
+reg key_down  = 0;
+reg key_up    = 0;
+reg key_jump  = 0;
+reg key_fire  = 0;
+reg key_start = 0;
+reg key_coin  = 0;
 
 always @(posedge clk_sys) begin
   reg old_state;
@@ -279,39 +305,43 @@ always @(posedge clk_sys) begin
 
   if (old_state != ps2_key[10]) begin
     case (code)
-      'h75: key_up      <= pressed; // up
-      'h72: key_down    <= pressed; // down
-      'h6B: key_left    <= pressed; // left
-      'h74: key_right   <= pressed; // right
-      'h16: key_start_1 <= pressed; // 1
-      'h1E: key_start_2 <= pressed; // 2
-      'h2E: key_coin    <= pressed; // 5
-      'h14: key_fire    <= pressed; // ctrl
-      'h11: key_jump    <= pressed; // alt
+      'h75: key_up    <= pressed; // up
+      'h72: key_down  <= pressed; // down
+      'h6B: key_left  <= pressed; // left
+      'h74: key_right <= pressed; // right
+      'h16: key_start <= pressed; // 1
+      'h2E: key_coin  <= pressed; // 5
+      'h14: key_fire  <= pressed; // ctrl
+      'h11: key_jump  <= pressed; // alt
     endcase
   end
 end
 
-wire right   = key_right   | joy[0];
-wire left    = key_left    | joy[1];
-wire down    = key_down    | joy[2];
-wire up      = key_up      | joy[3];
-wire fire    = key_fire    | joy[4];
-wire jump    = key_jump    | joy[5];
-wire start_1 = key_start_1 | joy[6];
-wire start_2 = key_start_2 | joy[7];
-wire coin    = key_coin    | joy[8];
+wire right = key_right | joy[0];
+wire left  = key_left  | joy[1];
+wire down  = key_down  | joy[2];
+wire up    = key_up    | joy[3];
+wire fire  = key_fire  | joy[4];
+wire jump  = key_jump  | joy[5];
+wire start = key_start | joy[6];
+wire coin  = key_coin  | joy[7];
+
+////////////////////////////////////////////////////////////////////////////////
+// GAME
+////////////////////////////////////////////////////////////////////////////////
+
+wire reset = RESET | ioctl_download | status[0] | buttons[1];
 
 rygar rygar
 (
-  .reset(RESET | ioctl_download | status[0] | buttons[1]),
+  .reset(reset),
   .clk(clk_sys),
   .cen_12(cen_12),
 
   .joystick_1({2'b0, jump, fire, up, down, right, left}),
   .joystick_2({2'b0, jump, fire, up, down, right, left}),
-  .start_1(start_1),
-  .start_2(start_2),
+  .start_1(start),
+  .start_2(1'b0),
   .coin_1(coin),
   .coin_2(1'b0),
 
