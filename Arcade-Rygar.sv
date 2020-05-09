@@ -109,6 +109,8 @@ assign LED_POWER = 0;
 assign HDMI_ARX = status[1] ? 8'd16 : 8'd4;
 assign HDMI_ARY = status[1] ? 8'd9  : 8'd3;
 
+assign SDRAM_CLK = clk_sdram;
+
 `include "build_id.v"
 localparam CONF_STR = {
   "A.Rygar;;",
@@ -130,7 +132,7 @@ localparam CONF_STR = {
 // CLOCKS
 ////////////////////////////////////////////////////////////////////////////////
 
-wire clk_sys;
+wire clk_sys, clk_sdram;
 wire cen_12;
 wire locked;
 
@@ -138,7 +140,7 @@ pll pll
 (
   .refclk(CLK_50M),
   .outclk_0(clk_sys),
-  .outclk_1(SDRAM_CLK),
+  .outclk_1(clk_sdram),
   .locked(locked)
 );
 
