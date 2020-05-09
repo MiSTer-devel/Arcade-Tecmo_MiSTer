@@ -44,7 +44,6 @@ module emu
   output        VGA_VS,
   output        VGA_DE,    // = ~(VBlank | HBlank)
   output        VGA_F1,
-  output [1:0]  VGA_SL,
 
   //Base video clock. Usually equals to CLK_SYS.
   output        HDMI_CLK,
@@ -73,34 +72,9 @@ module emu
   output  [1:0] LED_POWER,
   output  [1:0] LED_DISK,
 
-  // I/O board button press simulation (active high)
-  // b[1]: user button
-  // b[0]: osd button
-  output  [1:0] BUTTONS,
-
   output [15:0] AUDIO_L,
   output [15:0] AUDIO_R,
   output        AUDIO_S,   // 1 - signed audio samples, 0 - unsigned
-
-  //SD-SPI
-  output        SD_SCK,
-  output        SD_MOSI,
-  input         SD_MISO,
-  output        SD_CS,
-  input         SD_CD,
-
-  //High latency DDR3 RAM interface
-  //Use for non-critical time purposes
-  output        DDRAM_CLK,
-  input         DDRAM_BUSY,
-  output  [7:0] DDRAM_BURSTCNT,
-  output [28:0] DDRAM_ADDR,
-  input  [63:0] DDRAM_DOUT,
-  input         DDRAM_DOUT_READY,
-  output        DDRAM_RD,
-  output [63:0] DDRAM_DIN,
-  output  [7:0] DDRAM_BE,
-  output        DDRAM_WE,
 
   //SDRAM interface with lower latency
   output        SDRAM_CLK,
@@ -115,37 +89,22 @@ module emu
   output        SDRAM_nRAS,
   output        SDRAM_nWE,
 
-  input         UART_CTS,
-  output        UART_RTS,
-  input         UART_RXD,
-  output        UART_TXD,
-  output        UART_DTR,
-  input         UART_DSR,
-
   // Open-drain User port.
   // 0 - D+/RX
   // 1 - D-/TX
   // 2..6 - USR2..USR6
   // Set USER_OUT to 1 to read from USER_IN.
   input   [6:0] USER_IN,
-  output  [6:0] USER_OUT,
-
-  input         OSD_STATUS
+  output  [6:0] USER_OUT
 );
 
-assign USER_OUT = '1;
-assign {UART_RTS, UART_TXD, UART_DTR} = 0;
-assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
-assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;
-assign VGA_SL = 0;
 assign VGA_F1 = 0;
 
-assign AUDIO_S   = 1;
-assign AUDIO_R   = AUDIO_L;
+assign AUDIO_S = 1;
+assign AUDIO_R = AUDIO_L;
 
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
-assign BUTTONS   = 0;
 
 assign HDMI_ARX = status[1] ? 8'd16 : 8'd4;
 assign HDMI_ARY = status[1] ? 8'd9  : 8'd3;
@@ -233,7 +192,8 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 ////////////////////////////////////////////////////////////////////////////////
 
 wire [3:0] r, g, b;
-wire hsync, vsync, hblank, vblank;
+wire       hsync, vsync;
+wire       hblank, vblank;
 
 arcade_video #(256, 240, 12, 0) arcade_video
 (
@@ -299,8 +259,8 @@ sdram #(.CLK_FREQ(48.0)) sdram
 // CONTROLS
 ////////////////////////////////////////////////////////////////////////////////
 
-wire pressed    = ps2_key[9];
-wire [7:0] code = ps2_key[7:0];
+wire       pressed = ps2_key[9];
+wire [7:0] code    = ps2_key[7:0];
 
 reg key_left  = 0;
 reg key_right = 0;
