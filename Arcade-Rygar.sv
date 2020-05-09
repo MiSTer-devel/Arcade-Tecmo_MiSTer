@@ -31,15 +31,11 @@ module emu
   inout  [45:0] HPS_BUS,
 
   //Base video clock. Usually equals to CLK_SYS.
-  output        CLK_VIDEO,
+  output        VGA_CLK,
 
-  //Multiple resolutions are supported using different CE_PIXEL rates.
+  //Multiple resolutions are supported using different VGA_CE rates.
   //Must be based on CLK_VIDEO
-  output        CE_PIXEL,
-
-  //Video aspect ratio for HDMI. Most retro systems have ratio 4:3.
-  output  [7:0] VIDEO_ARX,
-  output  [7:0] VIDEO_ARY,
+  output        VGA_CE,
 
   output  [7:0] VGA_R,
   output  [7:0] VGA_G,
@@ -48,7 +44,25 @@ module emu
   output        VGA_VS,
   output        VGA_DE,    // = ~(VBlank | HBlank)
   output        VGA_F1,
-  output [1:0]  VGA_SL,
+
+  //Base video clock. Usually equals to CLK_SYS.
+  output        HDMI_CLK,
+
+  //Multiple resolutions are supported using different HDMI_CE rates.
+  //Must be based on CLK_VIDEO
+  output        HDMI_CE,
+
+  output  [7:0] HDMI_R,
+  output  [7:0] HDMI_G,
+  output  [7:0] HDMI_B,
+  output        HDMI_HS,
+  output        HDMI_VS,
+  output        HDMI_DE,   // = ~(VBlank | HBlank)
+  output  [1:0] HDMI_SL,   // scanlines fx
+
+  //Video aspect ratio for HDMI. Most retro systems have ratio 4:3.
+  output  [7:0] HDMI_ARX,
+  output  [7:0] HDMI_ARY,
 
   output        LED_USER,  // 1 - ON, 0 - OFF.
 
@@ -58,38 +72,9 @@ module emu
   output  [1:0] LED_POWER,
   output  [1:0] LED_DISK,
 
-  // I/O board button press simulation (active high)
-  // b[1]: user button
-  // b[0]: osd button
-  output  [1:0] BUTTONS,
-
   output [15:0] AUDIO_L,
   output [15:0] AUDIO_R,
   output        AUDIO_S,   // 1 - signed audio samples, 0 - unsigned
-  output  [1:0] AUDIO_MIX, // 0 - no mix, 1 - 25%, 2 - 50%, 3 - 100% (mono)
-
-  //ADC
-  inout   [3:0] ADC_BUS,
-
-  //SD-SPI
-  output        SD_SCK,
-  output        SD_MOSI,
-  input         SD_MISO,
-  output        SD_CS,
-  input         SD_CD,
-
-  //High latency DDR3 RAM interface
-  //Use for non-critical time purposes
-  output        DDRAM_CLK,
-  input         DDRAM_BUSY,
-  output  [7:0] DDRAM_BURSTCNT,
-  output [28:0] DDRAM_ADDR,
-  input  [63:0] DDRAM_DOUT,
-  input         DDRAM_DOUT_READY,
-  output        DDRAM_RD,
-  output [63:0] DDRAM_DIN,
-  output  [7:0] DDRAM_BE,
-  output        DDRAM_WE,
 
   //SDRAM interface with lower latency
   output        SDRAM_CLK,
@@ -104,50 +89,32 @@ module emu
   output        SDRAM_nRAS,
   output        SDRAM_nWE,
 
-  input         UART_CTS,
-  output        UART_RTS,
-  input         UART_RXD,
-  output        UART_TXD,
-  output        UART_DTR,
-  input         UART_DSR,
-
   // Open-drain User port.
   // 0 - D+/RX
   // 1 - D-/TX
   // 2..6 - USR2..USR6
   // Set USER_OUT to 1 to read from USER_IN.
   input   [6:0] USER_IN,
-  output  [6:0] USER_OUT,
-
-  input         OSD_STATUS
+  output  [6:0] USER_OUT
 );
 
-assign ADC_BUS  = 'Z;
-assign USER_OUT = '1;
-assign {UART_RTS, UART_TXD, UART_DTR} = 0;
-assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
-assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;
-assign VGA_SL = 0;
 assign VGA_F1 = 0;
 
-assign AUDIO_S   = 1;
-assign AUDIO_R   = AUDIO_L;
-assign AUDIO_MIX = 0;
+assign AUDIO_S = 1;
+assign AUDIO_R = AUDIO_L;
 
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
-assign BUTTONS   = 0;
 
-assign CLK_VIDEO = clk_sys;
-assign VIDEO_ARX = 8'd4;
-assign VIDEO_ARY = 8'd3;
+assign HDMI_ARX = status[1] ? 8'd16 : 8'd4;
+assign HDMI_ARY = status[1] ? 8'd9  : 8'd3;
+
+assign SDRAM_CLK = clk_sdram;
 
 `include "build_id.v"
 localparam CONF_STR = {
   "A.Rygar;;",
-  "F,rom;",
-  "-;",
-  "O1,Aspect Ratio,Original,Wide;",
+  "H0O1,Aspect Ratio,Original,Wide;",
   "O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
   "-;",
   "O89,Lives,3,4,5,2;",
@@ -165,7 +132,7 @@ localparam CONF_STR = {
 // CLOCKS
 ////////////////////////////////////////////////////////////////////////////////
 
-wire clk_sys;
+wire clk_sys, clk_sdram;
 wire cen_12;
 wire locked;
 
@@ -173,7 +140,7 @@ pll pll
 (
   .refclk(CLK_50M),
   .outclk_0(clk_sys),
-  .outclk_1(SDRAM_CLK),
+  .outclk_1(clk_sdram),
   .locked(locked)
 );
 
@@ -181,8 +148,11 @@ pll pll
 // HPS IO
 ////////////////////////////////////////////////////////////////////////////////
 
-wire [31:0] status;
 wire  [1:0] buttons;
+wire [31:0] status;
+wire        forced_scandoubler;
+wire [21:0] gamma_bus;
+wire        direct_video;
 
 wire [24:0] ioctl_addr;
 wire  [7:0] ioctl_data;
@@ -194,20 +164,19 @@ wire [10:0] ps2_key;
 wire  [8:0] joystick_0, joystick_1;
 wire [15:0] joy = joystick_0 | joystick_1;
 
-wire forced_scandoubler;
-
-wire [21:0] gamma_bus;
-
 hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 (
   .clk_sys(clk_sys),
   .HPS_BUS(HPS_BUS),
 
   .conf_str(CONF_STR),
-  .forced_scandoubler(forced_scandoubler),
 
   .buttons(buttons),
   .status(status),
+  .status_menumask(direct_video),
+  .forced_scandoubler(forced_scandoubler),
+  .gamma_bus(gamma_bus),
+  .direct_video(direct_video),
 
   .ioctl_addr(ioctl_addr),
   .ioctl_dout(ioctl_data),
@@ -216,32 +185,37 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 
   .joystick_0(joystick_0),
   .joystick_1(joystick_1),
-  .ps2_key(ps2_key),
 
-  .gamma_bus(gamma_bus)
+  .ps2_key(ps2_key)
 );
 
 ////////////////////////////////////////////////////////////////////////////////
 // VIDEO
 ////////////////////////////////////////////////////////////////////////////////
 
-wire [3:0] R, G, B;
-wire HSync, VSync, HBlank, VBlank;
-wire [2:0] scale = status[5:3];
-wire scandoubler = (scale || forced_scandoubler);
+wire [3:0] r, g, b;
+wire       hsync, vsync;
+wire       hblank, vblank;
 
-video_mixer #(.LINE_LENGTH(256), .HALF_DEPTH(1)) video_mixer
+arcade_video #(256, 240, 12, 0) arcade_video
 (
   .*,
 
-  .clk_vid(clk_sys),
+  // clock
+  .clk_video(clk_sys),
   .ce_pix(cen_12),
-  .ce_pix_out(CE_PIXEL),
 
-  .scandoubler(scandoubler),
-  .scanlines(0),
-  .hq2x(scale==1),
-  .mono(0)
+  // video
+  .RGB_in({r, g, b}),
+  .HBlank(hblank),
+  .VBlank(vblank),
+  .HSync(hsync),
+  .VSync(vsync),
+
+  // rotate/aspect
+  .no_rotate(1),
+  .rotate_ccw(0),
+  .fx(status[5:3])
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -287,8 +261,8 @@ sdram #(.CLK_FREQ(48.0)) sdram
 // CONTROLS
 ////////////////////////////////////////////////////////////////////////////////
 
-wire pressed    = ps2_key[9];
-wire [7:0] code = ps2_key[7:0];
+wire       pressed = ps2_key[9];
+wire [7:0] code    = ps2_key[7:0];
 
 reg key_left  = 0;
 reg key_right = 0;
@@ -364,14 +338,14 @@ rygar rygar
   .ioctl_wr(ioctl_wr),
   .ioctl_download(ioctl_download),
 
-  .hsync(HSync),
-  .vsync(VSync),
-  .hblank(HBlank),
-  .vblank(VBlank),
+  .hsync(hsync),
+  .vsync(vsync),
+  .hblank(hblank),
+  .vblank(vblank),
 
-  .r(R),
-  .g(G),
-  .b(B),
+  .r(r),
+  .g(g),
+  .b(b),
 
   .audio(AUDIO_L)
 );
