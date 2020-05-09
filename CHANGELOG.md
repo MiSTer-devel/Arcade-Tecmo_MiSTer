@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v1.0.0-beta.4 (2020-05-09)
+
 * Fix aspect and scandoubler options
 
 ## v1.0.0-beta.3 (2020-05-08)
