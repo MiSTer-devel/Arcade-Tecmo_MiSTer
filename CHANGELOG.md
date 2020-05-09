@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Fix aspect and scandoubler options
+
 ## v1.0.0-beta.3 (2020-05-08)
 
 * Centre CRT image
