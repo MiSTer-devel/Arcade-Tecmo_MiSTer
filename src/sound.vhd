@@ -83,7 +83,7 @@ architecture arch of sound is
   signal pcm_done    : std_logic;
   signal pcm_vck     : std_logic;
   signal pcm_data    : nibble_t;
-  signal pcm_sample  : signed(11 downto 0);
+  signal pcm_sample  : audio_t;
 begin
   cpu : entity work.T80s
   port map (
@@ -156,27 +156,26 @@ begin
   pcm_counter : entity work.pcm_counter
   generic map (ADDR_WIDTH => SOUND_ROM_2_ADDR_WIDTH)
   port map (
-    reset     => reset,
-    clk       => clk,
-    vck       => pcm_vck,
-    data      => cpu_dout,
-    we        => not cpu_wr_n,
-    set_low   => pcm_low_cs,
-    set_high  => pcm_high_cs,
-    addr      => pcm_addr,
-    nibble    => pcm_nibble,
-    done      => pcm_done
+    reset    => reset,
+    clk      => clk,
+    vck      => pcm_vck,
+    data     => cpu_dout,
+    we       => not cpu_wr_n,
+    set_low  => pcm_low_cs,
+    set_high => pcm_high_cs,
+    addr     => pcm_addr,
+    nibble   => pcm_nibble,
+    done     => pcm_done
   );
 
-  msm5205 : entity work.msm5205
-  generic map (SAMPLE_FREQ => "10")
+  pcm : entity work.pcm
   port map (
     reset  => pcm_done,
     clk    => clk,
     cen    => cen_384,
-    vck    => pcm_vck,
     din    => pcm_data,
-    sample => pcm_sample
+    sample => pcm_sample,
+    irq    => pcm_vck
   );
 
   nmi : process (clk, reset)
@@ -225,10 +224,10 @@ begin
              fm_data or
              req_data;
 
-  -- set the input data for the MSM5205
+  -- set the PCM data
   pcm_data <= sound_rom_2_data(7 downto 4) when pcm_nibble = '1' else
               sound_rom_2_data(3 downto 0);
 
   -- mix FM and PCM samples
-  audio <= fm_sample + (pcm_sample & "000");
+  audio <= fm_sample + pcm_sample;
 end architecture arch;

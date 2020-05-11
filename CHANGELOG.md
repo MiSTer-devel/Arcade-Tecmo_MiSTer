@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Use jt5205 for PCM sound
+
 ## v1.0.0-beta.4 (2020-05-09)
 
 * Fix aspect and scandoubler options
