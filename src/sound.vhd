@@ -83,7 +83,7 @@ architecture arch of sound is
   signal pcm_done    : std_logic;
   signal pcm_vck     : std_logic;
   signal pcm_data    : nibble_t;
-  signal pcm_sample  : signed(11 downto 0);
+  signal pcm_sample  : audio_t;
 begin
   cpu : entity work.T80s
   port map (
@@ -229,5 +229,5 @@ begin
               sound_rom_2_data(3 downto 0);
 
   -- mix FM and PCM samples
-  audio <= fm_sample + (pcm_sample & "000");
+  audio <= fm_sample + pcm_sample;
 end architecture arch;

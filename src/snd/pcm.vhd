@@ -28,12 +28,14 @@ entity pcm is
     clk    : in std_logic;
     cen    : in std_logic;
     din    : in std_logic_vector(3 downto 0);
-    sample : out signed(11 downto 0);
+    sample : out signed(15 downto 0);
     irq    : out std_logic
   );
 end entity pcm;
 
 architecture arch of pcm is
+  signal sound : signed(11 downto 0);
+
   component jt5205 is
     port (
       rst   : in std_logic;
@@ -53,7 +55,9 @@ begin
     cen   => cen,
     sel   => "10",
     din   => din,
-    sound => sample,
+    sound => sound,
     irq   => irq
   );
+
+  sample <= sound(11) & sound & "000";
 end architecture arch;
