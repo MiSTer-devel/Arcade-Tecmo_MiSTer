@@ -26,7 +26,7 @@ set_global_assignment -name VHDL_FILE src/snd/fm.vhd
 set_global_assignment -name VHDL_FILE src/snd/mixer.vhd
 set_global_assignment -name VHDL_FILE src/snd/pcm_counter.vhd
 set_global_assignment -name VHDL_FILE src/snd/pcm.vhd
-set_global_assignment -name VHDL_FILE src/sound.vhd
+set_global_assignment -name VHDL_FILE src/snd/snd.vhd
 set_global_assignment -name VHDL_FILE src/util/clock_divider.vhd
 set_global_assignment -name VHDL_FILE src/util/download_buffer.vhd
 set_global_assignment -name VHDL_FILE src/util/edge_detector.vhd

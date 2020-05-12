@@ -24,7 +24,7 @@ use ieee.numeric_std.all;
 
 use work.common.all;
 
-entity sound is
+entity snd is
   port (
     reset : in std_logic;
 
@@ -40,9 +40,9 @@ entity sound is
     -- audio data
     audio : out audio_t
   );
-end entity sound;
+end entity snd;
 
-architecture arch of sound is
+architecture arch of snd is
   -- CPU signals
   signal cpu_addr   : unsigned(CPU_ADDR_WIDTH-1 downto 0);
   signal cpu_din    : byte_t;

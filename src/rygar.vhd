@@ -344,7 +344,7 @@ begin
 
   -- A request is sent to the sound subsystem when the CPU writes a byte to
   -- address 0xf806.
-  sound : entity work.sound
+  snd : entity work.snd
   port map (
     reset   => reset,
     clk     => clk,
