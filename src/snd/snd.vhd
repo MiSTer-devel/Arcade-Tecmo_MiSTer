@@ -87,21 +87,21 @@ architecture arch of snd is
 begin
   cpu : entity work.T80s
   port map (
-    RESET_n             => not reset,
-    CLK                 => clk,
-    CEN                 => cen_4,
-    INT_n               => cpu_int_n,
-    NMI_n               => cpu_nmi_n,
-    MREQ_n              => cpu_mreq_n,
-    IORQ_n              => open,
-    RD_n                => cpu_rd_n,
-    WR_n                => cpu_wr_n,
-    RFSH_n              => cpu_rfsh_n,
-    HALT_n              => open,
-    BUSAK_n             => open,
-    std_logic_vector(A) => cpu_addr,
-    DI                  => cpu_din,
-    DO                  => cpu_dout
+    RESET_n     => not reset,
+    CLK         => clk,
+    CEN         => cen_4,
+    INT_n       => cpu_int_n,
+    NMI_n       => cpu_nmi_n,
+    MREQ_n      => cpu_mreq_n,
+    IORQ_n      => open,
+    RD_n        => cpu_rd_n,
+    WR_n        => cpu_wr_n,
+    RFSH_n      => cpu_rfsh_n,
+    HALT_n      => open,
+    BUSAK_n     => open,
+    unsigned(A) => cpu_addr,
+    DI          => cpu_din,
+    DO          => cpu_dout
   );
 
   -- contains sound program data
