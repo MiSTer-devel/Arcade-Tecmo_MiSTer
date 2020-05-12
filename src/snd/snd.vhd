@@ -24,6 +24,10 @@ use ieee.numeric_std.all;
 
 use work.common.all;
 
+-- The sound subsystem plays both FM and PCM sounds.
+--
+-- It has its own Z80 CPU that is responsible for starting and stopping sounds
+-- in response to requests from the main CPU.
 entity snd is
   port (
     reset : in std_logic;
@@ -104,7 +108,7 @@ begin
     DO          => cpu_dout
   );
 
-  -- contains sound program data
+  -- sound program ROM
   sound_rom_1 : entity work.single_port_rom
   generic map (
     ADDR_WIDTH => SOUND_ROM_1_ADDR_WIDTH,
@@ -117,7 +121,7 @@ begin
     dout => sound_rom_1_data
   );
 
-  -- contains PCM data
+  -- PCM ROM
   sound_rom_2 : entity work.single_port_rom
   generic map (
     ADDR_WIDTH => SOUND_ROM_2_ADDR_WIDTH,
@@ -129,6 +133,7 @@ begin
     dout => sound_rom_2_data
   );
 
+  -- sound work RAM
   sound_ram : entity work.single_port_ram
   generic map (ADDR_WIDTH => SOUND_RAM_ADDR_WIDTH)
   port map (
@@ -140,6 +145,7 @@ begin
     we   => not cpu_wr_n
   );
 
+  -- FM player
   fm : entity work.fm
   port map (
     reset  => reset,
@@ -153,6 +159,7 @@ begin
     sample => fm_sample
   );
 
+  -- PCM address counter
   pcm_counter : entity work.pcm_counter
   generic map (ADDR_WIDTH => SOUND_ROM_2_ADDR_WIDTH)
   port map (
@@ -168,6 +175,7 @@ begin
     done     => pcm_done
   );
 
+  -- PCM player
   pcm : entity work.pcm
   port map (
     reset  => pcm_done,
@@ -178,6 +186,7 @@ begin
     irq    => pcm_vck
   );
 
+  -- audio mixer
   mixer : entity work.mixer
   generic map (GAIN_0 => 1.0, GAIN_1 => 0.8)
   port map (
@@ -198,7 +207,7 @@ begin
         -- set NMI
         cpu_nmi_n <= '0';
 
-        -- latch data
+        -- latch input data
         data_reg <= data;
       end if;
     end if;

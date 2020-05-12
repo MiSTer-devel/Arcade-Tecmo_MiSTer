@@ -22,6 +22,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- Frequency-modulation (FM) sounds are handled by the YM3526 (OPL2) chip.
+--
+-- We are using an implementation of the YM3526 by Aleksander Osman.
 entity fm is
   port (
     reset : in std_logic;

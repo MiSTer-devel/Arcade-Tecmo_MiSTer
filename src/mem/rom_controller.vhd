@@ -24,17 +24,16 @@ use ieee.numeric_std.all;
 
 use work.common.all;
 
--- The ROM controller handles reading and writing ROM data to the SDRAM. It
--- provides a read-only interface to the GPU for reading tile data. It also
--- provides a write-only interface for downloading the ROM data.
+-- The original arcade hardware has multiple ROM chips that contain things like
+-- program data, tile data, sound data, etc. Unfortunately, the Cyclone V FPGA
+-- doesn't have enough resources for us to store these ROMs in block RAM.
 --
--- The original arcade hardware has multiple ROM chips that store things like
--- the program data, tile data, sound data, etc. Unfortunately, the Cyclone
--- V FPGA doesn't have enough memory blocks for us to implement all these ROMs.
--- Instead, we need to store the them in the SDRAM.
+-- Instead, we can store the them in the SDRAM.
 --
--- The ROMs are all accessed concurrently, so the ROM controller is responsible
--- for reading the ROM data from the SDRAM in a fair and timely manner.
+-- The ROM controller provides a read-only interface for each of these ROM
+-- chips. Data in these ROMs can be accessed concurrently by the arcade
+-- hardware, so the ROM controller must multiplex reads from the SDRAM when
+-- reading ROM data.
 entity rom_controller is
   port (
     -- reset
@@ -147,7 +146,7 @@ architecture arch of rom_controller is
   -- control signals
   signal ctrl_req : std_logic;
 begin
-
+  -- Manages the program ROM #1 memory segment.
   prog_rom_1_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => PROG_ROM_1_ADDR_WIDTH,
@@ -168,6 +167,7 @@ begin
     rom_data   => prog_rom_1_data
   );
 
+  -- Manages the program ROM #2 memory segment.
   prog_rom_2_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => PROG_ROM_2_ADDR_WIDTH,
@@ -188,6 +188,7 @@ begin
     rom_data   => prog_rom_2_data
   );
 
+  -- Manages the program ROM #3 memory segment.
   prog_rom_3_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => PROG_ROM_3_ADDR_WIDTH,
@@ -208,6 +209,7 @@ begin
     rom_data   => prog_rom_3_data
   );
 
+  -- Manages the sprite ROM memory segment.
   sprite_rom_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => SPRITE_ROM_ADDR_WIDTH,
@@ -228,6 +230,7 @@ begin
     rom_data   => sprite_rom_data
   );
 
+  -- Manages the character ROM memory segment.
   char_rom_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => CHAR_ROM_ADDR_WIDTH,
@@ -248,6 +251,7 @@ begin
     rom_data   => char_rom_data
   );
 
+  -- Manages the foreground ROM memory segment.
   fg_rom_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => FG_ROM_ADDR_WIDTH,
@@ -268,6 +272,7 @@ begin
     rom_data   => fg_rom_data
   );
 
+  -- Manages the background ROM memory segment.
   bg_rom_segment : entity work.segment
   generic map (
     ROM_ADDR_WIDTH => BG_ROM_ADDR_WIDTH,

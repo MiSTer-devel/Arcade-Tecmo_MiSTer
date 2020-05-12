@@ -34,8 +34,8 @@ use work.common.all;
 -- There are four different sprite sizes – 8x8, 16x16, 32x32, and 64x64 – which
 -- are all composed from one or more 8x8 tiles.
 --
--- The data which describes the characteristics of each sprite – such as
--- position, size, etc. – is stored in the sprite RAM.
+-- The data which describes the characteristics of each sprite — such as
+-- position, size, etc. — is stored in the sprite RAM.
 --
 -- The pixel data for the 8x8 tiles which make up each sprite is stored in the
 -- sprite tile ROM.

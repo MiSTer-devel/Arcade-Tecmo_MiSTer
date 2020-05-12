@@ -22,6 +22,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- Pulse-code modulation (PCM) sounds are handled by the MSM5205 chip.
+--
+-- We are using an implelmentation of the MSM5205 by Jose Tejada:
+-- https://github.com/jotego/jt5205
 entity pcm is
   port (
     reset  : in std_logic;

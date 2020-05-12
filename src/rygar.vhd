@@ -29,7 +29,7 @@ entity rygar is
     -- reset
     reset : in std_logic;
 
-    -- clock
+    -- 48MHz clock
     clk : in std_logic;
 
     -- clock enable signals
@@ -68,17 +68,18 @@ entity rygar is
     ioctl_wr       : in std_logic;
     ioctl_download : in std_logic;
 
-    -- video signals
+    -- video control signals
     hsync  : out std_logic;
     vsync  : out std_logic;
     hblank : out std_logic;
     vblank : out std_logic;
 
-    -- RGB
+    -- RGB signals
     r : out std_logic_vector(COLOR_DEPTH_R-1 downto 0);
     g : out std_logic_vector(COLOR_DEPTH_G-1 downto 0);
     b : out std_logic_vector(COLOR_DEPTH_B-1 downto 0);
 
+    -- audio data
     audio : out audio_t
   );
 end rygar;
@@ -132,7 +133,7 @@ architecture arch of rygar is
   signal bg_rom_addr     : unsigned(BG_ROM_ADDR_WIDTH-1 downto 0);
   signal bg_rom_data     : std_logic_vector(BG_ROM_DATA_WIDTH-1 downto 0);
 
-  -- data output signals
+  -- data signals
   signal prog_rom_1_dout : byte_t;
   signal prog_rom_2_dout : byte_t;
   signal prog_rom_3_dout : byte_t;
@@ -297,7 +298,7 @@ begin
     DO          => cpu_dout
   );
 
-  -- GPU
+  -- graphics subsystem
   gpu : entity work.gpu
   generic map (
     SPRITE_LAYER_ENABLE => true,
@@ -342,8 +343,7 @@ begin
     rgb   => rgb
   );
 
-  -- A request is sent to the sound subsystem when the CPU writes a byte to
-  -- address 0xf806.
+  -- sound subsystem
   snd : entity work.snd
   port map (
     reset   => reset,
