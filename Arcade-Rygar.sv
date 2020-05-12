@@ -197,7 +197,7 @@ wire [3:0] r, g, b;
 wire       hsync, vsync;
 wire       hblank, vblank;
 
-arcade_video #(256, 240, 12, 0) arcade_video
+arcade_video #(256, 224, 12, 0) arcade_video
 (
   .*,
 

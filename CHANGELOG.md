@@ -4,6 +4,7 @@
 
 * Use jt5205 for PCM sound
 * Fix audio clipping
+* Use 256x224 resolution for arcade video output
 
 ## v1.0.0-beta.4 (2020-05-09)
 
