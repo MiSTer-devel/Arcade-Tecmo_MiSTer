@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Use jt5205 for PCM sound
+* Fix audio clipping
 
 ## v1.0.0-beta.4 (2020-05-09)
 

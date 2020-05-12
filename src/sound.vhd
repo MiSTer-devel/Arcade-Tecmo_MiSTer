@@ -178,6 +178,14 @@ begin
     irq    => pcm_vck
   );
 
+  mixer : entity work.mixer
+  generic map (GAIN_0 => 1.0, GAIN_1 => 0.8)
+  port map (
+    ch0 => fm_sample,
+    ch1 => pcm_sample,
+    mix => audio
+  );
+
   nmi : process (clk, reset)
   begin
     if reset = '1' then
@@ -227,7 +235,4 @@ begin
   -- set the PCM data
   pcm_data <= sound_rom_2_data(7 downto 4) when pcm_nibble = '1' else
               sound_rom_2_data(3 downto 0);
-
-  -- mix FM and PCM samples
-  audio <= fm_sample + pcm_sample;
 end architecture arch;

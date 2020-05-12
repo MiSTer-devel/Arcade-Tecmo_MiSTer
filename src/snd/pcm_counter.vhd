@@ -24,7 +24,10 @@ entity pcm_counter is
     set_high : in std_logic;
 
     -- output address
-    addr   : out unsigned(ADDR_WIDTH-1 downto 0);
+    addr : out unsigned(ADDR_WIDTH-1 downto 0);
+
+    -- The nibble signal is asserted when the high nibble should be loaded from
+    -- the PCM ROM. Otherwise the low nibble should be loaded from the PCM rom.
     nibble : out std_logic;
 
     -- The done signal is asserted when the counter has reached the end
