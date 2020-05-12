@@ -22,7 +22,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity opl is
+entity fm is
   port (
     reset : in std_logic;
     clk   : in std_logic;
@@ -37,9 +37,9 @@ entity opl is
 
     sample : out signed(15 downto 0)
   );
-end entity opl;
+end entity fm;
 
-architecture arch of opl is
+architecture arch of fm is
   signal opl3_dout : std_logic_vector(7 downto 0);
 
   component opl3 is

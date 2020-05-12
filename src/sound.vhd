@@ -140,7 +140,7 @@ begin
     we   => not cpu_wr_n
   );
 
-  opl : entity work.opl
+  fm : entity work.fm
   port map (
     reset  => reset,
     clk    => clk,

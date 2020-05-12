@@ -22,8 +22,8 @@ set_global_assignment -name VHDL_FILE src/mem/single_port_ram.vhd
 set_global_assignment -name VHDL_FILE src/mem/single_port_rom.vhd
 set_global_assignment -name VHDL_FILE src/mem/true_dual_port_ram.vhd
 set_global_assignment -name VHDL_FILE src/rygar.vhd
+set_global_assignment -name VHDL_FILE src/snd/fm.vhd
 set_global_assignment -name VHDL_FILE src/snd/mixer.vhd
-set_global_assignment -name VHDL_FILE src/snd/opl.vhd
 set_global_assignment -name VHDL_FILE src/snd/pcm_counter.vhd
 set_global_assignment -name VHDL_FILE src/snd/pcm.vhd
 set_global_assignment -name VHDL_FILE src/sound.vhd
