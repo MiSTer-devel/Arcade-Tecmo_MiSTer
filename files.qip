@@ -2,6 +2,7 @@ set_global_assignment -name QIP_FILE lib/fixed_pkg/fixed_pkg.qip
 set_global_assignment -name QIP_FILE lib/jt5205/jt5205.qip
 set_global_assignment -name QIP_FILE lib/opl3/opl3.qip
 set_global_assignment -name QIP_FILE lib/t80/t80.qip
+set_global_assignment -name SDC_FILE src/sdram.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE rygar.sv
 set_global_assignment -name VHDL_FILE lib/fixed_float_types_c.vhd
 set_global_assignment -name VHDL_FILE lib/fixed_pkg_c.vhd
