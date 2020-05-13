@@ -121,7 +121,6 @@ architecture arch of rygar is
 
   -- chip select signals
   signal prog_rom_1_cs  : std_logic;
-  signal prog_rom_2_cs  : std_logic;
   signal prog_rom_3_cs  : std_logic;
   signal work_ram_cs    : std_logic;
   signal sprite_ram_cs  : std_logic;
@@ -150,7 +149,6 @@ architecture arch of rygar is
 
   -- data signals
   signal prog_rom_1_dout : byte_t;
-  signal prog_rom_2_dout : byte_t;
   signal prog_rom_3_dout : byte_t;
   signal work_ram_dout   : byte_t;
   signal gpu_dout        : byte_t;
@@ -240,12 +238,6 @@ begin
     prog_rom_1_oe   => not cpu_rd_n,
     prog_rom_1_addr => cpu_addr(PROG_ROM_1_ADDR_WIDTH-1 downto 0),
     prog_rom_1_data => prog_rom_1_dout,
-
-    -- program ROM #2 interface
-    prog_rom_2_cs   => prog_rom_2_cs and cpu_rfsh_n and not ioctl_download,
-    prog_rom_2_oe   => not cpu_rd_n,
-    prog_rom_2_addr => cpu_addr(PROG_ROM_2_ADDR_WIDTH-1 downto 0),
-    prog_rom_2_data => prog_rom_2_dout,
 
     -- program ROM #3 interface
     prog_rom_3_cs   => prog_rom_3_cs and cpu_rfsh_n and not ioctl_download,
@@ -449,8 +441,7 @@ begin
   --      f804 | coin
   -- f806-f807 | DIP switch 1
   -- f808-f809 | DIP switch 2
-  prog_rom_1_cs  <= '1' when cpu_addr >= x"0000" and cpu_addr <= x"7fff" else '0';
-  prog_rom_2_cs  <= '1' when cpu_addr >= x"8000" and cpu_addr <= x"bfff" else '0';
+  prog_rom_1_cs  <= '1' when cpu_addr >= x"0000" and cpu_addr <= x"bfff" else '0';
   work_ram_cs    <= '1' when cpu_addr >= x"c000" and cpu_addr <= x"cfff" else '0';
   char_ram_cs    <= '1' when cpu_addr >= x"d000" and cpu_addr <= x"d7ff" else '0';
   fg_ram_cs      <= '1' when cpu_addr >= x"d800" and cpu_addr <= x"dbff" else '0';
@@ -469,7 +460,6 @@ begin
 
   -- mux CPU data input
   cpu_din <= prog_rom_1_dout or
-             prog_rom_2_dout or
              prog_rom_3_dout or
              work_ram_dout or
              gpu_dout or

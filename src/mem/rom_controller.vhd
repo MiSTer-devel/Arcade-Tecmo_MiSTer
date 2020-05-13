@@ -63,12 +63,6 @@ entity rom_controller is
     prog_rom_1_addr : in unsigned(PROG_ROM_1_ADDR_WIDTH-1 downto 0);
     prog_rom_1_data : out std_logic_vector(PROG_ROM_1_DATA_WIDTH-1 downto 0);
 
-    -- program ROM #2 interface
-    prog_rom_2_cs   : in std_logic;
-    prog_rom_2_oe   : in std_logic;
-    prog_rom_2_addr : in unsigned(PROG_ROM_2_ADDR_WIDTH-1 downto 0);
-    prog_rom_2_data : out std_logic_vector(PROG_ROM_2_DATA_WIDTH-1 downto 0);
-
     -- program ROM #3 interface
     prog_rom_3_cs   : in std_logic;
     prog_rom_3_oe   : in std_logic;
@@ -117,14 +111,13 @@ entity rom_controller is
 end rom_controller;
 
 architecture arch of rom_controller is
-  type rom_t is (NONE, PROG_ROM_1, PROG_ROM_2, PROG_ROM_3, SPRITE_ROM, CHAR_ROM, FG_ROM, BG_ROM);
+  type rom_t is (NONE, PROG_ROM_1, PROG_ROM_3, SPRITE_ROM, CHAR_ROM, FG_ROM, BG_ROM);
 
   -- ROM signals
   signal rom, next_rom, pending_rom : rom_t;
 
   -- ROM request signals
   signal prog_rom_1_ctrl_req : std_logic;
-  signal prog_rom_2_ctrl_req : std_logic;
   signal prog_rom_3_ctrl_req : std_logic;
   signal sprite_rom_ctrl_req : std_logic;
   signal char_rom_ctrl_req   : std_logic;
@@ -133,7 +126,6 @@ architecture arch of rom_controller is
 
   -- ROM acknowledge signals
   signal prog_rom_1_ctrl_ack : std_logic;
-  signal prog_rom_2_ctrl_ack : std_logic;
   signal prog_rom_3_ctrl_ack : std_logic;
   signal sprite_rom_ctrl_ack : std_logic;
   signal char_rom_ctrl_ack   : std_logic;
@@ -142,7 +134,6 @@ architecture arch of rom_controller is
 
   -- ROM valid signals
   signal prog_rom_1_ctrl_valid : std_logic;
-  signal prog_rom_2_ctrl_valid : std_logic;
   signal prog_rom_3_ctrl_valid : std_logic;
   signal sprite_rom_ctrl_valid : std_logic;
   signal char_rom_ctrl_valid   : std_logic;
@@ -151,7 +142,6 @@ architecture arch of rom_controller is
 
   -- address mux signals
   signal prog_rom_1_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
-  signal prog_rom_2_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
   signal prog_rom_3_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
   signal sprite_rom_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
   signal char_rom_ctrl_addr   : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
@@ -180,27 +170,6 @@ begin
     ctrl_data  => sdram_q,
     rom_addr   => prog_rom_1_addr,
     rom_data   => prog_rom_1_data
-  );
-
-  -- Manages the program ROM #2 memory segment.
-  prog_rom_2_segment : entity work.segment
-  generic map (
-    ROM_ADDR_WIDTH => PROG_ROM_2_ADDR_WIDTH,
-    ROM_DATA_WIDTH => PROG_ROM_2_DATA_WIDTH,
-    ROM_OFFSET     => PROG_ROM_2_OFFSET
-  )
-  port map (
-    reset      => reset,
-    clk        => clk,
-    cs         => prog_rom_2_cs,
-    oe         => prog_rom_2_oe,
-    ctrl_addr  => prog_rom_2_ctrl_addr,
-    ctrl_req   => prog_rom_2_ctrl_req,
-    ctrl_ack   => prog_rom_2_ctrl_ack,
-    ctrl_valid => prog_rom_2_ctrl_valid,
-    ctrl_data  => sdram_q,
-    rom_addr   => prog_rom_2_addr,
-    rom_data   => prog_rom_2_data
   );
 
   -- Manages the program ROM #3 memory segment.
@@ -333,7 +302,6 @@ begin
 
   -- mux the next ROM in priority order
   next_rom <= PROG_ROM_1 when prog_rom_1_ctrl_req = '1' else
-              PROG_ROM_2 when prog_rom_2_ctrl_req = '1' else
               PROG_ROM_3 when prog_rom_3_ctrl_req = '1' else
               SPRITE_ROM when sprite_rom_ctrl_req = '1' else
               CHAR_ROM   when char_rom_ctrl_req   = '1' else
@@ -343,7 +311,6 @@ begin
 
   -- route SDRAM acknowledge signal to the current ROM
   prog_rom_1_ctrl_ack <= sdram_ack when rom = PROG_ROM_1 else '0';
-  prog_rom_2_ctrl_ack <= sdram_ack when rom = PROG_ROM_2 else '0';
   prog_rom_3_ctrl_ack <= sdram_ack when rom = PROG_ROM_3 else '0';
   sprite_rom_ctrl_ack <= sdram_ack when rom = SPRITE_ROM else '0';
   char_rom_ctrl_ack   <= sdram_ack when rom = CHAR_ROM   else '0';
@@ -352,7 +319,6 @@ begin
 
   -- route SDRAM valid signal to the pending ROM
   prog_rom_1_ctrl_valid <= sdram_valid when pending_rom = PROG_ROM_1 else '0';
-  prog_rom_2_ctrl_valid <= sdram_valid when pending_rom = PROG_ROM_2 else '0';
   prog_rom_3_ctrl_valid <= sdram_valid when pending_rom = PROG_ROM_3 else '0';
   sprite_rom_ctrl_valid <= sdram_valid when pending_rom = SPRITE_ROM else '0';
   char_rom_ctrl_valid   <= sdram_valid when pending_rom = CHAR_ROM   else '0';
@@ -361,7 +327,6 @@ begin
 
   -- mux ROM request
   ctrl_req <= prog_rom_1_ctrl_req or
-              prog_rom_2_ctrl_req or
               prog_rom_3_ctrl_req or
               sprite_rom_ctrl_req or
               char_rom_ctrl_req or
@@ -371,7 +336,6 @@ begin
   -- mux SDRAM address
   sdram_addr <= download_addr        when download_we         = '1' else
                 prog_rom_1_ctrl_addr when prog_rom_1_ctrl_req = '1' else
-                prog_rom_2_ctrl_addr when prog_rom_2_ctrl_req = '1' else
                 prog_rom_3_ctrl_addr when prog_rom_3_ctrl_req = '1' else
                 sprite_rom_ctrl_addr when sprite_rom_ctrl_req = '1' else
                 char_rom_ctrl_addr   when char_rom_ctrl_req   = '1' else
