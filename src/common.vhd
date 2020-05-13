@@ -81,6 +81,13 @@ package common is
   constant SOUND_ROM_2_DATA_WIDTH : natural := 8;
 
   -- ROM offsets
+  --
+  -- When MiSTer loads the core, the ROM data is downloaded from the HPS and
+  -- streamed directly into the SDRAM. These offset values mark the address of
+  -- each ROM segment in the SDRAM.
+  --
+  -- If the ordering of the ROMs in the MRA file changes, then these offset
+  -- values must also be changed.
   constant PROG_ROM_1_OFFSET  : natural := 16#00000#;
   constant PROG_ROM_2_OFFSET  : natural := 16#08000#;
   constant PROG_ROM_3_OFFSET  : natural := 16#0C000#;
