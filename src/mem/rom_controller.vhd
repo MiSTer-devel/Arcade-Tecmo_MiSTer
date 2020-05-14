@@ -64,46 +64,47 @@ entity rom_controller is
     clk : in std_logic;
 
     -- program ROM #1 interface
-    prog_rom_1_cs   : in std_logic;
-    prog_rom_1_oe   : in std_logic;
+    prog_rom_1_cs   : in std_logic := '1';
+    prog_rom_1_oe   : in std_logic := '1';
     prog_rom_1_addr : in unsigned(PROG_ROM_1_ADDR_WIDTH-1 downto 0);
     prog_rom_1_data : out std_logic_vector(PROG_ROM_1_DATA_WIDTH-1 downto 0);
 
     -- program ROM #3 interface
-    prog_rom_2_cs   : in std_logic;
-    prog_rom_2_oe   : in std_logic;
+    prog_rom_2_cs   : in std_logic := '1';
+    prog_rom_2_oe   : in std_logic := '1';
     prog_rom_2_addr : in unsigned(PROG_ROM_2_ADDR_WIDTH-1 downto 0);
     prog_rom_2_data : out std_logic_vector(PROG_ROM_2_DATA_WIDTH-1 downto 0);
 
     -- sprite ROM interface
-    sprite_rom_cs   : in std_logic;
-    sprite_rom_oe   : in std_logic;
+    sprite_rom_cs   : in std_logic := '1';
+    sprite_rom_oe   : in std_logic := '1';
     sprite_rom_addr : in unsigned(SPRITE_ROM_ADDR_WIDTH-1 downto 0);
     sprite_rom_data : out std_logic_vector(SPRITE_ROM_DATA_WIDTH-1 downto 0);
 
     -- character ROM interface
-    char_rom_cs   : in std_logic;
-    char_rom_oe   : in std_logic;
+    char_rom_cs   : in std_logic := '1';
+    char_rom_oe   : in std_logic := '1';
     char_rom_addr : in unsigned(CHAR_ROM_ADDR_WIDTH-1 downto 0);
     char_rom_data : out std_logic_vector(CHAR_ROM_DATA_WIDTH-1 downto 0);
 
     -- foreground ROM interface
-    fg_rom_cs   : in std_logic;
-    fg_rom_oe   : in std_logic;
+    fg_rom_cs   : in std_logic := '1';
+    fg_rom_oe   : in std_logic := '1';
     fg_rom_addr : in unsigned(FG_ROM_ADDR_WIDTH-1 downto 0);
     fg_rom_data : out std_logic_vector(FG_ROM_DATA_WIDTH-1 downto 0);
 
     -- background ROM interface
-    bg_rom_cs   : in std_logic;
-    bg_rom_oe   : in std_logic;
+    bg_rom_cs   : in std_logic := '1';
+    bg_rom_oe   : in std_logic := '1';
     bg_rom_addr : in unsigned(BG_ROM_ADDR_WIDTH-1 downto 0);
     bg_rom_data : out std_logic_vector(BG_ROM_DATA_WIDTH-1 downto 0);
 
-    -- download interface
-    download_addr : in unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
-    download_data : in std_logic_vector(SDRAM_CTRL_DATA_WIDTH-1 downto 0);
-    download_we   : in std_logic;
-    download_req  : in std_logic;
+
+    -- IOCTL interface
+    ioctl_addr     : in unsigned(IOCTL_ADDR_WIDTH-1 downto 0);
+    ioctl_data     : in byte_t;
+    ioctl_wr       : in std_logic;
+    ioctl_download : in std_logic;
 
     -- SDRAM interface
     sdram_addr  : out unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
@@ -154,9 +155,28 @@ architecture arch of rom_controller is
   signal fg_rom_ctrl_addr     : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
   signal bg_rom_ctrl_addr     : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
 
+  -- download signals
+  signal download_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
+  signal download_data : std_logic_vector(SDRAM_CTRL_DATA_WIDTH-1 downto 0);
+  signal download_req  : std_logic;
+
   -- control signals
   signal ctrl_req : std_logic;
 begin
+
+  -- The SDRAM controller has a 32-bit interface, so we need to buffer the
+  -- bytes received from the IOCTL interface in order to write 32-bit words to
+  -- the SDRAM.
+  download_buffer : entity work.download_buffer
+  generic map (SIZE => 4)
+  port map (
+    clk   => clk,
+    din   => ioctl_data,
+    dout  => download_data,
+    we    => ioctl_download and ioctl_wr,
+    valid => download_req
+  );
+
   -- Manages the program ROM #1 memory segment.
   prog_rom_1_segment : entity work.segment
   generic map (
@@ -167,7 +187,7 @@ begin
   port map (
     reset      => reset,
     clk        => clk,
-    cs         => prog_rom_1_cs,
+    cs         => prog_rom_1_cs and not ioctl_download,
     oe         => prog_rom_1_oe,
     ctrl_addr  => prog_rom_1_ctrl_addr,
     ctrl_req   => prog_rom_1_ctrl_req,
@@ -188,7 +208,7 @@ begin
   port map (
     reset      => reset,
     clk        => clk,
-    cs         => prog_rom_2_cs,
+    cs         => prog_rom_2_cs and not ioctl_download,
     oe         => prog_rom_2_oe,
     ctrl_addr  => prog_rom_2_ctrl_addr,
     ctrl_req   => prog_rom_2_ctrl_req,
@@ -209,7 +229,7 @@ begin
   port map (
     reset      => reset,
     clk        => clk,
-    cs         => sprite_rom_cs,
+    cs         => sprite_rom_cs and not ioctl_download,
     oe         => sprite_rom_oe,
     ctrl_addr  => sprite_rom_ctrl_addr,
     ctrl_req   => sprite_rom_ctrl_req,
@@ -230,7 +250,7 @@ begin
   port map (
     reset      => reset,
     clk        => clk,
-    cs         => char_rom_cs,
+    cs         => char_rom_cs and not ioctl_download,
     oe         => char_rom_oe,
     ctrl_addr  => char_rom_ctrl_addr,
     ctrl_req   => char_rom_ctrl_req,
@@ -251,7 +271,7 @@ begin
   port map (
     reset      => reset,
     clk        => clk,
-    cs         => fg_rom_cs,
+    cs         => fg_rom_cs and not ioctl_download,
     oe         => fg_rom_oe,
     ctrl_addr  => fg_rom_ctrl_addr,
     ctrl_req   => fg_rom_ctrl_req,
@@ -272,7 +292,7 @@ begin
   port map (
     reset      => reset,
     clk        => clk,
-    cs         => bg_rom_cs,
+    cs         => bg_rom_cs and not ioctl_download,
     oe         => bg_rom_oe,
     ctrl_addr  => bg_rom_ctrl_addr,
     ctrl_req   => bg_rom_ctrl_req,
@@ -294,7 +314,7 @@ begin
       rom <= NONE;
 
       -- set the current ROM register when ROM data is not being downloaded
-      if download_we = '0' then
+      if ioctl_download = '0' then
         rom <= next_rom;
       end if;
 
@@ -340,7 +360,7 @@ begin
               bg_rom_ctrl_req;
 
   -- mux SDRAM address
-  sdram_addr <= download_addr        when download_we         = '1' else
+  sdram_addr <= download_addr        when ioctl_download      = '1' else
                 prog_rom_1_ctrl_addr when prog_rom_1_ctrl_req = '1' else
                 prog_rom_2_ctrl_addr when prog_rom_2_ctrl_req = '1' else
                 sprite_rom_ctrl_addr when sprite_rom_ctrl_req = '1' else
@@ -353,8 +373,12 @@ begin
   sdram_data <= download_data;
 
   -- set SDRAM request
-  sdram_req <= (download_we and download_req) or (not download_we and ctrl_req);
+  sdram_req <= (ioctl_download and download_req) or (not ioctl_download and ctrl_req);
 
   -- enable writing to the SDRAM when downloading ROM data
-  sdram_we <= download_we;
+  sdram_we <= ioctl_download;
+
+  -- we need to divide the address by four, because we're converting from
+  -- a 8-bit IOCTL address to a 32-bit SDRAM address
+  download_addr <= resize(shift_right(ioctl_addr, 2), download_addr'length);
 end architecture arch;
