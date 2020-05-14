@@ -122,7 +122,6 @@ architecture arch of rygar is
   -- chip select signals
   signal prog_rom_1_cs  : std_logic;
   signal prog_rom_2_cs  : std_logic;
-  signal prog_rom_3_cs  : std_logic;
   signal work_ram_cs    : std_logic;
   signal sprite_ram_cs  : std_logic;
   signal char_ram_cs    : std_logic;
@@ -151,7 +150,6 @@ architecture arch of rygar is
   -- data signals
   signal prog_rom_1_dout : byte_t;
   signal prog_rom_2_dout : byte_t;
-  signal prog_rom_3_dout : byte_t;
   signal work_ram_dout   : byte_t;
   signal gpu_dout        : byte_t;
   signal io_dout         : nibble_t;
@@ -241,17 +239,11 @@ begin
     prog_rom_1_addr => cpu_addr(PROG_ROM_1_ADDR_WIDTH-1 downto 0),
     prog_rom_1_data => prog_rom_1_dout,
 
-    -- program ROM #2 interface
+    -- program ROM #3 interface
     prog_rom_2_cs   => prog_rom_2_cs and cpu_rfsh_n and not ioctl_download,
     prog_rom_2_oe   => not cpu_rd_n,
-    prog_rom_2_addr => cpu_addr(PROG_ROM_2_ADDR_WIDTH-1 downto 0),
+    prog_rom_2_addr => bank_reg & cpu_addr(PROG_ROM_2_ADDR_WIDTH-BANK_REG_WIDTH-1 downto 0),
     prog_rom_2_data => prog_rom_2_dout,
-
-    -- program ROM #3 interface
-    prog_rom_3_cs   => prog_rom_3_cs and cpu_rfsh_n and not ioctl_download,
-    prog_rom_3_oe   => not cpu_rd_n,
-    prog_rom_3_addr => bank_reg & cpu_addr(PROG_ROM_3_ADDR_WIDTH-BANK_REG_WIDTH-1 downto 0),
-    prog_rom_3_data => prog_rom_3_dout,
 
     -- sprite ROM interface
     sprite_rom_cs   => not ioctl_download,
@@ -432,15 +424,14 @@ begin
 
   --  address    description
   -- ----------+-----------------
-  -- 0000-7fff | program ROM 1
-  -- 8000-bfff | program ROM 2
+  -- 0000-bfff | program ROM 1
   -- c000-cfff | work RAM
   -- d000-d7ff | character RAM
   -- d800-dbff | foreground RAM
   -- dc00-dfff | background RAM
   -- e000-e7ff | sprite RAM
   -- e800-efff | palette RAM
-  -- f000-f7ff | program ROM 3
+  -- f000-f7ff | program ROM 2
   -- f800-f805 | scroll registers
   --      f807 | sound
   --      f808 | bank register
@@ -449,15 +440,14 @@ begin
   --      f804 | coin
   -- f806-f807 | DIP switch 1
   -- f808-f809 | DIP switch 2
-  prog_rom_1_cs  <= '1' when cpu_addr >= x"0000" and cpu_addr <= x"7fff" else '0';
-  prog_rom_2_cs  <= '1' when cpu_addr >= x"8000" and cpu_addr <= x"bfff" else '0';
+  prog_rom_1_cs  <= '1' when cpu_addr >= x"0000" and cpu_addr <= x"bfff" else '0';
   work_ram_cs    <= '1' when cpu_addr >= x"c000" and cpu_addr <= x"cfff" else '0';
   char_ram_cs    <= '1' when cpu_addr >= x"d000" and cpu_addr <= x"d7ff" else '0';
   fg_ram_cs      <= '1' when cpu_addr >= x"d800" and cpu_addr <= x"dbff" else '0';
   bg_ram_cs      <= '1' when cpu_addr >= x"dc00" and cpu_addr <= x"dfff" else '0';
   sprite_ram_cs  <= '1' when cpu_addr >= x"e000" and cpu_addr <= x"e7ff" else '0';
   palette_ram_cs <= '1' when cpu_addr >= x"e800" and cpu_addr <= x"efff" else '0';
-  prog_rom_3_cs  <= '1' when cpu_addr >= x"f000" and cpu_addr <= x"f7ff" else '0';
+  prog_rom_2_cs  <= '1' when cpu_addr >= x"f000" and cpu_addr <= x"f7ff" else '0';
   scroll_cs      <= '1' when cpu_addr >= x"f800" and cpu_addr <= x"f805" else '0';
   sound_cs       <= '1' when cpu_addr  = x"f806"                         else '0';
   bank_cs        <= '1' when cpu_addr  = x"f808"                         else '0';
@@ -470,7 +460,6 @@ begin
   -- mux CPU data input
   cpu_din <= prog_rom_1_dout or
              prog_rom_2_dout or
-             prog_rom_3_dout or
              work_ram_dout or
              gpu_dout or
              io_dout;

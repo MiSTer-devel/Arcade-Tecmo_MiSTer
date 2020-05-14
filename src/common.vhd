@@ -57,12 +57,10 @@ package common is
   constant WORK_RAM_ADDR_WIDTH : natural := 12; -- 4kB
 
   -- program ROMs
-  constant PROG_ROM_1_ADDR_WIDTH : natural := 15; -- 32kB
+  constant PROG_ROM_1_ADDR_WIDTH : natural := 16; -- 48kB
   constant PROG_ROM_1_DATA_WIDTH : natural := 8;
-  constant PROG_ROM_2_ADDR_WIDTH : natural := 14; -- 16kB
+  constant PROG_ROM_2_ADDR_WIDTH : natural := 15; -- 32kB
   constant PROG_ROM_2_DATA_WIDTH : natural := 8;
-  constant PROG_ROM_3_ADDR_WIDTH : natural := 15; -- 32kB
-  constant PROG_ROM_3_DATA_WIDTH : natural := 8;
 
   -- tile ROMs
   constant SPRITE_ROM_ADDR_WIDTH : natural := 15; -- 128kB
@@ -89,8 +87,7 @@ package common is
   -- If the ordering of the ROMs in the MRA file changes, then these offset
   -- values must also be changed.
   constant PROG_ROM_1_OFFSET  : natural := 16#00000#;
-  constant PROG_ROM_2_OFFSET  : natural := 16#08000#;
-  constant PROG_ROM_3_OFFSET  : natural := 16#0C000#;
+  constant PROG_ROM_2_OFFSET  : natural := 16#0C000#;
   constant CHAR_ROM_OFFSET    : natural := 16#14000#;
   constant FG_ROM_OFFSET      : natural := 16#1C000#;
   constant BG_ROM_OFFSET      : natural := 16#3C000#;
