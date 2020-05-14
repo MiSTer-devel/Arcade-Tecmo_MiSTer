@@ -39,16 +39,22 @@ use ieee.numeric_std.all;
 
 use work.common.all;
 
--- The original arcade hardware has multiple ROM chips that contain things like
--- program data, tile data, sound data, etc. Unfortunately, the Cyclone V FPGA
--- doesn't have enough resources for us to store these ROMs in block RAM.
+-- The original arcade hardware contains multiple ROM chips to store things
+-- like program data, tile data, sound data, etc. Unfortunately, the Cyclone
+-- V FPGA doesn't have enough resources for us to store all of these ROMs in
+-- block RAM.
 --
--- Instead, we can store the them in the SDRAM.
+-- The ROM controller provides a read-only interface for each of the ROM chips.
+-- It stores the data for each ROM in the SDRAM in a single contiguous block,
+-- mapping each segement to a different ROM.
 --
--- The ROM controller provides a read-only interface for each of these ROM
--- chips. Data in these ROMs can be accessed concurrently by the arcade
--- hardware, so the ROM controller must multiplex reads from the SDRAM when
--- reading ROM data.
+-- From the perspective of the reset of the arcade hardware, these ROMs appear
+-- to be different chips even though in reality they are being mapped to
+-- different segments of the SDRAM.
+--
+-- These ROMs are all accessed concurrently by the arcade hardware, so the ROM
+-- controller must coordinate access to the SDRAM when reading the data for
+-- each ROM. It does this using prioritised time-division multiplexing.
 entity rom_controller is
   port (
     -- reset

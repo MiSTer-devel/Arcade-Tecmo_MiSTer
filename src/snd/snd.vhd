@@ -45,6 +45,7 @@ use work.common.all;
 -- in response to requests from the main CPU.
 entity snd is
   port (
+    -- reset
     reset : in std_logic;
 
     -- clock signals
