@@ -93,7 +93,7 @@ package common is
   constant BG_ROM_OFFSET      : natural := 16#3C000#;
   constant SPRITE_ROM_OFFSET  : natural := 16#5C000#;
   constant SOUND_ROM_1_OFFSET : natural := 16#7C000#;
-  constant SOUND_ROM_2_OFFSET : natural := 16#80000#;
+  constant SOUND_ROM_2_OFFSET : natural := 16#7E000#;
 
   -- VRAM
   constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
