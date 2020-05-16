@@ -122,6 +122,8 @@ architecture arch of rygar is
   -- chip select signals
   signal prog_rom_1_cs  : std_logic;
   signal prog_rom_2_cs  : std_logic;
+  signal sound_rom_1_cs : std_logic;
+  signal sound_rom_2_cs : std_logic;
   signal work_ram_cs    : std_logic;
   signal sprite_ram_cs  : std_logic;
   signal char_ram_cs    : std_logic;
@@ -137,15 +139,22 @@ architecture arch of rygar is
   signal bank_cs        : std_logic;
   signal sound_cs       : std_logic;
 
+  signal sound_rom_1_oe : std_logic;
+  signal sound_rom_2_oe : std_logic;
+
   -- ROM signals
-  signal sprite_rom_addr : unsigned(SPRITE_ROM_ADDR_WIDTH-1 downto 0);
-  signal sprite_rom_data : std_logic_vector(SPRITE_ROM_DATA_WIDTH-1 downto 0);
-  signal char_rom_addr   : unsigned(CHAR_ROM_ADDR_WIDTH-1 downto 0);
-  signal char_rom_data   : std_logic_vector(CHAR_ROM_DATA_WIDTH-1 downto 0);
-  signal fg_rom_addr     : unsigned(FG_ROM_ADDR_WIDTH-1 downto 0);
-  signal fg_rom_data     : std_logic_vector(FG_ROM_DATA_WIDTH-1 downto 0);
-  signal bg_rom_addr     : unsigned(BG_ROM_ADDR_WIDTH-1 downto 0);
-  signal bg_rom_data     : std_logic_vector(BG_ROM_DATA_WIDTH-1 downto 0);
+  signal sprite_rom_addr  : unsigned(SPRITE_ROM_ADDR_WIDTH-1 downto 0);
+  signal sprite_rom_data  : std_logic_vector(SPRITE_ROM_DATA_WIDTH-1 downto 0);
+  signal char_rom_addr    : unsigned(CHAR_ROM_ADDR_WIDTH-1 downto 0);
+  signal char_rom_data    : std_logic_vector(CHAR_ROM_DATA_WIDTH-1 downto 0);
+  signal fg_rom_addr      : unsigned(FG_ROM_ADDR_WIDTH-1 downto 0);
+  signal fg_rom_data      : std_logic_vector(FG_ROM_DATA_WIDTH-1 downto 0);
+  signal bg_rom_addr      : unsigned(BG_ROM_ADDR_WIDTH-1 downto 0);
+  signal bg_rom_data      : std_logic_vector(BG_ROM_DATA_WIDTH-1 downto 0);
+  signal sound_rom_1_addr : unsigned(SOUND_ROM_1_ADDR_WIDTH-1 downto 0);
+  signal sound_rom_1_data : std_logic_vector(SOUND_ROM_1_DATA_WIDTH-1 downto 0);
+  signal sound_rom_2_addr : unsigned(SOUND_ROM_2_ADDR_WIDTH-1 downto 0);
+  signal sound_rom_2_data : std_logic_vector(SOUND_ROM_2_DATA_WIDTH-1 downto 0);
 
   -- data signals
   signal prog_rom_1_dout : byte_t;
@@ -153,11 +162,6 @@ architecture arch of rygar is
   signal work_ram_dout   : byte_t;
   signal gpu_dout        : byte_t;
   signal io_dout         : nibble_t;
-
-  -- download signals
-  signal download_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
-  signal download_data : std_logic_vector(SDRAM_CTRL_DATA_WIDTH-1 downto 0);
-  signal download_req  : std_logic;
 
   -- registers
   signal fg_scroll_pos_reg : pos_t := (x => (others => '0'), y => (others => '0'));
@@ -214,19 +218,6 @@ begin
     we   => not cpu_wr_n
   );
 
-  -- The SDRAM controller has a 32-bit interface, so we need to buffer the
-  -- bytes received from the IOCTL interface in order to write 32-bit words to
-  -- the SDRAM.
-  download_buffer : entity work.download_buffer
-  generic map (SIZE => 4)
-  port map (
-    clk   => clk,
-    din   => ioctl_data,
-    dout  => download_data,
-    we    => ioctl_download and ioctl_wr,
-    valid => download_req
-  );
-
   -- ROM controller
   rom_controller : entity work.rom_controller
   port map (
@@ -234,46 +225,50 @@ begin
     clk   => clk,
 
     -- program ROM #1 interface
-    prog_rom_1_cs   => prog_rom_1_cs and cpu_rfsh_n and not ioctl_download,
+    prog_rom_1_cs   => prog_rom_1_cs and cpu_rfsh_n,
     prog_rom_1_oe   => not cpu_rd_n,
     prog_rom_1_addr => cpu_addr(PROG_ROM_1_ADDR_WIDTH-1 downto 0),
     prog_rom_1_data => prog_rom_1_dout,
 
     -- program ROM #3 interface
-    prog_rom_2_cs   => prog_rom_2_cs and cpu_rfsh_n and not ioctl_download,
+    prog_rom_2_cs   => prog_rom_2_cs and cpu_rfsh_n,
     prog_rom_2_oe   => not cpu_rd_n,
     prog_rom_2_addr => bank_reg & cpu_addr(PROG_ROM_2_ADDR_WIDTH-BANK_REG_WIDTH-1 downto 0),
     prog_rom_2_data => prog_rom_2_dout,
 
     -- sprite ROM interface
-    sprite_rom_cs   => not ioctl_download,
-    sprite_rom_oe   => '1',
     sprite_rom_addr => sprite_rom_addr,
     sprite_rom_data => sprite_rom_data,
 
     -- character ROM interface
-    char_rom_cs   => not ioctl_download,
-    char_rom_oe   => '1',
     char_rom_addr => char_rom_addr,
     char_rom_data => char_rom_data,
 
     -- foreground ROM interface
-    fg_rom_cs   => not ioctl_download,
-    fg_rom_oe   => '1',
     fg_rom_addr => fg_rom_addr,
     fg_rom_data => fg_rom_data,
 
     -- background ROM interface
-    bg_rom_cs   => not ioctl_download,
-    bg_rom_oe   => '1',
     bg_rom_addr => bg_rom_addr,
     bg_rom_data => bg_rom_data,
 
-    -- download interface
-    download_addr => download_addr,
-    download_data => download_data,
-    download_we   => ioctl_download,
-    download_req  => download_req,
+    -- sound ROM #1 interface
+    sound_rom_1_cs   => sound_rom_1_cs,
+    sound_rom_1_oe   => sound_rom_1_oe,
+    sound_rom_1_addr => sound_rom_1_addr,
+    sound_rom_1_data => sound_rom_1_data,
+
+    -- sound ROM #2 interface
+    sound_rom_2_cs   => sound_rom_2_cs,
+    sound_rom_2_oe   => sound_rom_2_oe,
+    sound_rom_2_addr => sound_rom_2_addr,
+    sound_rom_2_data => sound_rom_2_data,
+
+    -- IOCTL interface
+    ioctl_addr     => ioctl_addr,
+    ioctl_data     => ioctl_data,
+    ioctl_wr       => ioctl_wr,
+    ioctl_download => ioctl_download,
 
     -- SDRAM interface
     sdram_addr  => sdram_addr,
@@ -353,13 +348,30 @@ begin
   -- sound subsystem
   snd : entity work.snd
   port map (
-    reset   => reset,
+    reset => reset,
+
+    -- clock signals
     clk     => clk,
     cen_4   => cen_4,
     cen_384 => cen_384,
-    req     => sound_cs and not cpu_wr_n,
-    data    => cpu_dout,
-    audio   => audio
+
+    -- CPU interface
+    req  => sound_cs and not cpu_wr_n,
+    data => cpu_dout,
+
+    -- ROM interface
+    sound_rom_1_cs   => sound_rom_1_cs,
+    sound_rom_1_oe   => sound_rom_1_oe,
+    sound_rom_1_addr => sound_rom_1_addr,
+    sound_rom_1_data => sound_rom_1_data,
+
+    sound_rom_2_cs   => sound_rom_2_cs,
+    sound_rom_2_oe   => sound_rom_2_oe,
+    sound_rom_2_addr => sound_rom_2_addr,
+    sound_rom_2_data => sound_rom_2_data,
+
+    -- audio data
+    audio => audio
   );
 
   -- Trigger an interrupt on the falling edge of the VBLANK signal.
@@ -406,10 +418,6 @@ begin
       end if;
     end if;
   end process;
-
-  -- we need to divide the address by four, because we're converting from
-  -- a 8-bit IOCTL address to a 32-bit SDRAM address
-  download_addr <= resize(shift_right(ioctl_addr, 2), download_addr'length);
 
   -- mux joystick, coin, and DIP switch data
   io_dout <= joystick_1(3 downto 0)              when player_1_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else

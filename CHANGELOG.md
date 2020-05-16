@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Move sound ROMs to BRAM (there's not enough bandwidth to run them from SDRAM)
+
 ## v1.0.0 (2020-05-12)
 
 * Use jt5205 for PCM sound
