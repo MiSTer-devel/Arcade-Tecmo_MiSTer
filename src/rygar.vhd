@@ -122,6 +122,8 @@ architecture arch of rygar is
   -- chip select signals
   signal prog_rom_1_cs  : std_logic;
   signal prog_rom_2_cs  : std_logic;
+  signal sound_rom_1_cs : std_logic;
+  signal sound_rom_2_cs : std_logic;
   signal work_ram_cs    : std_logic;
   signal sprite_ram_cs  : std_logic;
   signal char_ram_cs    : std_logic;
@@ -137,15 +139,22 @@ architecture arch of rygar is
   signal bank_cs        : std_logic;
   signal sound_cs       : std_logic;
 
+  signal sound_rom_1_oe : std_logic;
+  signal sound_rom_2_oe : std_logic;
+
   -- ROM signals
-  signal sprite_rom_addr : unsigned(SPRITE_ROM_ADDR_WIDTH-1 downto 0);
-  signal sprite_rom_data : std_logic_vector(SPRITE_ROM_DATA_WIDTH-1 downto 0);
-  signal char_rom_addr   : unsigned(CHAR_ROM_ADDR_WIDTH-1 downto 0);
-  signal char_rom_data   : std_logic_vector(CHAR_ROM_DATA_WIDTH-1 downto 0);
-  signal fg_rom_addr     : unsigned(FG_ROM_ADDR_WIDTH-1 downto 0);
-  signal fg_rom_data     : std_logic_vector(FG_ROM_DATA_WIDTH-1 downto 0);
-  signal bg_rom_addr     : unsigned(BG_ROM_ADDR_WIDTH-1 downto 0);
-  signal bg_rom_data     : std_logic_vector(BG_ROM_DATA_WIDTH-1 downto 0);
+  signal sprite_rom_addr  : unsigned(SPRITE_ROM_ADDR_WIDTH-1 downto 0);
+  signal sprite_rom_data  : std_logic_vector(SPRITE_ROM_DATA_WIDTH-1 downto 0);
+  signal char_rom_addr    : unsigned(CHAR_ROM_ADDR_WIDTH-1 downto 0);
+  signal char_rom_data    : std_logic_vector(CHAR_ROM_DATA_WIDTH-1 downto 0);
+  signal fg_rom_addr      : unsigned(FG_ROM_ADDR_WIDTH-1 downto 0);
+  signal fg_rom_data      : std_logic_vector(FG_ROM_DATA_WIDTH-1 downto 0);
+  signal bg_rom_addr      : unsigned(BG_ROM_ADDR_WIDTH-1 downto 0);
+  signal bg_rom_data      : std_logic_vector(BG_ROM_DATA_WIDTH-1 downto 0);
+  signal sound_rom_1_addr : unsigned(SOUND_ROM_1_ADDR_WIDTH-1 downto 0);
+  signal sound_rom_1_data : std_logic_vector(SOUND_ROM_1_DATA_WIDTH-1 downto 0);
+  signal sound_rom_2_addr : unsigned(SOUND_ROM_2_ADDR_WIDTH-1 downto 0);
+  signal sound_rom_2_data : std_logic_vector(SOUND_ROM_2_DATA_WIDTH-1 downto 0);
 
   -- data signals
   signal prog_rom_1_dout : byte_t;
@@ -243,6 +252,17 @@ begin
     bg_rom_addr => bg_rom_addr,
     bg_rom_data => bg_rom_data,
 
+    -- sound ROM #1 interface
+    sound_rom_1_cs   => sound_rom_1_cs,
+    sound_rom_1_oe   => sound_rom_1_oe,
+    sound_rom_1_addr => sound_rom_1_addr,
+    sound_rom_1_data => sound_rom_1_data,
+
+    -- sound ROM #2 interface
+    sound_rom_2_cs   => sound_rom_2_cs,
+    sound_rom_2_oe   => sound_rom_2_oe,
+    sound_rom_2_addr => sound_rom_2_addr,
+    sound_rom_2_data => sound_rom_2_data,
 
     -- IOCTL interface
     ioctl_addr     => ioctl_addr,
@@ -338,6 +358,17 @@ begin
     -- CPU interface
     req  => sound_cs and not cpu_wr_n,
     data => cpu_dout,
+
+    -- ROM interface
+    sound_rom_1_cs   => sound_rom_1_cs,
+    sound_rom_1_oe   => sound_rom_1_oe,
+    sound_rom_1_addr => sound_rom_1_addr,
+    sound_rom_1_data => sound_rom_1_data,
+
+    sound_rom_2_cs   => sound_rom_2_cs,
+    sound_rom_2_oe   => sound_rom_2_oe,
+    sound_rom_2_addr => sound_rom_2_addr,
+    sound_rom_2_data => sound_rom_2_data,
 
     -- audio data
     audio => audio

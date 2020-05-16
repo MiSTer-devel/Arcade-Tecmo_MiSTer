@@ -69,7 +69,7 @@ entity rom_controller is
     prog_rom_1_addr : in unsigned(PROG_ROM_1_ADDR_WIDTH-1 downto 0);
     prog_rom_1_data : out std_logic_vector(PROG_ROM_1_DATA_WIDTH-1 downto 0);
 
-    -- program ROM #3 interface
+    -- program ROM #2 interface
     prog_rom_2_cs   : in std_logic := '1';
     prog_rom_2_oe   : in std_logic := '1';
     prog_rom_2_addr : in unsigned(PROG_ROM_2_ADDR_WIDTH-1 downto 0);
@@ -99,6 +99,17 @@ entity rom_controller is
     bg_rom_addr : in unsigned(BG_ROM_ADDR_WIDTH-1 downto 0);
     bg_rom_data : out std_logic_vector(BG_ROM_DATA_WIDTH-1 downto 0);
 
+    -- sound ROM #1 interface
+    sound_rom_1_cs   : in std_logic := '1';
+    sound_rom_1_oe   : in std_logic := '1';
+    sound_rom_1_addr : in unsigned(SOUND_ROM_1_ADDR_WIDTH-1 downto 0);
+    sound_rom_1_data : out std_logic_vector(SOUND_ROM_1_DATA_WIDTH-1 downto 0);
+
+    -- sound ROM #2 interface
+    sound_rom_2_cs   : in std_logic := '1';
+    sound_rom_2_oe   : in std_logic := '1';
+    sound_rom_2_addr : in unsigned(SOUND_ROM_2_ADDR_WIDTH-1 downto 0);
+    sound_rom_2_data : out std_logic_vector(SOUND_ROM_2_DATA_WIDTH-1 downto 0);
 
     -- IOCTL interface
     ioctl_addr     : in unsigned(IOCTL_ADDR_WIDTH-1 downto 0);
@@ -161,9 +172,10 @@ architecture arch of rom_controller is
   signal download_req  : std_logic;
 
   -- control signals
-  signal ctrl_req : std_logic;
+  signal ctrl_req       : std_logic;
+  signal sound_rom_1_we : std_logic;
+  signal sound_rom_2_we : std_logic;
 begin
-
   -- The SDRAM controller has a 32-bit interface, so we need to buffer the
   -- bytes received from the IOCTL interface in order to write 32-bit words to
   -- the SDRAM.
@@ -303,6 +315,36 @@ begin
     rom_data   => bg_rom_data
   );
 
+  -- sound ROM #1
+  sound_rom_1 : entity work.dual_port_ram
+  generic map (
+    ADDR_WIDTH => SOUND_ROM_1_ADDR_WIDTH
+  )
+  port map (
+    clk    => clk,
+    cs     => sound_rom_1_cs or ioctl_download,
+    addr_a => ioctl_addr(SOUND_ROM_1_ADDR_WIDTH-1 downto 0)-SOUND_ROM_1_OFFSET,
+    din_a  => ioctl_data,
+    we_a   => sound_rom_1_we and ioctl_download and ioctl_wr,
+    addr_b => sound_rom_1_addr,
+    dout_b => sound_rom_1_data
+  );
+
+  -- sound ROM #2
+  sound_rom_2 : entity work.dual_port_ram
+  generic map (
+    ADDR_WIDTH => SOUND_ROM_2_ADDR_WIDTH
+  )
+  port map (
+    clk    => clk,
+    cs     => sound_rom_2_cs or ioctl_download,
+    addr_a => ioctl_addr(SOUND_ROM_2_ADDR_WIDTH-1 downto 0)-SOUND_ROM_2_OFFSET,
+    din_a  => ioctl_data,
+    we_a   => sound_rom_2_we and ioctl_download and ioctl_wr,
+    addr_b => sound_rom_2_addr,
+    dout_b => sound_rom_2_data
+  );
+
   -- latch the next ROM
   latch_next_rom : process (clk, reset)
   begin
@@ -381,4 +423,9 @@ begin
   -- we need to divide the address by four, because we're converting from
   -- a 8-bit IOCTL address to a 32-bit SDRAM address
   download_addr <= resize(shift_right(ioctl_addr, 2), download_addr'length);
+
+  -- assert the write-enable signal for the sound ROMs when the IOCTL address
+  -- is in the right segment
+  sound_rom_1_we <= '1' when ioctl_addr >= SOUND_ROM_1_OFFSET and ioctl_addr <= SOUND_ROM_1_OFFSET+SOUND_ROM_1_SIZE else '0';
+  sound_rom_2_we <= '1' when ioctl_addr >= SOUND_ROM_2_OFFSET and ioctl_addr <= SOUND_ROM_2_OFFSET+SOUND_ROM_2_SIZE else '0';
 end architecture arch;
