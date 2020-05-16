@@ -6,7 +6,7 @@
   <year>1986</year>
   <manufacturer>Tecmo</manufacturer>
   <category>Platform</category>
-  <rbf>rygar</rbf>
+  <rbf>tecmo</rbf>
   <rom index="0" zip="rygar.zip" md5="e0355e7803fdab0a8d8b5bda284ef2a5">
     <part crc="062cd55d" name="5.5p" />
     <part crc="7ac5191b" name="cpu_5m.bin" />

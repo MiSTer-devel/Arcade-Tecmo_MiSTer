@@ -128,7 +128,7 @@ assign SDRAM_CLK = clk_sdram;
 
 `include "build_id.v"
 localparam CONF_STR = {
-  "A.Rygar;;",
+  "A.Tecmo;;",
   "H0O1,Aspect Ratio,Original,Wide;",
   "O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
   "-;",
@@ -321,7 +321,7 @@ wire coin  = key_coin  | joy[7];
 
 wire reset = RESET | ioctl_download | status[0] | buttons[1];
 
-rygar rygar
+tecmo tecmo
 (
   .reset(reset),
   .clk(clk_sys),

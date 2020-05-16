@@ -39,7 +39,7 @@ use ieee.numeric_std.all;
 
 use work.common.all;
 
-entity rygar is
+entity tecmo is
   port (
     -- reset
     reset : in std_logic;
@@ -97,9 +97,9 @@ entity rygar is
     -- audio data
     audio : out audio_t
   );
-end rygar;
+end tecmo;
 
-architecture arch of rygar is
+architecture arch of tecmo is
   -- the number of banks in program ROM #3
   constant BANKS : natural := 16;
 

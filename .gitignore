@@ -1,3 +1,4 @@
+*.qdf
 *.qws
 *.zip
 build_id.v
@@ -6,4 +7,3 @@ db
 incremental_db
 jtag.cdf
 output_files
-rygar_assignment_defaults.qdf
