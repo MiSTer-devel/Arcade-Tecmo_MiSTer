@@ -78,22 +78,28 @@ package common is
   constant SOUND_ROM_2_ADDR_WIDTH : natural := 15;
   constant SOUND_ROM_2_DATA_WIDTH : natural := 8;
 
-  -- ROM offsets
+  -- ROM sizes/offsets
   --
-  -- When MiSTer loads the core, the ROM data is downloaded from the HPS and
-  -- streamed directly into the SDRAM. These offset values mark the address of
-  -- each ROM segment in the SDRAM.
+  -- When MiSTer loads a core, ROM data is downloaded from the HPS and streamed
+  -- directly into the SDRAM. These offset values contain the address of each
+  -- ROM segment in the IOCTL data stream.
   --
   -- If the ordering of the ROMs in the MRA file changes, then these offset
   -- values must also be changed.
   constant PROG_ROM_1_OFFSET  : natural := 16#00000#;
+  constant PROG_ROM_1_SIZE    : natural := 16#0C000#;
   constant PROG_ROM_2_OFFSET  : natural := 16#0C000#;
-  constant CHAR_ROM_OFFSET    : natural := 16#14000#;
-  constant FG_ROM_OFFSET      : natural := 16#1C000#;
-  constant BG_ROM_OFFSET      : natural := 16#3C000#;
-  constant SPRITE_ROM_OFFSET  : natural := 16#5C000#;
-  constant SOUND_ROM_1_OFFSET : natural := 16#7C000#;
+  constant PROG_ROM_2_SIZE    : natural := 16#08000#;
+  constant SOUND_ROM_1_OFFSET : natural := 16#14000#;
   constant SOUND_ROM_1_SIZE   : natural := 16#02000#;
+  constant CHAR_ROM_OFFSET    : natural := 16#16000#;
+  constant CHAR_ROM_SIZE      : natural := 16#08000#;
+  constant SPRITE_ROM_OFFSET  : natural := 16#1E000#;
+  constant SPRITE_ROM_SIZE    : natural := 16#20000#;
+  constant FG_ROM_OFFSET      : natural := 16#3E000#;
+  constant FG_ROM_SIZE        : natural := 16#20000#;
+  constant BG_ROM_OFFSET      : natural := 16#5E000#;
+  constant BG_ROM_SIZE        : natural := 16#20000#;
   constant SOUND_ROM_2_OFFSET : natural := 16#7E000#;
   constant SOUND_ROM_2_SIZE   : natural := 16#04000#;
 
