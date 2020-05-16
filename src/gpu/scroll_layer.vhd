@@ -149,7 +149,7 @@ begin
 
           when 10 =>
             -- latch tile code
-            tile_code <= unsigned(tile_data(1 downto 0) & ram_data);
+            tile_code <= unsigned(tile_data(2 downto 0) & ram_data);
 
           when 15 =>
             -- latch colour

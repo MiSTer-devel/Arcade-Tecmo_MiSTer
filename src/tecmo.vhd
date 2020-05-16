@@ -100,8 +100,8 @@ entity tecmo is
 end tecmo;
 
 architecture arch of tecmo is
-  -- the number of banks in program ROM #3
-  constant BANKS : natural := 16;
+  -- the number of banks in program ROM #2
+  constant BANKS : natural := 32;
 
   -- the number of bits in the bank register
   constant BANK_REG_WIDTH : natural := ilog2(BANKS);
@@ -396,7 +396,7 @@ begin
     if rising_edge(clk) then
       if bank_cs = '1' and cpu_wr_n = '0' then
         -- from the schematic, flip-flop 6J uses data bus lines 3 to 6
-        bank_reg <= unsigned(cpu_dout(6 downto 3));
+        bank_reg <= unsigned(cpu_dout(7 downto 3));
       end if;
     end if;
   end process;

@@ -114,7 +114,7 @@ begin
 
           when 2 =>
             -- latch tile code
-            tile_code <= unsigned(tile_data(1 downto 0) & ram_data);
+            tile_code <= unsigned(tile_data(2 downto 0) & ram_data);
 
           when 7 =>
             -- latch colour
@@ -142,7 +142,7 @@ begin
   -- Set the tile ROM address.
   --
   -- This address points to a row of an 8x8 tile.
-  rom_addr <= tile_code & offset_y(2 downto 0);
+  rom_addr <= tile_code(9 downto 0) & offset_y(2 downto 0);
 
   -- decode the pixel from the tile row data
   tile_pixel <= decode_tile_row(tile_row, video.pos.x(2 downto 0));

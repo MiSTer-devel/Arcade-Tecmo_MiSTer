@@ -57,23 +57,23 @@ package common is
   constant WORK_RAM_ADDR_WIDTH : natural := 12; -- 4kB
 
   -- program ROMs
-  constant PROG_ROM_1_ADDR_WIDTH : natural := 16; -- 48kB
+  constant PROG_ROM_1_ADDR_WIDTH : natural := 16;
   constant PROG_ROM_1_DATA_WIDTH : natural := 8;
-  constant PROG_ROM_2_ADDR_WIDTH : natural := 15; -- 32kB
+  constant PROG_ROM_2_ADDR_WIDTH : natural := 16;
   constant PROG_ROM_2_DATA_WIDTH : natural := 8;
 
   -- tile ROMs
-  constant SPRITE_ROM_ADDR_WIDTH : natural := 15; -- 128kB
+  constant SPRITE_ROM_ADDR_WIDTH : natural := 16;
   constant SPRITE_ROM_DATA_WIDTH : natural := 32;
-  constant CHAR_ROM_ADDR_WIDTH   : natural := 13; -- 32kB
+  constant CHAR_ROM_ADDR_WIDTH   : natural := 13;
   constant CHAR_ROM_DATA_WIDTH   : natural := 32;
-  constant FG_ROM_ADDR_WIDTH     : natural := 15; -- 128kB
+  constant FG_ROM_ADDR_WIDTH     : natural := 16;
   constant FG_ROM_DATA_WIDTH     : natural := 32;
-  constant BG_ROM_ADDR_WIDTH     : natural := 15; -- 128kB
+  constant BG_ROM_ADDR_WIDTH     : natural := 16;
   constant BG_ROM_DATA_WIDTH     : natural := 32;
 
   -- sound ROMs
-  constant SOUND_ROM_1_ADDR_WIDTH : natural := 14;
+  constant SOUND_ROM_1_ADDR_WIDTH : natural := 15;
   constant SOUND_ROM_1_DATA_WIDTH : natural := 8;
   constant SOUND_ROM_2_ADDR_WIDTH : natural := 15;
   constant SOUND_ROM_2_DATA_WIDTH : natural := 8;
@@ -89,19 +89,19 @@ package common is
   constant PROG_ROM_1_OFFSET  : natural := 16#00000#;
   constant PROG_ROM_1_SIZE    : natural := 16#0C000#; -- 48kB
   constant PROG_ROM_2_OFFSET  : natural := 16#0C000#;
-  constant PROG_ROM_2_SIZE    : natural := 16#08000#; -- 32kB
-  constant SOUND_ROM_1_OFFSET : natural := 16#14000#;
-  constant SOUND_ROM_1_SIZE   : natural := 16#02000#; -- 8kB
-  constant CHAR_ROM_OFFSET    : natural := 16#16000#;
+  constant PROG_ROM_2_SIZE    : natural := 16#10000#; -- 64kB
+  constant SOUND_ROM_1_OFFSET : natural := 16#1C000#;
+  constant SOUND_ROM_1_SIZE   : natural := 16#08000#; -- 32kB
+  constant CHAR_ROM_OFFSET    : natural := 16#24000#;
   constant CHAR_ROM_SIZE      : natural := 16#08000#; -- 32kB
-  constant SPRITE_ROM_OFFSET  : natural := 16#1E000#;
-  constant SPRITE_ROM_SIZE    : natural := 16#20000#; -- 128kB
-  constant FG_ROM_OFFSET      : natural := 16#3E000#;
-  constant FG_ROM_SIZE        : natural := 16#20000#; -- 128kB
-  constant BG_ROM_OFFSET      : natural := 16#5E000#;
-  constant BG_ROM_SIZE        : natural := 16#20000#; -- 128kB
-  constant SOUND_ROM_2_OFFSET : natural := 16#7E000#;
-  constant SOUND_ROM_2_SIZE   : natural := 16#04000#; -- 16kB
+  constant SPRITE_ROM_OFFSET  : natural := 16#2C000#;
+  constant SPRITE_ROM_SIZE    : natural := 16#40000#; -- 256kB
+  constant FG_ROM_OFFSET      : natural := 16#6C000#;
+  constant FG_ROM_SIZE        : natural := 16#40000#; -- 256kB
+  constant BG_ROM_OFFSET      : natural := 16#AC000#;
+  constant BG_ROM_SIZE        : natural := 16#40000#; -- 256kB
+  constant SOUND_ROM_2_OFFSET : natural := 16#EC000#;
+  constant SOUND_ROM_2_SIZE   : natural := 16#08000#; -- 32kB
 
   -- VRAM
   constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
@@ -131,7 +131,7 @@ package common is
   constant TILE_BPP : natural := 4;
 
   -- sprite byte 0
-  constant SPRITE_HI_CODE_MSB : natural := 7;
+  constant SPRITE_HI_CODE_MSB : natural := 8;
   constant SPRITE_HI_CODE_LSB : natural := 4;
   constant SPRITE_ENABLE_BIT  : natural := 2;
   constant SPRITE_FLIP_Y_BIT  : natural := 1;
@@ -195,7 +195,7 @@ package common is
   subtype tile_color_t is std_logic_vector(3 downto 0);
 
   -- represents the index of a tile in a tilemap
-  subtype tile_code_t is unsigned(9 downto 0);
+  subtype tile_code_t is unsigned(10 downto 0);
 
   -- represents the video signals
   type video_t is record
@@ -216,7 +216,7 @@ package common is
 
   -- represents a sprite
   type sprite_t is record
-    code     : unsigned(11 downto 0);
+    code     : unsigned(12 downto 0);
     color    : unsigned(3 downto 0);
     enable   : std_logic;
     flip_x   : std_logic;
