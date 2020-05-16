@@ -87,21 +87,21 @@ package common is
   -- If the ordering of the ROMs in the MRA file changes, then these offset
   -- values must also be changed.
   constant PROG_ROM_1_OFFSET  : natural := 16#00000#;
-  constant PROG_ROM_1_SIZE    : natural := 16#0C000#;
+  constant PROG_ROM_1_SIZE    : natural := 16#0C000#; -- 48kB
   constant PROG_ROM_2_OFFSET  : natural := 16#0C000#;
-  constant PROG_ROM_2_SIZE    : natural := 16#08000#;
+  constant PROG_ROM_2_SIZE    : natural := 16#08000#; -- 32kB
   constant SOUND_ROM_1_OFFSET : natural := 16#14000#;
-  constant SOUND_ROM_1_SIZE   : natural := 16#02000#;
+  constant SOUND_ROM_1_SIZE   : natural := 16#02000#; -- 8kB
   constant CHAR_ROM_OFFSET    : natural := 16#16000#;
-  constant CHAR_ROM_SIZE      : natural := 16#08000#;
+  constant CHAR_ROM_SIZE      : natural := 16#08000#; -- 32kB
   constant SPRITE_ROM_OFFSET  : natural := 16#1E000#;
-  constant SPRITE_ROM_SIZE    : natural := 16#20000#;
+  constant SPRITE_ROM_SIZE    : natural := 16#20000#; -- 128kB
   constant FG_ROM_OFFSET      : natural := 16#3E000#;
-  constant FG_ROM_SIZE        : natural := 16#20000#;
+  constant FG_ROM_SIZE        : natural := 16#20000#; -- 128kB
   constant BG_ROM_OFFSET      : natural := 16#5E000#;
-  constant BG_ROM_SIZE        : natural := 16#20000#;
+  constant BG_ROM_SIZE        : natural := 16#20000#; -- 128kB
   constant SOUND_ROM_2_OFFSET : natural := 16#7E000#;
-  constant SOUND_ROM_2_SIZE   : natural := 16#04000#;
+  constant SOUND_ROM_2_SIZE   : natural := 16#04000#; -- 16kB
 
   -- VRAM
   constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
