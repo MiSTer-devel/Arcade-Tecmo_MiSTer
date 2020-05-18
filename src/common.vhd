@@ -103,6 +103,50 @@ package common is
   constant SOUND_ROM_2_OFFSET : natural := 16#EC000#;
   constant SOUND_ROM_2_SIZE   : natural := 16#08000#; -- 32kB
 
+  type addr_range_t is record
+    min : unsigned(CPU_ADDR_WIDTH-1 downto 0);
+    max : unsigned(CPU_ADDR_WIDTH-1 downto 0);
+  end record addr_range_t;
+
+  type mem_map_t is record
+    prog_rom_1  : addr_range_t;
+    work_ram    : addr_range_t;
+    char_ram    : addr_range_t;
+    fg_ram      : addr_range_t;
+    bg_ram      : addr_range_t;
+    sprite_ram  : addr_range_t;
+    palette_ram : addr_range_t;
+    prog_rom_2  : addr_range_t;
+    scroll      : addr_range_t;
+    sound       : addr_range_t;
+    bank        : addr_range_t;
+    player_1    : addr_range_t;
+    player_2    : addr_range_t;
+    coin        : addr_range_t;
+    dip_sw_1    : addr_range_t;
+    dip_sw_2    : addr_range_t;
+  end record mem_map_t;
+
+  -- memory map
+  constant MEM_MAP : mem_map_t := (
+    prog_rom_1  => (x"0000", x"bfff"), -- program ROM #1
+    work_ram    => (x"c000", x"cfff"), -- work RAM
+    char_ram    => (x"d000", x"d7ff"), -- character RAM
+    fg_ram      => (x"d800", x"dbff"), -- foreground RAM
+    bg_ram      => (x"dc00", x"dfff"), -- background RAM
+    sprite_ram  => (x"e000", x"e7ff"), -- sprite RAM
+    palette_ram => (x"e800", x"efff"), -- palette RAM
+    prog_rom_2  => (x"f000", x"f7ff"), -- program ROM #2 (bank switched)
+    scroll      => (x"f800", x"f805"), -- scroll register
+    sound       => (x"f806", x"f806"), -- sound
+    bank        => (x"f808", x"f808"), -- bank register
+    player_1    => (x"f800", x"f801"), -- player 1
+    player_2    => (x"f802", x"f803"), -- player 2
+    coin        => (x"f804", x"f804"), -- coin
+    dip_sw_1    => (x"f806", x"f807"), -- DIP switch #1
+    dip_sw_2    => (x"f808", x"f809")  -- DIP switch #2
+  );
+
   -- VRAM
   constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
   constant BG_RAM_GPU_ADDR_WIDTH      : natural := 10;
@@ -235,6 +279,9 @@ package common is
   -- calculates the log2 of the given number
   function ilog2(n : natural) return natural;
 
+  -- determine whether an address is within a given range
+  function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean;
+
   -- decodes a single pixel from a tile row at the given offset
   function decode_tile_row (tile_row : tile_row_t; offset : unsigned(2 downto 0)) return tile_pixel_t;
 
@@ -259,6 +306,15 @@ package body common is
   begin
     return natural(ceil(log2(real(n))));
   end ilog2;
+
+  function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean is
+  begin
+    if addr >= addr_range.min and addr <= addr_range.max then
+      return true;
+    else
+      return false;
+    end if;
+  end addr_in_range;
 
   function decode_tile_row (
     tile_row : tile_row_t;
