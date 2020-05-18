@@ -173,6 +173,7 @@ wire [24:0] ioctl_addr;
 wire  [7:0] ioctl_data;
 wire        ioctl_wr;
 wire        ioctl_download;
+wire  [7:0] ioctl_index;
 
 wire [10:0] ps2_key;
 
@@ -197,6 +198,7 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
   .ioctl_dout(ioctl_data),
   .ioctl_wr(ioctl_wr),
   .ioctl_download(ioctl_download),
+  .ioctl_index(ioctl_index),
 
   .joystick_0(joystick_0),
   .joystick_1(joystick_1),

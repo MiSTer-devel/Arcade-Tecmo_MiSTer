@@ -82,6 +82,7 @@ entity tecmo is
     ioctl_data     : in byte_t;
     ioctl_wr       : in std_logic;
     ioctl_download : in std_logic;
+    ioctl_index    : in byte_t;
 
     -- video control signals
     hsync  : out std_logic;
