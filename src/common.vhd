@@ -276,6 +276,9 @@ package common is
   -- represents an audio sample
   subtype audio_t is signed(15 downto 0);
 
+  -- represents the currently configured game
+  type game_t is (RYGAR, GEMINI, SILKWORM);
+
   -- calculates the log2 of the given number
   function ilog2(n : natural) return natural;
 
