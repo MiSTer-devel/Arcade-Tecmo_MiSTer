@@ -219,7 +219,7 @@ begin
   -- Set the ROM address.
   --
   -- This address points to a row of an 8x8 tile.
-  rom_addr <= sprite.code(11 downto 4) &
+  rom_addr <= sprite.code(12 downto 4) &
               (sprite.code(3 downto 0) or (load_pos.y(4) & load_pos.x(4) & load_pos.y(3) & load_pos.x(3))) &
               load_pos.y(2 downto 0);
 

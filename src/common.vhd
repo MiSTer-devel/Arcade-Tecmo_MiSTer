@@ -57,45 +57,95 @@ package common is
   constant WORK_RAM_ADDR_WIDTH : natural := 12; -- 4kB
 
   -- program ROMs
-  constant PROG_ROM_1_ADDR_WIDTH : natural := 16; -- 48kB
+  constant PROG_ROM_1_ADDR_WIDTH : natural := 16;
   constant PROG_ROM_1_DATA_WIDTH : natural := 8;
-  constant PROG_ROM_2_ADDR_WIDTH : natural := 15; -- 32kB
+  constant PROG_ROM_2_ADDR_WIDTH : natural := 16;
   constant PROG_ROM_2_DATA_WIDTH : natural := 8;
 
   -- tile ROMs
-  constant SPRITE_ROM_ADDR_WIDTH : natural := 15; -- 128kB
+  constant SPRITE_ROM_ADDR_WIDTH : natural := 16;
   constant SPRITE_ROM_DATA_WIDTH : natural := 32;
-  constant CHAR_ROM_ADDR_WIDTH   : natural := 13; -- 32kB
+  constant CHAR_ROM_ADDR_WIDTH   : natural := 13;
   constant CHAR_ROM_DATA_WIDTH   : natural := 32;
-  constant FG_ROM_ADDR_WIDTH     : natural := 15; -- 128kB
+  constant FG_ROM_ADDR_WIDTH     : natural := 16;
   constant FG_ROM_DATA_WIDTH     : natural := 32;
-  constant BG_ROM_ADDR_WIDTH     : natural := 15; -- 128kB
+  constant BG_ROM_ADDR_WIDTH     : natural := 16;
   constant BG_ROM_DATA_WIDTH     : natural := 32;
 
   -- sound ROMs
-  constant SOUND_ROM_1_ADDR_WIDTH : natural := 14;
+  constant SOUND_ROM_1_ADDR_WIDTH : natural := 15;
   constant SOUND_ROM_1_DATA_WIDTH : natural := 8;
   constant SOUND_ROM_2_ADDR_WIDTH : natural := 15;
   constant SOUND_ROM_2_DATA_WIDTH : natural := 8;
 
-  -- ROM offsets
+  -- ROM sizes/offsets
   --
-  -- When MiSTer loads the core, the ROM data is downloaded from the HPS and
-  -- streamed directly into the SDRAM. These offset values mark the address of
-  -- each ROM segment in the SDRAM.
+  -- When MiSTer loads a core, ROM data is downloaded from the HPS and streamed
+  -- directly into the SDRAM. These offset values contain the address of each
+  -- ROM segment in the IOCTL data stream.
   --
   -- If the ordering of the ROMs in the MRA file changes, then these offset
   -- values must also be changed.
   constant PROG_ROM_1_OFFSET  : natural := 16#00000#;
+  constant PROG_ROM_1_SIZE    : natural := 16#0C000#; -- 48kB
   constant PROG_ROM_2_OFFSET  : natural := 16#0C000#;
-  constant CHAR_ROM_OFFSET    : natural := 16#14000#;
-  constant FG_ROM_OFFSET      : natural := 16#1C000#;
-  constant BG_ROM_OFFSET      : natural := 16#3C000#;
-  constant SPRITE_ROM_OFFSET  : natural := 16#5C000#;
-  constant SOUND_ROM_1_OFFSET : natural := 16#7C000#;
-  constant SOUND_ROM_1_SIZE   : natural := 16#02000#;
-  constant SOUND_ROM_2_OFFSET : natural := 16#7E000#;
-  constant SOUND_ROM_2_SIZE   : natural := 16#04000#;
+  constant PROG_ROM_2_SIZE    : natural := 16#10000#; -- 64kB
+  constant SOUND_ROM_1_OFFSET : natural := 16#1C000#;
+  constant SOUND_ROM_1_SIZE   : natural := 16#08000#; -- 32kB
+  constant CHAR_ROM_OFFSET    : natural := 16#24000#;
+  constant CHAR_ROM_SIZE      : natural := 16#08000#; -- 32kB
+  constant SPRITE_ROM_OFFSET  : natural := 16#2C000#;
+  constant SPRITE_ROM_SIZE    : natural := 16#40000#; -- 256kB
+  constant FG_ROM_OFFSET      : natural := 16#6C000#;
+  constant FG_ROM_SIZE        : natural := 16#40000#; -- 256kB
+  constant BG_ROM_OFFSET      : natural := 16#AC000#;
+  constant BG_ROM_SIZE        : natural := 16#40000#; -- 256kB
+  constant SOUND_ROM_2_OFFSET : natural := 16#EC000#;
+  constant SOUND_ROM_2_SIZE   : natural := 16#08000#; -- 32kB
+
+  type addr_range_t is record
+    min : unsigned(CPU_ADDR_WIDTH-1 downto 0);
+    max : unsigned(CPU_ADDR_WIDTH-1 downto 0);
+  end record addr_range_t;
+
+  type mem_map_t is record
+    prog_rom_1  : addr_range_t;
+    work_ram    : addr_range_t;
+    char_ram    : addr_range_t;
+    fg_ram      : addr_range_t;
+    bg_ram      : addr_range_t;
+    sprite_ram  : addr_range_t;
+    palette_ram : addr_range_t;
+    prog_rom_2  : addr_range_t;
+    scroll      : addr_range_t;
+    sound       : addr_range_t;
+    bank        : addr_range_t;
+    player_1    : addr_range_t;
+    player_2    : addr_range_t;
+    coin        : addr_range_t;
+    dip_sw_1    : addr_range_t;
+    dip_sw_2    : addr_range_t;
+  end record mem_map_t;
+
+  -- memory map
+  constant MEM_MAP : mem_map_t := (
+    prog_rom_1  => (x"0000", x"bfff"), -- program ROM #1
+    work_ram    => (x"c000", x"cfff"), -- work RAM
+    char_ram    => (x"d000", x"d7ff"), -- character RAM
+    fg_ram      => (x"d800", x"dbff"), -- foreground RAM
+    bg_ram      => (x"dc00", x"dfff"), -- background RAM
+    sprite_ram  => (x"e000", x"e7ff"), -- sprite RAM
+    palette_ram => (x"e800", x"efff"), -- palette RAM
+    prog_rom_2  => (x"f000", x"f7ff"), -- program ROM #2 (bank switched)
+    scroll      => (x"f800", x"f805"), -- scroll register
+    sound       => (x"f806", x"f806"), -- sound
+    bank        => (x"f808", x"f808"), -- bank register
+    player_1    => (x"f800", x"f801"), -- player 1
+    player_2    => (x"f802", x"f803"), -- player 2
+    coin        => (x"f804", x"f804"), -- coin
+    dip_sw_1    => (x"f806", x"f807"), -- DIP switch #1
+    dip_sw_2    => (x"f808", x"f809")  -- DIP switch #2
+  );
 
   -- VRAM
   constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
@@ -125,7 +175,7 @@ package common is
   constant TILE_BPP : natural := 4;
 
   -- sprite byte 0
-  constant SPRITE_HI_CODE_MSB : natural := 7;
+  constant SPRITE_HI_CODE_MSB : natural := 8;
   constant SPRITE_HI_CODE_LSB : natural := 4;
   constant SPRITE_ENABLE_BIT  : natural := 2;
   constant SPRITE_FLIP_Y_BIT  : natural := 1;
@@ -189,7 +239,7 @@ package common is
   subtype tile_color_t is std_logic_vector(3 downto 0);
 
   -- represents the index of a tile in a tilemap
-  subtype tile_code_t is unsigned(9 downto 0);
+  subtype tile_code_t is unsigned(10 downto 0);
 
   -- represents the video signals
   type video_t is record
@@ -210,7 +260,7 @@ package common is
 
   -- represents a sprite
   type sprite_t is record
-    code     : unsigned(11 downto 0);
+    code     : unsigned(12 downto 0);
     color    : unsigned(3 downto 0);
     enable   : std_logic;
     flip_x   : std_logic;
@@ -226,8 +276,14 @@ package common is
   -- represents an audio sample
   subtype audio_t is signed(15 downto 0);
 
+  -- represents the currently configured game
+  type game_t is (RYGAR, GEMINI, SILKWORM);
+
   -- calculates the log2 of the given number
   function ilog2(n : natural) return natural;
+
+  -- determine whether an address is within a given range
+  function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean;
 
   -- decodes a single pixel from a tile row at the given offset
   function decode_tile_row (tile_row : tile_row_t; offset : unsigned(2 downto 0)) return tile_pixel_t;
@@ -253,6 +309,15 @@ package body common is
   begin
     return natural(ceil(log2(real(n))));
   end ilog2;
+
+  function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean is
+  begin
+    if addr >= addr_range.min and addr <= addr_range.max then
+      return true;
+    else
+      return false;
+    end if;
+  end addr_in_range;
 
   function decode_tile_row (
     tile_row : tile_row_t;
