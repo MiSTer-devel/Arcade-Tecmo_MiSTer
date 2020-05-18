@@ -322,6 +322,12 @@ wire coin  = key_coin  | joy[7];
 ////////////////////////////////////////////////////////////////////////////////
 
 wire reset = RESET | ioctl_download | status[0] | buttons[1];
+reg [3:0] game_index = 0;
+
+// set game index
+always @(posedge clk_sys) begin
+  if (ioctl_wr & (ioctl_index == 1)) game_index <= ioctl_data[3:0];
+end
 
 tecmo tecmo
 (
@@ -352,8 +358,10 @@ tecmo tecmo
 
   .ioctl_addr(ioctl_addr),
   .ioctl_data(ioctl_data),
-  .ioctl_wr(ioctl_wr),
+  .ioctl_wr(ioctl_wr & (ioctl_index == 0)),
   .ioctl_download(ioctl_download),
+
+  .game_index(game_index),
 
   .hsync(hsync),
   .vsync(vsync),

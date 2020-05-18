@@ -127,13 +127,53 @@ package common is
     dip_sw_2    : addr_range_t;
   end record mem_map_t;
 
-  -- memory map
-  constant MEM_MAP : mem_map_t := (
+  -- rygar memory map
+  constant RYGAR_MEM_MAP : mem_map_t := (
     prog_rom_1  => (x"0000", x"bfff"), -- program ROM #1
     work_ram    => (x"c000", x"cfff"), -- work RAM
     char_ram    => (x"d000", x"d7ff"), -- character RAM
     fg_ram      => (x"d800", x"dbff"), -- foreground RAM
     bg_ram      => (x"dc00", x"dfff"), -- background RAM
+    sprite_ram  => (x"e000", x"e7ff"), -- sprite RAM
+    palette_ram => (x"e800", x"efff"), -- palette RAM
+    prog_rom_2  => (x"f000", x"f7ff"), -- program ROM #2 (bank switched)
+    scroll      => (x"f800", x"f805"), -- scroll register
+    sound       => (x"f806", x"f806"), -- sound
+    bank        => (x"f808", x"f808"), -- bank register
+    player_1    => (x"f800", x"f801"), -- player 1
+    player_2    => (x"f802", x"f803"), -- player 2
+    coin        => (x"f804", x"f804"), -- coin
+    dip_sw_1    => (x"f806", x"f807"), -- DIP switch #1
+    dip_sw_2    => (x"f808", x"f809")  -- DIP switch #2
+  );
+
+  -- gemini memory map
+  constant GEMINI_MEM_MAP : mem_map_t := (
+    prog_rom_1  => (x"0000", x"bfff"), -- program ROM #1
+    work_ram    => (x"c000", x"cfff"), -- work RAM
+    char_ram    => (x"d000", x"d7ff"), -- character RAM
+    fg_ram      => (x"d800", x"dbff"), -- foreground RAM
+    bg_ram      => (x"dc00", x"dfff"), -- background RAM
+    sprite_ram  => (x"e000", x"e7ff"), -- palette RAM
+    palette_ram => (x"e800", x"efff"), -- sprite RAM
+    prog_rom_2  => (x"f000", x"f7ff"), -- program ROM #2 (bank switched)
+    scroll      => (x"f800", x"f805"), -- scroll register
+    sound       => (x"f806", x"f806"), -- sound
+    bank        => (x"f808", x"f808"), -- bank register
+    player_1    => (x"f800", x"f801"), -- player 1
+    player_2    => (x"f802", x"f803"), -- player 2
+    coin        => (x"f804", x"f804"), -- coin
+    dip_sw_1    => (x"f806", x"f807"), -- DIP switch #1
+    dip_sw_2    => (x"f808", x"f809")  -- DIP switch #2
+  );
+
+  -- silkworm memory map
+  constant SILKWORM_MEM_MAP : mem_map_t := (
+    prog_rom_1  => (x"0000", x"bfff"), -- program ROM #1
+    bg_ram      => (x"c000", x"c3ff"), -- background RAM
+    fg_ram      => (x"c400", x"c7ff"), -- foreground RAM
+    char_ram    => (x"c800", x"cfff"), -- character RAM
+    work_ram    => (x"d000", x"dfff"), -- work RAM
     sprite_ram  => (x"e000", x"e7ff"), -- sprite RAM
     palette_ram => (x"e800", x"efff"), -- palette RAM
     prog_rom_2  => (x"f000", x"f7ff"), -- program ROM #2 (bank switched)
@@ -276,14 +316,14 @@ package common is
   -- represents an audio sample
   subtype audio_t is signed(15 downto 0);
 
-  -- represents the currently configured game
-  type game_t is (RYGAR, GEMINI, SILKWORM);
-
   -- calculates the log2 of the given number
   function ilog2(n : natural) return natural;
 
   -- determine whether an address is within a given range
   function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean;
+
+  -- determine the memory map for the given index
+  function select_mem_map (index : natural) return mem_map_t;
 
   -- decodes a single pixel from a tile row at the given offset
   function decode_tile_row (tile_row : tile_row_t; offset : unsigned(2 downto 0)) return tile_pixel_t;
@@ -318,6 +358,15 @@ package body common is
       return false;
     end if;
   end addr_in_range;
+
+  function select_mem_map (index : natural) return mem_map_t is
+  begin
+    case index is
+      when 2      => return SILKWORM_MEM_MAP;
+      when 1      => return GEMINI_MEM_MAP;
+      when others => return RYGAR_MEM_MAP;
+    end case;
+  end select_mem_map;
 
   function decode_tile_row (
     tile_row : tile_row_t;

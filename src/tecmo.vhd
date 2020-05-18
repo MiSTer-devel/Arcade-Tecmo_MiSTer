@@ -82,7 +82,9 @@ entity tecmo is
     ioctl_data     : in byte_t;
     ioctl_wr       : in std_logic;
     ioctl_download : in std_logic;
-    ioctl_index    : in byte_t;
+
+    -- current game index
+    game_index : in unsigned(3 downto 0);
 
     -- video control signals
     hsync  : out std_logic;
@@ -106,6 +108,9 @@ architecture arch of tecmo is
 
   -- the number of bits in the bank register
   constant BANK_REG_WIDTH : natural := ilog2(BANKS);
+
+  -- the current memory map
+  signal mem_map : mem_map_t;
 
   -- CPU signals
   signal cpu_cen     : std_logic;
@@ -385,12 +390,11 @@ begin
     end if;
   end process;
 
-  -- The bank register selects the current bank for program ROM 3.
+  -- The bank register selects the current bank for program ROM #2.
   set_bank_register : process (clk)
   begin
     if rising_edge(clk) then
       if bank_cs = '1' and cpu_wr_n = '0' then
-        -- from the schematic, flip-flop 6J uses data bus lines 3 to 6
         bank_reg <= unsigned(cpu_dout(7 downto 3));
       end if;
     end if;
@@ -414,6 +418,9 @@ begin
     end if;
   end process;
 
+  -- set memory map
+  mem_map <= select_mem_map(to_integer(game_index));
+
   -- mux joystick, coin, and DIP switch data
   io_dout <= joystick_1(3 downto 0)              when player_1_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
              joystick_1(7 downto 4)              when player_1_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
@@ -426,22 +433,22 @@ begin
              (others => '0');
 
   -- set chip select signals
-  prog_rom_1_cs  <= '1' when addr_in_range(cpu_addr, MEM_MAP.prog_rom_1)  else '0';
-  work_ram_cs    <= '1' when addr_in_range(cpu_addr, MEM_MAP.work_ram)    else '0';
-  char_ram_cs    <= '1' when addr_in_range(cpu_addr, MEM_MAP.char_ram)    else '0';
-  fg_ram_cs      <= '1' when addr_in_range(cpu_addr, MEM_MAP.fg_ram)      else '0';
-  bg_ram_cs      <= '1' when addr_in_range(cpu_addr, MEM_MAP.bg_ram)      else '0';
-  sprite_ram_cs  <= '1' when addr_in_range(cpu_addr, MEM_MAP.sprite_ram)  else '0';
-  palette_ram_cs <= '1' when addr_in_range(cpu_addr, MEM_MAP.palette_ram) else '0';
-  prog_rom_2_cs  <= '1' when addr_in_range(cpu_addr, MEM_MAP.prog_rom_2)  else '0';
-  scroll_cs      <= '1' when addr_in_range(cpu_addr, MEM_MAP.scroll)      else '0';
-  sound_cs       <= '1' when addr_in_range(cpu_addr, MEM_MAP.sound)       else '0';
-  bank_cs        <= '1' when addr_in_range(cpu_addr, MEM_MAP.bank)        else '0';
-  player_1_cs    <= '1' when addr_in_range(cpu_addr, MEM_MAP.player_1)    else '0';
-  player_2_cs    <= '1' when addr_in_range(cpu_addr, MEM_MAP.player_2)    else '0';
-  coin_cs        <= '1' when addr_in_range(cpu_addr, MEM_MAP.coin)        else '0';
-  dip_sw_1_cs    <= '1' when addr_in_range(cpu_addr, MEM_MAP.dip_sw_1)    else '0';
-  dip_sw_2_cs    <= '1' when addr_in_range(cpu_addr, MEM_MAP.dip_sw_2)    else '0';
+  prog_rom_1_cs  <= '1' when addr_in_range(cpu_addr, mem_map.prog_rom_1)  else '0';
+  work_ram_cs    <= '1' when addr_in_range(cpu_addr, mem_map.work_ram)    else '0';
+  char_ram_cs    <= '1' when addr_in_range(cpu_addr, mem_map.char_ram)    else '0';
+  fg_ram_cs      <= '1' when addr_in_range(cpu_addr, mem_map.fg_ram)      else '0';
+  bg_ram_cs      <= '1' when addr_in_range(cpu_addr, mem_map.bg_ram)      else '0';
+  sprite_ram_cs  <= '1' when addr_in_range(cpu_addr, mem_map.sprite_ram)  else '0';
+  palette_ram_cs <= '1' when addr_in_range(cpu_addr, mem_map.palette_ram) else '0';
+  prog_rom_2_cs  <= '1' when addr_in_range(cpu_addr, mem_map.prog_rom_2)  else '0';
+  scroll_cs      <= '1' when addr_in_range(cpu_addr, mem_map.scroll)      else '0';
+  sound_cs       <= '1' when addr_in_range(cpu_addr, mem_map.sound)       else '0';
+  bank_cs        <= '1' when addr_in_range(cpu_addr, mem_map.bank)        else '0';
+  player_1_cs    <= '1' when addr_in_range(cpu_addr, mem_map.player_1)    else '0';
+  player_2_cs    <= '1' when addr_in_range(cpu_addr, mem_map.player_2)    else '0';
+  coin_cs        <= '1' when addr_in_range(cpu_addr, mem_map.coin)        else '0';
+  dip_sw_1_cs    <= '1' when addr_in_range(cpu_addr, mem_map.dip_sw_1)    else '0';
+  dip_sw_2_cs    <= '1' when addr_in_range(cpu_addr, mem_map.dip_sw_2)    else '0';
 
   -- mux CPU data input
   cpu_din <= prog_rom_1_dout or
