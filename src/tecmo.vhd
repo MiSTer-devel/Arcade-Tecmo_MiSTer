@@ -302,12 +302,6 @@ begin
 
   -- graphics subsystem
   gpu : entity work.gpu
-  generic map (
-    SPRITE_LAYER_ENABLE => true,
-    CHAR_LAYER_ENABLE   => true,
-    FG_LAYER_ENABLE     => true,
-    BG_LAYER_ENABLE     => true
-  )
   port map (
     -- clock signals
     clk   => clk,
