@@ -7,6 +7,15 @@
   <manufacturer>Tecmo</manufacturer>
   <category>Platform</category>
   <rbf>tecmo</rbf>
+
+  <buttons names="Fire,Jump,Start,Coin" default="A,B,R,L" />
+
+  <!-- select game -->
+  <rom index="1">
+    <part>0</part>
+  </rom>
+
+  <!-- ROM data -->
   <rom index="0" zip="rygar.zip" md5="none">
     <!-- main cpu -->
     <part crc="062cd55d" name="5.5p" />
@@ -45,5 +54,4 @@
     <!-- pcm -->
     <part crc="3cc98c5a" name="cpu_1f.bin" />
   </rom>
-  <buttons names="Fire,Jump,Start,Coin" default="A,B,R,L" />
 </misterromdescription>

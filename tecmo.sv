@@ -173,6 +173,7 @@ wire [24:0] ioctl_addr;
 wire  [7:0] ioctl_data;
 wire        ioctl_wr;
 wire        ioctl_download;
+wire  [7:0] ioctl_index;
 
 wire [10:0] ps2_key;
 
@@ -197,6 +198,7 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
   .ioctl_dout(ioctl_data),
   .ioctl_wr(ioctl_wr),
   .ioctl_download(ioctl_download),
+  .ioctl_index(ioctl_index),
 
   .joystick_0(joystick_0),
   .joystick_1(joystick_1),
@@ -320,6 +322,12 @@ wire coin  = key_coin  | joy[7];
 ////////////////////////////////////////////////////////////////////////////////
 
 wire reset = RESET | ioctl_download | status[0] | buttons[1];
+reg [3:0] game_index = 0;
+
+// set game index
+always @(posedge clk_sys) begin
+  if (ioctl_wr & (ioctl_index == 1)) game_index <= ioctl_data[3:0];
+end
 
 tecmo tecmo
 (
@@ -350,8 +358,10 @@ tecmo tecmo
 
   .ioctl_addr(ioctl_addr),
   .ioctl_data(ioctl_data),
-  .ioctl_wr(ioctl_wr),
+  .ioctl_wr(ioctl_wr & (ioctl_index == 0)),
   .ioctl_download(ioctl_download),
+
+  .game_index(game_index),
 
   .hsync(hsync),
   .vsync(vsync),

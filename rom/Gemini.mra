@@ -7,6 +7,15 @@
   <manufacturer>Tecmo</manufacturer>
   <category>Shooter</category>
   <rbf>tecmo</rbf>
+
+  <buttons names="Fire,Jump,Start,Coin" default="A,B,R,L" />
+
+  <!-- select game -->
+  <rom index="1">
+    <part>1</part>
+  </rom>
+
+  <!-- ROM data -->
   <rom index="0" zip="gemini.zip" md5="none">
     <!-- main cpu -->
     <part crc="ce71e27a" name="4-5s" length="0xc000" />
@@ -39,5 +48,4 @@
     <!-- pcm -->
     <part crc="d78afa05" name="gw01-6a.rom" />
   </rom>
-  <buttons names="Fire,Jump,Start,Coin" default="A,B,R,L" />
 </misterromdescription>
