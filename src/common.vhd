@@ -109,82 +109,82 @@ package common is
   end record addr_range_t;
 
   type mem_map_t is record
-    prog_rom_1  : addr_range_t;
-    work_ram    : addr_range_t;
-    char_ram    : addr_range_t;
-    fg_ram      : addr_range_t;
-    bg_ram      : addr_range_t;
-    sprite_ram  : addr_range_t;
-    palette_ram : addr_range_t;
-    prog_rom_2  : addr_range_t;
-    scroll      : addr_range_t;
-    sound       : addr_range_t;
-    bank        : addr_range_t;
-    player_1    : addr_range_t;
-    player_2    : addr_range_t;
-    coin        : addr_range_t;
-    dip_sw_1    : addr_range_t;
-    dip_sw_2    : addr_range_t;
+    prog_rom_1  : addr_range_t; -- program ROM #1
+    work_ram    : addr_range_t; -- work RAM
+    char_ram    : addr_range_t; -- character RAM
+    fg_ram      : addr_range_t; -- foreground RAM
+    bg_ram      : addr_range_t; -- background RAM
+    sprite_ram  : addr_range_t; -- sprite RAM
+    palette_ram : addr_range_t; -- palette RAM
+    prog_rom_2  : addr_range_t; -- program ROM #2 (bank switched)
+    scroll      : addr_range_t; -- scroll register
+    sound       : addr_range_t; -- sound
+    bank        : addr_range_t; -- bank register
+    player_1    : addr_range_t; -- player 1
+    player_2    : addr_range_t; -- player 2
+    coin        : addr_range_t; -- coin
+    dip_sw_1    : addr_range_t; -- DIP switch #1
+    dip_sw_2    : addr_range_t; -- DIP switch #2
   end record mem_map_t;
 
   -- rygar memory map
   constant RYGAR_MEM_MAP : mem_map_t := (
-    prog_rom_1  => (x"0000", x"bfff"), -- program ROM #1
-    work_ram    => (x"c000", x"cfff"), -- work RAM
-    char_ram    => (x"d000", x"d7ff"), -- character RAM
-    fg_ram      => (x"d800", x"dbff"), -- foreground RAM
-    bg_ram      => (x"dc00", x"dfff"), -- background RAM
-    sprite_ram  => (x"e000", x"e7ff"), -- sprite RAM
-    palette_ram => (x"e800", x"efff"), -- palette RAM
-    prog_rom_2  => (x"f000", x"f7ff"), -- program ROM #2 (bank switched)
-    scroll      => (x"f800", x"f805"), -- scroll register
-    sound       => (x"f806", x"f806"), -- sound
-    bank        => (x"f808", x"f808"), -- bank register
-    player_1    => (x"f800", x"f801"), -- player 1
-    player_2    => (x"f802", x"f803"), -- player 2
-    coin        => (x"f804", x"f804"), -- coin
-    dip_sw_1    => (x"f806", x"f807"), -- DIP switch #1
-    dip_sw_2    => (x"f808", x"f809")  -- DIP switch #2
+    prog_rom_1  => (x"0000", x"bfff"),
+    work_ram    => (x"c000", x"cfff"),
+    char_ram    => (x"d000", x"d7ff"),
+    fg_ram      => (x"d800", x"dbff"),
+    bg_ram      => (x"dc00", x"dfff"),
+    sprite_ram  => (x"e000", x"e7ff"),
+    palette_ram => (x"e800", x"efff"),
+    prog_rom_2  => (x"f000", x"f7ff"),
+    scroll      => (x"f800", x"f805"),
+    sound       => (x"f806", x"f806"),
+    bank        => (x"f808", x"f808"),
+    player_1    => (x"f800", x"f801"),
+    player_2    => (x"f802", x"f803"),
+    coin        => (x"f804", x"f804"),
+    dip_sw_1    => (x"f806", x"f807"),
+    dip_sw_2    => (x"f808", x"f809")
   );
 
   -- gemini memory map
   constant GEMINI_MEM_MAP : mem_map_t := (
-    prog_rom_1  => (x"0000", x"bfff"), -- program ROM #1
-    work_ram    => (x"c000", x"cfff"), -- work RAM
-    char_ram    => (x"d000", x"d7ff"), -- character RAM
-    fg_ram      => (x"d800", x"dbff"), -- foreground RAM
-    bg_ram      => (x"dc00", x"dfff"), -- background RAM
-    sprite_ram  => (x"e000", x"e7ff"), -- palette RAM
-    palette_ram => (x"e800", x"efff"), -- sprite RAM
-    prog_rom_2  => (x"f000", x"f7ff"), -- program ROM #2 (bank switched)
-    scroll      => (x"f800", x"f805"), -- scroll register
-    sound       => (x"f806", x"f806"), -- sound
-    bank        => (x"f808", x"f808"), -- bank register
-    player_1    => (x"f800", x"f801"), -- player 1
-    player_2    => (x"f802", x"f803"), -- player 2
-    coin        => (x"f804", x"f804"), -- coin
-    dip_sw_1    => (x"f806", x"f807"), -- DIP switch #1
-    dip_sw_2    => (x"f808", x"f809")  -- DIP switch #2
+    prog_rom_1  => (x"0000", x"bfff"),
+    work_ram    => (x"c000", x"cfff"),
+    char_ram    => (x"d000", x"d7ff"),
+    fg_ram      => (x"d800", x"dbff"),
+    bg_ram      => (x"dc00", x"dfff"),
+    sprite_ram  => (x"e000", x"e7ff"),
+    palette_ram => (x"e800", x"efff"),
+    prog_rom_2  => (x"f000", x"f7ff"),
+    scroll      => (x"f800", x"f805"),
+    sound       => (x"f806", x"f806"),
+    bank        => (x"f808", x"f808"),
+    player_1    => (x"f800", x"f801"),
+    player_2    => (x"f802", x"f803"),
+    coin        => (x"f804", x"f804"),
+    dip_sw_1    => (x"f806", x"f807"),
+    dip_sw_2    => (x"f808", x"f809")
   );
 
   -- silkworm memory map
   constant SILKWORM_MEM_MAP : mem_map_t := (
-    prog_rom_1  => (x"0000", x"bfff"), -- program ROM #1
-    bg_ram      => (x"c000", x"c3ff"), -- background RAM
-    fg_ram      => (x"c400", x"c7ff"), -- foreground RAM
-    char_ram    => (x"c800", x"cfff"), -- character RAM
-    work_ram    => (x"d000", x"dfff"), -- work RAM
-    sprite_ram  => (x"e000", x"e7ff"), -- sprite RAM
-    palette_ram => (x"e800", x"efff"), -- palette RAM
-    prog_rom_2  => (x"f000", x"f7ff"), -- program ROM #2 (bank switched)
-    scroll      => (x"f800", x"f805"), -- scroll register
-    sound       => (x"f806", x"f806"), -- sound
-    bank        => (x"f808", x"f808"), -- bank register
-    player_1    => (x"f800", x"f801"), -- player 1
-    player_2    => (x"f802", x"f803"), -- player 2
-    coin        => (x"f804", x"f804"), -- coin
-    dip_sw_1    => (x"f806", x"f807"), -- DIP switch #1
-    dip_sw_2    => (x"f808", x"f809")  -- DIP switch #2
+    prog_rom_1  => (x"0000", x"bfff"),
+    bg_ram      => (x"c000", x"c3ff"),
+    fg_ram      => (x"c400", x"c7ff"),
+    char_ram    => (x"c800", x"cfff"),
+    work_ram    => (x"d000", x"dfff"),
+    sprite_ram  => (x"e000", x"e7ff"),
+    palette_ram => (x"e800", x"efff"),
+    prog_rom_2  => (x"f000", x"f7ff"),
+    scroll      => (x"f800", x"f805"),
+    sound       => (x"f806", x"f806"),
+    bank        => (x"f808", x"f808"),
+    player_1    => (x"f800", x"f801"),
+    player_2    => (x"f802", x"f803"),
+    coin        => (x"f804", x"f804"),
+    dip_sw_1    => (x"f806", x"f807"),
+    dip_sw_2    => (x"f808", x"f809")
   );
 
   -- VRAM
