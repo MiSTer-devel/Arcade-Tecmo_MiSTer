@@ -187,6 +187,10 @@ package common is
     dip_sw_2    => (x"f808", x"f809")
   );
 
+  type game_config_t is record
+    mem_map : mem_map_t;
+  end record game_config_t;
+
   -- VRAM
   constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
   constant BG_RAM_GPU_ADDR_WIDTH      : natural := 10;
@@ -322,8 +326,8 @@ package common is
   -- determine whether an address is within a given range
   function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean;
 
-  -- determine the memory map for the given index
-  function select_mem_map (index : natural) return mem_map_t;
+  -- determine the game config for the given index
+  function select_game_config (index : natural) return game_config_t;
 
   -- decodes a single pixel from a tile row at the given offset
   function decode_tile_row (tile_row : tile_row_t; offset : unsigned(2 downto 0)) return tile_pixel_t;
@@ -359,14 +363,14 @@ package body common is
     end if;
   end addr_in_range;
 
-  function select_mem_map (index : natural) return mem_map_t is
+  function select_game_config (index : natural) return game_config_t is
   begin
     case index is
-      when 2      => return SILKWORM_MEM_MAP;
-      when 1      => return GEMINI_MEM_MAP;
-      when others => return RYGAR_MEM_MAP;
+      when 2      => return (mem_map => SILKWORM_MEM_MAP);
+      when 1      => return (mem_map => GEMINI_MEM_MAP);
+      when others => return (mem_map => RYGAR_MEM_MAP);
     end case;
-  end select_mem_map;
+  end select_game_config;
 
   function decode_tile_row (
     tile_row : tile_row_t;
