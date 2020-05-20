@@ -38,6 +38,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
+use work.types.all;
 
 -- The sprite blitter copies sprite data from the tile ROM to the frame buffer.
 --

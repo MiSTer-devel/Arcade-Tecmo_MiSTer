@@ -38,6 +38,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
+use work.math.all;
+use work.types.all;
 
 entity tecmo is
   port (
@@ -54,12 +56,16 @@ entity tecmo is
     cen_4   : buffer std_logic;
 
     -- player controls
-    joystick_1 : in byte_t;
-    joystick_2 : in byte_t;
-    start_1    : in std_logic;
-    start_2    : in std_logic;
-    coin_1     : in std_logic;
-    coin_2     : in std_logic;
+    joy_1     : in nibble_t;
+    joy_2     : in nibble_t;
+    buttons_1 : in nibble_t;
+    buttons_2 : in nibble_t;
+
+    -- coin/start flags
+    coin_1  : in std_logic;
+    coin_2  : in std_logic;
+    start_1 : in std_logic;
+    start_2 : in std_logic;
 
     -- DIP switches
     dip_allow_continue : in std_logic;
@@ -93,9 +99,9 @@ entity tecmo is
     vblank : out std_logic;
 
     -- RGB signals
-    r : out std_logic_vector(COLOR_DEPTH_R-1 downto 0);
-    g : out std_logic_vector(COLOR_DEPTH_G-1 downto 0);
-    b : out std_logic_vector(COLOR_DEPTH_B-1 downto 0);
+    r : out std_logic_vector(3 downto 0);
+    g : out std_logic_vector(3 downto 0);
+    b : out std_logic_vector(3 downto 0);
 
     -- audio data
     audio : out audio_t
@@ -109,8 +115,11 @@ architecture arch of tecmo is
   -- the number of bits in the bank register
   constant BANK_REG_WIDTH : natural := ilog2(BANKS);
 
-  -- the current memory map
-  signal mem_map : mem_map_t;
+  -- the current game configuration
+  signal game_config : game_config_t;
+
+  -- coin/start states
+  signal coin : nibble_t;
 
   -- CPU signals
   signal cpu_cen     : std_logic;
@@ -128,8 +137,6 @@ architecture arch of tecmo is
   -- chip select signals
   signal prog_rom_1_cs  : std_logic;
   signal prog_rom_2_cs  : std_logic;
-  signal sound_rom_1_cs : std_logic;
-  signal sound_rom_2_cs : std_logic;
   signal work_ram_cs    : std_logic;
   signal sprite_ram_cs  : std_logic;
   signal char_ram_cs    : std_logic;
@@ -137,14 +144,19 @@ architecture arch of tecmo is
   signal bg_ram_cs      : std_logic;
   signal palette_ram_cs : std_logic;
   signal scroll_cs      : std_logic;
-  signal player_1_cs    : std_logic;
-  signal player_2_cs    : std_logic;
+  signal joy_1_cs       : std_logic;
+  signal buttons_1_cs   : std_logic;
+  signal joy_2_cs       : std_logic;
+  signal buttons_2_cs   : std_logic;
   signal coin_cs        : std_logic;
   signal dip_sw_1_cs    : std_logic;
   signal dip_sw_2_cs    : std_logic;
   signal bank_cs        : std_logic;
   signal sound_cs       : std_logic;
 
+  -- sound signals
+  signal sound_rom_1_cs : std_logic;
+  signal sound_rom_2_cs : std_logic;
   signal sound_rom_1_oe : std_logic;
   signal sound_rom_2_oe : std_logic;
 
@@ -182,6 +194,20 @@ architecture arch of tecmo is
 
   -- RGB data
   signal rgb : rgb_t;
+
+  function select_coin (
+    index   : natural;
+    coin_1  : std_logic;
+    coin_2  : std_logic;
+    start_1 : std_logic;
+    start_2 : std_logic
+  ) return nibble_t is
+  begin
+    case index is
+      when 0      => return coin_1 & coin_2 & start_1 & start_2; -- rygar
+      when others => return coin_2 & coin_1 & start_2 & start_1; -- gemini/silkworm
+    end case;
+  end select_coin;
 begin
   -- generate a 12MHz clock enable signal
   clock_divider_12 : entity work.clock_divider
@@ -309,6 +335,9 @@ begin
   -- graphics subsystem
   gpu : entity work.gpu
   port map (
+    -- configuration
+    config => game_config.gpu_config,
+
     -- clock signals
     clk   => clk,
     cen_6 => cen_6,
@@ -418,37 +447,42 @@ begin
     end if;
   end process;
 
-  -- set memory map
-  mem_map <= select_mem_map(to_integer(game_index));
+  -- set game config
+  game_config <= select_game_config(to_integer(game_index));
 
-  -- mux joystick, coin, and DIP switch data
-  io_dout <= joystick_1(3 downto 0)              when player_1_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             joystick_1(7 downto 4)              when player_1_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
-             joystick_2(3 downto 0)              when player_2_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             joystick_2(7 downto 4)              when player_2_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
-             coin_1 & coin_2 & start_1 & start_2 when coin_cs     = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             "0" & dip_cabinet & dip_lives       when dip_sw_1_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
-             dip_difficulty & dip_bonus_life     when dip_sw_2_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             dip_allow_continue & "000"          when dip_sw_2_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
-             (others => '0');
+  -- set coin/start signal
+  coin <= select_coin(to_integer(game_index), coin_1, coin_2, start_1, start_2);
 
   -- set chip select signals
-  prog_rom_1_cs  <= '1' when addr_in_range(cpu_addr, mem_map.prog_rom_1)  else '0';
-  work_ram_cs    <= '1' when addr_in_range(cpu_addr, mem_map.work_ram)    else '0';
-  char_ram_cs    <= '1' when addr_in_range(cpu_addr, mem_map.char_ram)    else '0';
-  fg_ram_cs      <= '1' when addr_in_range(cpu_addr, mem_map.fg_ram)      else '0';
-  bg_ram_cs      <= '1' when addr_in_range(cpu_addr, mem_map.bg_ram)      else '0';
-  sprite_ram_cs  <= '1' when addr_in_range(cpu_addr, mem_map.sprite_ram)  else '0';
-  palette_ram_cs <= '1' when addr_in_range(cpu_addr, mem_map.palette_ram) else '0';
-  prog_rom_2_cs  <= '1' when addr_in_range(cpu_addr, mem_map.prog_rom_2)  else '0';
-  scroll_cs      <= '1' when addr_in_range(cpu_addr, mem_map.scroll)      else '0';
-  sound_cs       <= '1' when addr_in_range(cpu_addr, mem_map.sound)       else '0';
-  bank_cs        <= '1' when addr_in_range(cpu_addr, mem_map.bank)        else '0';
-  player_1_cs    <= '1' when addr_in_range(cpu_addr, mem_map.player_1)    else '0';
-  player_2_cs    <= '1' when addr_in_range(cpu_addr, mem_map.player_2)    else '0';
-  coin_cs        <= '1' when addr_in_range(cpu_addr, mem_map.coin)        else '0';
-  dip_sw_1_cs    <= '1' when addr_in_range(cpu_addr, mem_map.dip_sw_1)    else '0';
-  dip_sw_2_cs    <= '1' when addr_in_range(cpu_addr, mem_map.dip_sw_2)    else '0';
+  prog_rom_1_cs  <= '1' when addr_in_range(cpu_addr, game_config.mem_map.prog_rom_1)  else '0';
+  prog_rom_2_cs  <= '1' when addr_in_range(cpu_addr, game_config.mem_map.prog_rom_2)  else '0';
+  work_ram_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.work_ram)    else '0';
+  char_ram_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.char_ram)    else '0';
+  fg_ram_cs      <= '1' when addr_in_range(cpu_addr, game_config.mem_map.fg_ram)      else '0';
+  bg_ram_cs      <= '1' when addr_in_range(cpu_addr, game_config.mem_map.bg_ram)      else '0';
+  sprite_ram_cs  <= '1' when addr_in_range(cpu_addr, game_config.mem_map.sprite_ram)  else '0';
+  palette_ram_cs <= '1' when addr_in_range(cpu_addr, game_config.mem_map.palette_ram) else '0';
+  scroll_cs      <= '1' when addr_in_range(cpu_addr, game_config.mem_map.scroll)      else '0';
+  sound_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.sound)       else '0';
+  bank_cs        <= '1' when addr_in_range(cpu_addr, game_config.mem_map.bank)        else '0';
+  joy_1_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.joy_1)       else '0';
+  joy_2_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.joy_2)       else '0';
+  buttons_1_cs   <= '1' when addr_in_range(cpu_addr, game_config.mem_map.buttons_1)   else '0';
+  buttons_2_cs   <= '1' when addr_in_range(cpu_addr, game_config.mem_map.buttons_2)   else '0';
+  coin_cs        <= '1' when addr_in_range(cpu_addr, game_config.mem_map.coin)        else '0';
+  dip_sw_1_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.dip_sw_1)    else '0';
+  dip_sw_2_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.dip_sw_2)    else '0';
+
+  -- mux joystick, coin, and DIP switch data
+  io_dout <= joy_1                           when joy_1_cs     = '1' and cpu_rd_n = '0'                       else
+             joy_2                           when joy_2_cs     = '1' and cpu_rd_n = '0'                       else
+             buttons_1                       when buttons_1_cs = '1' and cpu_rd_n = '0'                       else
+             buttons_2                       when buttons_2_cs = '1' and cpu_rd_n = '0'                       else
+             coin                            when coin_cs      = '1' and cpu_rd_n = '0'                       else
+             "0" & dip_cabinet & dip_lives   when dip_sw_1_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
+             dip_difficulty & dip_bonus_life when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
+             dip_allow_continue & "000"      when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
+             (others => '0');
 
   -- mux CPU data input
   cpu_din <= prog_rom_1_dout or

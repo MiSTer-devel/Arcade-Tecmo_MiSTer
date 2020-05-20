@@ -36,7 +36,10 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
+
+use work.config.all;
+use work.math.all;
+use work.types.all;
 
 package common is
   constant CPU_ADDR_WIDTH : natural := 16;
@@ -103,90 +106,6 @@ package common is
   constant SOUND_ROM_2_OFFSET : natural := 16#EC000#;
   constant SOUND_ROM_2_SIZE   : natural := 16#08000#; -- 32kB
 
-  type addr_range_t is record
-    min : unsigned(CPU_ADDR_WIDTH-1 downto 0);
-    max : unsigned(CPU_ADDR_WIDTH-1 downto 0);
-  end record addr_range_t;
-
-  type mem_map_t is record
-    prog_rom_1  : addr_range_t; -- program ROM #1
-    work_ram    : addr_range_t; -- work RAM
-    char_ram    : addr_range_t; -- character RAM
-    fg_ram      : addr_range_t; -- foreground RAM
-    bg_ram      : addr_range_t; -- background RAM
-    sprite_ram  : addr_range_t; -- sprite RAM
-    palette_ram : addr_range_t; -- palette RAM
-    prog_rom_2  : addr_range_t; -- program ROM #2 (bank switched)
-    scroll      : addr_range_t; -- scroll register
-    sound       : addr_range_t; -- sound
-    bank        : addr_range_t; -- bank register
-    player_1    : addr_range_t; -- player 1
-    player_2    : addr_range_t; -- player 2
-    coin        : addr_range_t; -- coin
-    dip_sw_1    : addr_range_t; -- DIP switch #1
-    dip_sw_2    : addr_range_t; -- DIP switch #2
-  end record mem_map_t;
-
-  -- rygar memory map
-  constant RYGAR_MEM_MAP : mem_map_t := (
-    prog_rom_1  => (x"0000", x"bfff"),
-    work_ram    => (x"c000", x"cfff"),
-    char_ram    => (x"d000", x"d7ff"),
-    fg_ram      => (x"d800", x"dbff"),
-    bg_ram      => (x"dc00", x"dfff"),
-    sprite_ram  => (x"e000", x"e7ff"),
-    palette_ram => (x"e800", x"efff"),
-    prog_rom_2  => (x"f000", x"f7ff"),
-    scroll      => (x"f800", x"f805"),
-    sound       => (x"f806", x"f806"),
-    bank        => (x"f808", x"f808"),
-    player_1    => (x"f800", x"f801"),
-    player_2    => (x"f802", x"f803"),
-    coin        => (x"f804", x"f804"),
-    dip_sw_1    => (x"f806", x"f807"),
-    dip_sw_2    => (x"f808", x"f809")
-  );
-
-  -- gemini memory map
-  constant GEMINI_MEM_MAP : mem_map_t := (
-    prog_rom_1  => (x"0000", x"bfff"),
-    work_ram    => (x"c000", x"cfff"),
-    char_ram    => (x"d000", x"d7ff"),
-    fg_ram      => (x"d800", x"dbff"),
-    bg_ram      => (x"dc00", x"dfff"),
-    sprite_ram  => (x"e000", x"e7ff"),
-    palette_ram => (x"e800", x"efff"),
-    prog_rom_2  => (x"f000", x"f7ff"),
-    scroll      => (x"f800", x"f805"),
-    sound       => (x"f806", x"f806"),
-    bank        => (x"f808", x"f808"),
-    player_1    => (x"f800", x"f801"),
-    player_2    => (x"f802", x"f803"),
-    coin        => (x"f804", x"f804"),
-    dip_sw_1    => (x"f806", x"f807"),
-    dip_sw_2    => (x"f808", x"f809")
-  );
-
-  -- silkworm memory map
-  constant SILKWORM_MEM_MAP : mem_map_t := (
-    prog_rom_1  => (x"0000", x"bfff"),
-    bg_ram      => (x"c000", x"c3ff"),
-    fg_ram      => (x"c400", x"c7ff"),
-    char_ram    => (x"c800", x"cfff"),
-    work_ram    => (x"d000", x"dfff"),
-    sprite_ram  => (x"e000", x"e7ff"),
-    palette_ram => (x"e800", x"efff"),
-    prog_rom_2  => (x"f000", x"f7ff"),
-    scroll      => (x"f800", x"f805"),
-    sound       => (x"f806", x"f806"),
-    bank        => (x"f808", x"f808"),
-    player_1    => (x"f800", x"f801"),
-    player_2    => (x"f802", x"f803"),
-    coin        => (x"f804", x"f804"),
-    dip_sw_1    => (x"f806", x"f807"),
-    dip_sw_2    => (x"f808", x"f809")
-  );
-
   -- VRAM
   constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
   constant BG_RAM_GPU_ADDR_WIDTH      : natural := 10;
@@ -211,119 +130,11 @@ package common is
   constant FRAME_BUFFER_ADDR_WIDTH : natural := 16;
   constant FRAME_BUFFER_DATA_WIDTH : natural := 10;
 
-  -- each 8x8 tile is composed of four layers of pixel data (bitplanes)
-  constant TILE_BPP : natural := 4;
-
-  -- sprite byte 0
-  constant SPRITE_HI_CODE_MSB : natural := 8;
-  constant SPRITE_HI_CODE_LSB : natural := 4;
-  constant SPRITE_ENABLE_BIT  : natural := 2;
-  constant SPRITE_FLIP_Y_BIT  : natural := 1;
-  constant SPRITE_FLIP_X_BIT  : natural := 0;
-
-  -- sprite byte 1
-  constant SPRITE_LO_CODE_MSB : natural := 15;
-  constant SPRITE_LO_CODE_LSB : natural := 8;
-
-  -- sprite byte 2
-  constant SPRITE_SIZE_MSB : natural := 17;
-  constant SPRITE_SIZE_LSB : natural := 16;
-
-  -- sprite byte 3
-  constant SPRITE_PRIORITY_MSB : natural := 31;
-  constant SPRITE_PRIORITY_LSB : natural := 30;
-  constant SPRITE_HI_POS_Y_BIT : natural := 29;
-  constant SPRITE_HI_POS_X_BIT : natural := 28;
-  constant SPRITE_COLOR_MSB    : natural := 27;
-  constant SPRITE_COLOR_LSB    : natural := 24;
-
-  -- sprite byte 4
-  constant SPRITE_LO_POS_Y_MSB : natural := 39;
-  constant SPRITE_LO_POS_Y_LSB : natural := 32;
-
-  -- sprite byte 5
-  constant SPRITE_LO_POS_X_MSB : natural := 47;
-  constant SPRITE_LO_POS_X_LSB : natural := 40;
-
-  -- colour depth
-  constant COLOR_DEPTH_R : natural := 4;
-  constant COLOR_DEPTH_G : natural := 4;
-  constant COLOR_DEPTH_B : natural := 4;
-
-  subtype byte_t is std_logic_vector(7 downto 0);
-  subtype nibble_t is std_logic_vector(3 downto 0);
-
-  -- represents a RGB colour value
-  type rgb_t is record
-    r : std_logic_vector(COLOR_DEPTH_R-1 downto 0);
-    g : std_logic_vector(COLOR_DEPTH_G-1 downto 0);
-    b : std_logic_vector(COLOR_DEPTH_B-1 downto 0);
-  end record rgb_t;
-
-  -- represents a position
-  type pos_t is record
-    x : unsigned(8 downto 0);
-    y : unsigned(8 downto 0);
-  end record pos_t;
-
-  -- represents a priority
-  subtype priority_t is unsigned(1 downto 0);
-
-  -- represents a row of pixels in a 8x8 tile
-  subtype tile_row_t is std_logic_vector(TILE_BPP*8-1 downto 0);
-
-  -- represents a pixel in a 8x8 tile
-  subtype tile_pixel_t is std_logic_vector(TILE_BPP-1 downto 0);
-
-  -- represents the colour of a tile
-  subtype tile_color_t is std_logic_vector(3 downto 0);
-
-  -- represents the index of a tile in a tilemap
-  subtype tile_code_t is unsigned(10 downto 0);
-
-  -- represents the video signals
-  type video_t is record
-    -- position
-    pos : pos_t;
-
-    -- sync signals
-    hsync : std_logic;
-    vsync : std_logic;
-
-    -- blank signals
-    hblank : std_logic;
-    vblank : std_logic;
-
-    -- enable video output
-    enable : std_logic;
-  end record video_t;
-
-  -- represents a sprite
-  type sprite_t is record
-    code     : unsigned(12 downto 0);
-    color    : unsigned(3 downto 0);
-    enable   : std_logic;
-    flip_x   : std_logic;
-    flip_y   : std_logic;
-    pos      : pos_t;
-    priority : priority_t;
-    size     : unsigned(5 downto 0);
-  end record sprite_t;
-
-  -- represents a graphics layer
-  type layer_t is (SPRITE_LAYER, CHAR_LAYER, FG_LAYER, BG_LAYER, FILL_LAYER);
-
-  -- represents an audio sample
-  subtype audio_t is signed(15 downto 0);
-
-  -- calculates the log2 of the given number
-  function ilog2(n : natural) return natural;
+  -- determine the game config for the given index
+  function select_game_config (index : natural) return game_config_t;
 
   -- determine whether an address is within a given range
   function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean;
-
-  -- determine the memory map for the given index
-  function select_mem_map (index : natural) return mem_map_t;
 
   -- decodes a single pixel from a tile row at the given offset
   function decode_tile_row (tile_row : tile_row_t; offset : unsigned(2 downto 0)) return tile_pixel_t;
@@ -332,9 +143,9 @@ package common is
   function sprite_size_in_pixels (size : std_logic_vector(1 downto 0)) return natural;
 
   -- initialise sprite from a raw 64-bit value
-  function init_sprite (data : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0)) return sprite_t;
+  function init_sprite (config : sprite_config_t; data : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0)) return sprite_t;
 
-  -- determine which graphics layer should be rendered
+  -- determine graphics layer to be rendered
   function mux_layers (
     sprite_priority : priority_t;
     sprite_data     : byte_t;
@@ -345,10 +156,14 @@ package common is
 end package common;
 
 package body common is
-  function ilog2(n : natural) return natural is
+  function select_game_config (index : natural) return game_config_t is
   begin
-    return natural(ceil(log2(real(n))));
-  end ilog2;
+    case index is
+      when 2      => return SILKWORM_GAME_CONFIG;
+      when 1      => return GEMINI_GAME_CONFIG;
+      when others => return RYGAR_GAME_CONFIG;
+    end case;
+  end select_game_config;
 
   function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean is
   begin
@@ -358,15 +173,6 @@ package body common is
       return false;
     end if;
   end addr_in_range;
-
-  function select_mem_map (index : natural) return mem_map_t is
-  begin
-    case index is
-      when 2      => return SILKWORM_MEM_MAP;
-      when 1      => return GEMINI_MEM_MAP;
-      when others => return RYGAR_MEM_MAP;
-    end case;
-  end select_mem_map;
 
   function decode_tile_row (
     tile_row : tile_row_t;
@@ -395,44 +201,34 @@ package body common is
     end case;
   end sprite_size_in_pixels;
 
-  --  byte     bit        description
-  -- --------+-76543210-+----------------
-  --       0 | xxxx---- | hi code
-  --         | -----x-- | enable
-  --         | ------x- | flip y
-  --         | -------x | flip x
-  --       1 | xxxxxxxx | lo code
-  --       2 | ------xx | size
-  --       3 | xx-------| priority
-  --         | --x----- | hi pos y
-  --         | ---x---- | hi pos x
-  --         | ----xxxx | colour
-  --       4 | xxxxxxxx | lo pos y
-  --       5 | xxxxxxxx | lo pos x
-  --       6 | -------- |
-  --       7 | -------- |
-  function init_sprite (data : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0)) return sprite_t is
-    variable sprite : sprite_t;
+  function init_sprite (config : sprite_config_t; data : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0)) return sprite_t is
   begin
-    sprite.code     := unsigned(data(SPRITE_HI_CODE_MSB downto SPRITE_HI_CODE_LSB)) & unsigned(data(SPRITE_LO_CODE_MSB downto SPRITE_LO_CODE_LSB));
-    sprite.color    := unsigned(data(SPRITE_COLOR_MSB downto SPRITE_COLOR_LSB));
-    sprite.enable   := data(SPRITE_ENABLE_BIT);
-    sprite.flip_x   := data(SPRITE_FLIP_X_BIT);
-    sprite.flip_y   := data(SPRITE_FLIP_Y_BIT);
-    sprite.pos.x    := data(SPRITE_HI_POS_X_BIT) & unsigned(data(SPRITE_LO_POS_X_MSB downto SPRITE_LO_POS_X_LSB));
-    sprite.pos.y    := data(SPRITE_HI_POS_Y_BIT) & unsigned(data(SPRITE_LO_POS_Y_MSB downto SPRITE_LO_POS_Y_LSB));
-    sprite.priority := unsigned(data(SPRITE_PRIORITY_MSB downto SPRITE_PRIORITY_LSB));
-    sprite.size     := to_unsigned(sprite_size_in_pixels(data(SPRITE_SIZE_MSB downto SPRITE_SIZE_LSB)), sprite.size'length);
-    return sprite;
+    return (
+      code     => unsigned(
+        mask_bits(data, config.hi_code_msb, config.hi_code_lsb, 5) &
+        mask_bits(data, config.lo_code_msb, config.lo_code_lsb, 8)
+      ),
+      color    => unsigned(mask_bits(data, config.color_msb, config.color_lsb, 4)),
+      enable   => data(config.enable_bit),
+      flip_x   => data(config.flip_x_bit),
+      flip_y   => data(config.flip_y_bit),
+      pos      => (
+        data(config.hi_pos_x_bit) & unsigned(mask_bits(data, config.lo_pos_x_msb, config.lo_pos_x_lsb, 8)),
+        data(config.hi_pos_y_bit) & unsigned(mask_bits(data, config.lo_pos_y_msb, config.lo_pos_y_lsb, 8))
+      ),
+      priority => unsigned(mask_bits(data, config.priority_msb, config.priority_lsb, 2)),
+      size     => to_unsigned(sprite_size_in_pixels(mask_bits(data, config.size_msb, config.size_lsb, 2)), 6)
+    );
   end init_sprite;
 
   -- This function determines which graphics layer should be rendered, based on
-  -- the sprite priority and the graphics layer data.
+  -- the sprite priority and graphics layer data.
   --
   -- This differs from the original arcade hardware, which uses a priority
   -- encoder and some other logic gates to choose the correct layer to render.
-  -- A giant conditional is way more verbose, but it's easy to understand how
-  -- it works.
+  --
+  -- A giant conditional is more verbose, but it's easier to understand how it
+  -- works.
   function mux_layers (
     sprite_priority : priority_t;
     sprite_data     : byte_t;

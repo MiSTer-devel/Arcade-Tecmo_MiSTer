@@ -38,6 +38,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
+use work.types.all;
 
 -- The original arcade hardware contains multiple ROM chips to store things
 -- like program data, tile data, sound data, etc. Unfortunately, the Cyclone

@@ -7,6 +7,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE tecmo.sv
 set_global_assignment -name VHDL_FILE lib/fixed_float_types_c.vhd
 set_global_assignment -name VHDL_FILE lib/fixed_pkg_c.vhd
 set_global_assignment -name VHDL_FILE src/common.vhd
+set_global_assignment -name VHDL_FILE src/config.vhd
 set_global_assignment -name VHDL_FILE src/gpu/char_layer.vhd
 set_global_assignment -name VHDL_FILE src/gpu/frame_buffer.vhd
 set_global_assignment -name VHDL_FILE src/gpu/gpu.vhd
@@ -15,6 +16,7 @@ set_global_assignment -name VHDL_FILE src/gpu/scroll_layer.vhd
 set_global_assignment -name VHDL_FILE src/gpu/sprite_blitter.vhd
 set_global_assignment -name VHDL_FILE src/gpu/sprite_layer.vhd
 set_global_assignment -name VHDL_FILE src/gpu/video_gen.vhd
+set_global_assignment -name VHDL_FILE src/math.vhd
 set_global_assignment -name VHDL_FILE src/mem/dual_port_ram.vhd
 set_global_assignment -name VHDL_FILE src/mem/rom_controller.vhd
 set_global_assignment -name VHDL_FILE src/mem/sdram.vhd
@@ -23,6 +25,7 @@ set_global_assignment -name VHDL_FILE src/mem/single_port_ram.vhd
 set_global_assignment -name VHDL_FILE src/mem/single_port_rom.vhd
 set_global_assignment -name VHDL_FILE src/mem/true_dual_port_ram.vhd
 set_global_assignment -name VHDL_FILE src/tecmo.vhd
+set_global_assignment -name VHDL_FILE src/types.vhd
 set_global_assignment -name VHDL_FILE src/snd/fm.vhd
 set_global_assignment -name VHDL_FILE src/snd/mixer.vhd
 set_global_assignment -name VHDL_FILE src/snd/pcm_counter.vhd

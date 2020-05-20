@@ -34,11 +34,10 @@
 -- SOFTWARE.
 
 library ieee;
-
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.common.all;
+use work.types.all;
 
 -- The PCM counter increments an address range in nibbles.
 --

@@ -38,6 +38,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
+use work.types.all;
 
 -- The graphical processing unit (GPU) implements the graphical layers of the
 -- original arcade hardware.
@@ -57,6 +58,9 @@ entity gpu is
     BG_LAYER_ENABLE     : boolean := true
   );
   port (
+    -- configuration
+    config : in gpu_config_t;
+
     -- clock signals
     clk   : in std_logic;
     cen_6 : in std_logic;
@@ -255,6 +259,9 @@ begin
     -- sprite layer
     sprite_layer : entity work.sprite_layer
     port map (
+      -- configuration
+      config => config.sprite_config,
+
       -- clock signals
       clk   => clk,
       cen_6 => cen_6,
@@ -306,6 +313,9 @@ begin
       ROM_DATA_WIDTH => FG_ROM_DATA_WIDTH
     )
     port map (
+      -- configuration
+      config => config.scroll_config,
+
       -- clock signals
       clk   => clk,
       cen_6 => cen_6,
@@ -335,6 +345,9 @@ begin
       ROM_DATA_WIDTH => BG_ROM_DATA_WIDTH
     )
     port map (
+      -- configuration
+      config => config.scroll_config,
+
       -- clock signals
       clk   => clk,
       cen_6 => cen_6,

@@ -38,6 +38,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
+use work.types.all;
 
 -- The scroll module handles the scrolling foreground and background layers in
 -- the graphics pipeline.
@@ -59,6 +60,9 @@ entity scroll_layer is
     ROM_DATA_WIDTH : natural
   );
   port (
+    -- configuration
+    config : in scroll_config_t;
+
     -- clock signals
     clk   : in std_logic;
     cen_6 : in std_logic;
