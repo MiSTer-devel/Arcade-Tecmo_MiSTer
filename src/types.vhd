@@ -124,8 +124,10 @@ package types is
     scroll      : addr_range_t; -- scroll register
     sound       : addr_range_t; -- sound
     bank        : addr_range_t; -- bank register
-    player_1    : addr_range_t; -- player 1
-    player_2    : addr_range_t; -- player 2
+    joy_1       : addr_range_t; -- joystick 1
+    buttons_1   : addr_range_t; -- buttons 1
+    joy_2       : addr_range_t; -- joystick 2
+    buttons_2   : addr_range_t; -- buttons 2
     coin        : addr_range_t; -- coin
     dip_sw_1    : addr_range_t; -- DIP switch #1
     dip_sw_2    : addr_range_t; -- DIP switch #2

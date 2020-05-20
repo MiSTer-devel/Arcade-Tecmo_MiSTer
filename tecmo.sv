@@ -335,8 +335,10 @@ tecmo tecmo
   .clk(clk_sys),
   .cen_12(cen_12),
 
-  .joystick_1({2'b0, jump, fire, up, down, right, left}),
-  .joystick_2({2'b0, jump, fire, up, down, right, left}),
+  .joy_1({up, down, right, left}),
+  .buttons_1({2'b0, jump, fire}),
+  .joy_2({up, down, right, left}),
+  .buttons_2({2'b0, jump, fire}),
   .start_1(start),
   .start_2(1'b0),
   .coin_1(coin),

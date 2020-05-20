@@ -56,12 +56,14 @@ entity tecmo is
     cen_4   : buffer std_logic;
 
     -- player controls
-    joystick_1 : in byte_t;
-    joystick_2 : in byte_t;
-    start_1    : in std_logic;
-    start_2    : in std_logic;
-    coin_1     : in std_logic;
-    coin_2     : in std_logic;
+    joy_1     : in nibble_t;
+    buttons_1 : in nibble_t;
+    joy_2     : in nibble_t;
+    buttons_2 : in nibble_t;
+    start_1   : in std_logic;
+    start_2   : in std_logic;
+    coin_1    : in std_logic;
+    coin_2    : in std_logic;
 
     -- DIP switches
     dip_allow_continue : in std_logic;
@@ -137,8 +139,10 @@ architecture arch of tecmo is
   signal bg_ram_cs      : std_logic;
   signal palette_ram_cs : std_logic;
   signal scroll_cs      : std_logic;
-  signal player_1_cs    : std_logic;
-  signal player_2_cs    : std_logic;
+  signal joy_1_cs       : std_logic;
+  signal buttons_1_cs   : std_logic;
+  signal joy_2_cs       : std_logic;
+  signal buttons_2_cs   : std_logic;
   signal coin_cs        : std_logic;
   signal dip_sw_1_cs    : std_logic;
   signal dip_sw_2_cs    : std_logic;
@@ -428,14 +432,14 @@ begin
   game_config <= select_game_config(to_integer(game_index));
 
   -- mux joystick, coin, and DIP switch data
-  io_dout <= joystick_1(3 downto 0)              when player_1_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             joystick_1(7 downto 4)              when player_1_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
-             joystick_2(3 downto 0)              when player_2_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             joystick_2(7 downto 4)              when player_2_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
-             coin_1 & coin_2 & start_1 & start_2 when coin_cs     = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             "0" & dip_cabinet & dip_lives       when dip_sw_1_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
-             dip_difficulty & dip_bonus_life     when dip_sw_2_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             dip_allow_continue & "000"          when dip_sw_2_cs = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
+  io_dout <= joy_1                               when joy_1_cs     = '1' and cpu_rd_n = '0'                       else
+             joy_2                               when joy_2_cs     = '1' and cpu_rd_n = '0'                       else
+             buttons_1                           when buttons_1_cs = '1' and cpu_rd_n = '0'                       else
+             buttons_2                           when buttons_2_cs = '1' and cpu_rd_n = '0'                       else
+             coin_1 & coin_2 & start_1 & start_2 when coin_cs      = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
+             "0" & dip_cabinet & dip_lives       when dip_sw_1_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
+             dip_difficulty & dip_bonus_life     when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
+             dip_allow_continue & "000"          when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
              (others => '0');
 
   -- set chip select signals
@@ -450,8 +454,10 @@ begin
   scroll_cs      <= '1' when addr_in_range(cpu_addr, game_config.mem_map.scroll)      else '0';
   sound_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.sound)       else '0';
   bank_cs        <= '1' when addr_in_range(cpu_addr, game_config.mem_map.bank)        else '0';
-  player_1_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.player_1)    else '0';
-  player_2_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.player_2)    else '0';
+  joy_1_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.joy_1)       else '0';
+  joy_2_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.joy_2)       else '0';
+  buttons_1_cs   <= '1' when addr_in_range(cpu_addr, game_config.mem_map.buttons_1)   else '0';
+  buttons_2_cs   <= '1' when addr_in_range(cpu_addr, game_config.mem_map.buttons_2)   else '0';
   coin_cs        <= '1' when addr_in_range(cpu_addr, game_config.mem_map.coin)        else '0';
   dip_sw_1_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.dip_sw_1)    else '0';
   dip_sw_2_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.dip_sw_2)    else '0';
