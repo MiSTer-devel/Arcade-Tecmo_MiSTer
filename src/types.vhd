@@ -99,7 +99,13 @@ package types is
     enable : std_logic;
   end record video_t;
 
-  -- sprite
+  -- tile descriptor
+  type tile_t is record
+    code  : unsigned(10 downto 0);
+    color : unsigned(3 downto 0);
+  end record tile_t;
+
+  -- sprite descriptor
   type sprite_t is record
     code     : unsigned(12 downto 0);
     color    : unsigned(3 downto 0);
