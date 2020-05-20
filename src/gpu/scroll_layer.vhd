@@ -143,14 +143,14 @@ begin
         case to_integer(offset_x) is
           when 8 =>
             -- load high byte
-            ram_addr <= '1' & row & (col+1);
+            ram_addr <= row & (col+1) & '1';
 
           when 9 =>
             -- latch high byte
             tile_data <= ram_data;
 
             -- load low byte
-            ram_addr <= '0' & row & (col+1);
+            ram_addr <= row & (col+1) & '0';
 
           when 10 =>
             -- latch tile code

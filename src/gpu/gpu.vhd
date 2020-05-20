@@ -100,21 +100,25 @@ end gpu;
 
 architecture arch of gpu is
   -- sprite RAM
+  signal sprite_ram_cpu_addr : unsigned(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
   signal sprite_ram_cpu_dout : byte_t;
   signal sprite_ram_gpu_addr : unsigned(SPRITE_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
   signal sprite_ram_gpu_dout : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0);
 
   -- character RAM
+  signal char_ram_cpu_addr : unsigned(CHAR_RAM_CPU_ADDR_WIDTH-1 downto 0);
   signal char_ram_cpu_dout : byte_t;
   signal char_ram_gpu_addr : unsigned(CHAR_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
   signal char_ram_gpu_dout : std_logic_vector(CHAR_RAM_GPU_DATA_WIDTH-1 downto 0);
 
   -- foreground RAM
+  signal fg_ram_cpu_addr : unsigned(FG_RAM_CPU_ADDR_WIDTH-1 downto 0);
   signal fg_ram_cpu_dout : byte_t;
   signal fg_ram_gpu_addr : unsigned(FG_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
   signal fg_ram_gpu_dout : std_logic_vector(FG_RAM_GPU_DATA_WIDTH-1 downto 0);
 
   -- background RAM
+  signal bg_ram_cpu_addr : unsigned(BG_RAM_CPU_ADDR_WIDTH-1 downto 0);
   signal bg_ram_cpu_dout : byte_t;
   signal bg_ram_gpu_addr : unsigned(BG_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
   signal bg_ram_gpu_dout : std_logic_vector(BG_RAM_GPU_DATA_WIDTH-1 downto 0);
@@ -152,7 +156,7 @@ begin
     -- CPU interface
     clk_a  => clk,
     cs_a   => sprite_ram_cs,
-    addr_a => ram_addr(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0),
+    addr_a => sprite_ram_cpu_addr,
     din_a  => ram_din,
     dout_a => sprite_ram_cpu_dout,
     we_a   => ram_we,
@@ -175,7 +179,7 @@ begin
     -- CPU interface
     clk_a  => clk,
     cs_a   => char_ram_cs,
-    addr_a => ram_addr(CHAR_RAM_CPU_ADDR_WIDTH-1 downto 0),
+    addr_a => char_ram_cpu_addr,
     din_a  => ram_din,
     dout_a => char_ram_cpu_dout,
     we_a   => ram_we,
@@ -198,7 +202,7 @@ begin
     -- CPU interface
     clk_a  => clk,
     cs_a   => fg_ram_cs,
-    addr_a => ram_addr(FG_RAM_CPU_ADDR_WIDTH-1 downto 0),
+    addr_a => fg_ram_cpu_addr,
     din_a  => ram_din,
     dout_a => fg_ram_cpu_dout,
     we_a   => ram_we,
@@ -221,7 +225,7 @@ begin
     -- CPU interface
     clk_a  => clk,
     cs_a   => bg_ram_cs,
-    addr_a => ram_addr(BG_RAM_CPU_ADDR_WIDTH-1 downto 0),
+    addr_a => bg_ram_cpu_addr,
     din_a  => ram_din,
     dout_a => bg_ram_cpu_dout,
     we_a   => ram_we,
@@ -391,6 +395,18 @@ begin
     video => video,
     rgb   => rgb
   );
+
+  -- Rotate tile RAM addresses.
+  --
+  -- This allows tiles to be stored as 16-bit words (i.e. two contiguous bytes)
+  -- in memory, rather than spliting them into high and low bytes stored in the
+  -- upper and lower-half of the RAM.
+  char_ram_cpu_addr <= rotate_left(ram_addr(CHAR_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
+  fg_ram_cpu_addr   <= rotate_left(ram_addr(FG_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
+  bg_ram_cpu_addr   <= rotate_left(remap_tile_addr(ram_addr(BG_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
+
+  -- set sprite RAM address
+  sprite_ram_cpu_addr <= ram_addr(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
 
   -- mux GPU data output
   ram_dout <= sprite_ram_cpu_dout or
