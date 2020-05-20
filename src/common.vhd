@@ -103,94 +103,6 @@ package common is
   constant SOUND_ROM_2_OFFSET : natural := 16#EC000#;
   constant SOUND_ROM_2_SIZE   : natural := 16#08000#; -- 32kB
 
-  type addr_range_t is record
-    min : unsigned(CPU_ADDR_WIDTH-1 downto 0);
-    max : unsigned(CPU_ADDR_WIDTH-1 downto 0);
-  end record addr_range_t;
-
-  type mem_map_t is record
-    prog_rom_1  : addr_range_t; -- program ROM #1
-    work_ram    : addr_range_t; -- work RAM
-    char_ram    : addr_range_t; -- character RAM
-    fg_ram      : addr_range_t; -- foreground RAM
-    bg_ram      : addr_range_t; -- background RAM
-    sprite_ram  : addr_range_t; -- sprite RAM
-    palette_ram : addr_range_t; -- palette RAM
-    prog_rom_2  : addr_range_t; -- program ROM #2 (bank switched)
-    scroll      : addr_range_t; -- scroll register
-    sound       : addr_range_t; -- sound
-    bank        : addr_range_t; -- bank register
-    player_1    : addr_range_t; -- player 1
-    player_2    : addr_range_t; -- player 2
-    coin        : addr_range_t; -- coin
-    dip_sw_1    : addr_range_t; -- DIP switch #1
-    dip_sw_2    : addr_range_t; -- DIP switch #2
-  end record mem_map_t;
-
-  -- rygar memory map
-  constant RYGAR_MEM_MAP : mem_map_t := (
-    prog_rom_1  => (x"0000", x"bfff"),
-    work_ram    => (x"c000", x"cfff"),
-    char_ram    => (x"d000", x"d7ff"),
-    fg_ram      => (x"d800", x"dbff"),
-    bg_ram      => (x"dc00", x"dfff"),
-    sprite_ram  => (x"e000", x"e7ff"),
-    palette_ram => (x"e800", x"efff"),
-    prog_rom_2  => (x"f000", x"f7ff"),
-    scroll      => (x"f800", x"f805"),
-    sound       => (x"f806", x"f806"),
-    bank        => (x"f808", x"f808"),
-    player_1    => (x"f800", x"f801"),
-    player_2    => (x"f802", x"f803"),
-    coin        => (x"f804", x"f804"),
-    dip_sw_1    => (x"f806", x"f807"),
-    dip_sw_2    => (x"f808", x"f809")
-  );
-
-  -- gemini memory map
-  constant GEMINI_MEM_MAP : mem_map_t := (
-    prog_rom_1  => (x"0000", x"bfff"),
-    work_ram    => (x"c000", x"cfff"),
-    char_ram    => (x"d000", x"d7ff"),
-    fg_ram      => (x"d800", x"dbff"),
-    bg_ram      => (x"dc00", x"dfff"),
-    sprite_ram  => (x"e000", x"e7ff"),
-    palette_ram => (x"e800", x"efff"),
-    prog_rom_2  => (x"f000", x"f7ff"),
-    scroll      => (x"f800", x"f805"),
-    sound       => (x"f806", x"f806"),
-    bank        => (x"f808", x"f808"),
-    player_1    => (x"f800", x"f801"),
-    player_2    => (x"f802", x"f803"),
-    coin        => (x"f804", x"f804"),
-    dip_sw_1    => (x"f806", x"f807"),
-    dip_sw_2    => (x"f808", x"f809")
-  );
-
-  -- silkworm memory map
-  constant SILKWORM_MEM_MAP : mem_map_t := (
-    prog_rom_1  => (x"0000", x"bfff"),
-    bg_ram      => (x"c000", x"c3ff"),
-    fg_ram      => (x"c400", x"c7ff"),
-    char_ram    => (x"c800", x"cfff"),
-    work_ram    => (x"d000", x"dfff"),
-    sprite_ram  => (x"e000", x"e7ff"),
-    palette_ram => (x"e800", x"efff"),
-    prog_rom_2  => (x"f000", x"f7ff"),
-    scroll      => (x"f800", x"f805"),
-    sound       => (x"f806", x"f806"),
-    bank        => (x"f808", x"f808"),
-    player_1    => (x"f800", x"f801"),
-    player_2    => (x"f802", x"f803"),
-    coin        => (x"f804", x"f804"),
-    dip_sw_1    => (x"f806", x"f807"),
-    dip_sw_2    => (x"f808", x"f809")
-  );
-
-  type game_config_t is record
-    mem_map : mem_map_t;
-  end record game_config_t;
-
   -- VRAM
   constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
   constant BG_RAM_GPU_ADDR_WIDTH      : natural := 10;
@@ -320,14 +232,92 @@ package common is
   -- represents an audio sample
   subtype audio_t is signed(15 downto 0);
 
+  type addr_range_t is record
+    min : unsigned(CPU_ADDR_WIDTH-1 downto 0);
+    max : unsigned(CPU_ADDR_WIDTH-1 downto 0);
+  end record addr_range_t;
+
+  type mem_map_t is record
+    prog_rom_1  : addr_range_t; -- program ROM #1
+    work_ram    : addr_range_t; -- work RAM
+    char_ram    : addr_range_t; -- character RAM
+    fg_ram      : addr_range_t; -- foreground RAM
+    bg_ram      : addr_range_t; -- background RAM
+    sprite_ram  : addr_range_t; -- sprite RAM
+    palette_ram : addr_range_t; -- palette RAM
+    prog_rom_2  : addr_range_t; -- program ROM #2 (bank switched)
+    scroll      : addr_range_t; -- scroll register
+    sound       : addr_range_t; -- sound
+    bank        : addr_range_t; -- bank register
+    player_1    : addr_range_t; -- player 1
+    player_2    : addr_range_t; -- player 2
+    coin        : addr_range_t; -- coin
+    dip_sw_1    : addr_range_t; -- DIP switch #1
+    dip_sw_2    : addr_range_t; -- DIP switch #2
+  end record mem_map_t;
+
+  --  byte   bit        description
+  -- ------+-76543210-+-------------
+  --     0 | xxxxx--- | hi code
+  --       | -----x-- | enable
+  --       | ------x- | flip y
+  --       | -------x | flip x
+  --     1 | xxxxxxxx | lo code
+  --     2 | ------xx | size
+  --     3 | xx-------| priority
+  --       | --x----- | hi pos y
+  --       | ---x---- | hi pos x
+  --       | ----xxxx | colour
+  --     4 | xxxxxxxx | lo pos y
+  --     5 | xxxxxxxx | lo pos x
+  --     6 | -------- |
+  --     7 | -------- |
+  type sprite_config_t is record
+    hi_code_msb  : natural;
+    hi_code_lsb  : natural;
+    enable_bit   : natural;
+    flip_y_bit   : natural;
+    flip_x_bit   : natural;
+    lo_code_msb  : natural;
+    lo_code_lsb  : natural;
+    size_msb     : natural;
+    size_lsb     : natural;
+    priority_msb : natural;
+    priority_lsb : natural;
+    hi_pos_y_bit : natural;
+    hi_pos_x_bit : natural;
+    color_msb    : natural;
+    color_lsb    : natural;
+    lo_pos_y_msb : natural;
+    lo_pos_y_lsb : natural;
+    lo_pos_x_msb : natural;
+    lo_pos_x_lsb : natural;
+  end record sprite_config_t;
+
+  type scroll_config_t is record
+    hi_code_msb : natural;
+    hi_code_lsb : natural;
+    lo_code_msb : natural;
+    lo_code_lsb : natural;
+    color_msb   : natural;
+    color_lsb   : natural;
+  end record scroll_config_t;
+
+  type gpu_config_t is record
+    scroll_config : scroll_config_t;
+    sprite_config : sprite_config_t;
+  end record gpu_config_t;
+
+  type game_config_t is record
+    mem_map    : mem_map_t;
+    gpu_config : gpu_config_t;
+  end record game_config_t;
+
   -- calculates the log2 of the given number
   function ilog2(n : natural) return natural;
 
   -- determine whether an address is within a given range
   function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean;
-
-  -- determine the game config for the given index
-  function select_game_config (index : natural) return game_config_t;
 
   -- decodes a single pixel from a tile row at the given offset
   function decode_tile_row (tile_row : tile_row_t; offset : unsigned(2 downto 0)) return tile_pixel_t;
@@ -336,7 +326,7 @@ package common is
   function sprite_size_in_pixels (size : std_logic_vector(1 downto 0)) return natural;
 
   -- initialise sprite from a raw 64-bit value
-  function init_sprite (data : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0)) return sprite_t;
+  function init_sprite (config : sprite_config_t; data : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0)) return sprite_t;
 
   -- determine which graphics layer should be rendered
   function mux_layers (
@@ -362,15 +352,6 @@ package body common is
       return false;
     end if;
   end addr_in_range;
-
-  function select_game_config (index : natural) return game_config_t is
-  begin
-    case index is
-      when 2      => return (mem_map => SILKWORM_MEM_MAP);
-      when 1      => return (mem_map => GEMINI_MEM_MAP);
-      when others => return (mem_map => RYGAR_MEM_MAP);
-    end case;
-  end select_game_config;
 
   function decode_tile_row (
     tile_row : tile_row_t;
@@ -399,35 +380,40 @@ package body common is
     end case;
   end sprite_size_in_pixels;
 
-  --  byte     bit        description
-  -- --------+-76543210-+----------------
-  --       0 | xxxx---- | hi code
-  --         | -----x-- | enable
-  --         | ------x- | flip y
-  --         | -------x | flip x
-  --       1 | xxxxxxxx | lo code
-  --       2 | ------xx | size
-  --       3 | xx-------| priority
-  --         | --x----- | hi pos y
-  --         | ---x---- | hi pos x
-  --         | ----xxxx | colour
-  --       4 | xxxxxxxx | lo pos y
-  --       5 | xxxxxxxx | lo pos x
-  --       6 | -------- |
-  --       7 | -------- |
-  function init_sprite (data : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0)) return sprite_t is
-    variable sprite : sprite_t;
+  function lol(data : std_logic_vector(63 downto 0); msb : natural; lsb : natural; size : natural) return std_logic_vector is
+    variable mask : std_logic_vector(63 downto 0);
+    variable n : natural;
   begin
-    sprite.code     := unsigned(data(SPRITE_HI_CODE_MSB downto SPRITE_HI_CODE_LSB)) & unsigned(data(SPRITE_LO_CODE_MSB downto SPRITE_LO_CODE_LSB));
-    sprite.color    := unsigned(data(SPRITE_COLOR_MSB downto SPRITE_COLOR_LSB));
-    sprite.enable   := data(SPRITE_ENABLE_BIT);
-    sprite.flip_x   := data(SPRITE_FLIP_X_BIT);
-    sprite.flip_y   := data(SPRITE_FLIP_Y_BIT);
-    sprite.pos.x    := data(SPRITE_HI_POS_X_BIT) & unsigned(data(SPRITE_LO_POS_X_MSB downto SPRITE_LO_POS_X_LSB));
-    sprite.pos.y    := data(SPRITE_HI_POS_Y_BIT) & unsigned(data(SPRITE_LO_POS_Y_MSB downto SPRITE_LO_POS_Y_LSB));
-    sprite.priority := unsigned(data(SPRITE_PRIORITY_MSB downto SPRITE_PRIORITY_LSB));
-    sprite.size     := to_unsigned(sprite_size_in_pixels(data(SPRITE_SIZE_MSB downto SPRITE_SIZE_LSB)), sprite.size'length);
-    return sprite;
+    n := (2 ** (msb - lsb + 1)) - 1;
+    mask := std_logic_vector(shift_left(to_unsigned(n, mask'length), lsb));
+    return std_logic_vector(resize(shift_right(unsigned(data AND mask), lsb), size));
+  end lol;
+
+  function init_sprite (config : sprite_config_t; data : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0)) return sprite_t is
+  begin
+    return (
+      code     => unsigned(lol(data, config.hi_code_msb, config.hi_code_lsb, 5) & lol(data, config.lo_code_msb, config.lo_code_lsb, 8)),
+      color    => unsigned(lol(data, config.color_msb, config.color_lsb, 4)),
+      enable   => data(config.enable_bit),
+      flip_x   => data(config.flip_x_bit),
+      flip_y   => data(config.flip_y_bit),
+      pos      => (
+        data(SPRITE_HI_POS_X_BIT) & unsigned(lol(data, config.lo_pos_x_msb, config.lo_pos_x_lsb, 8)),
+        data(SPRITE_HI_POS_Y_BIT) & unsigned(lol(data, config.lo_pos_y_msb, config.lo_pos_y_lsb, 8))
+      ),
+      priority => unsigned(lol(data, config.priority_msb, config.priority_lsb, 2)),
+      size     => to_unsigned(sprite_size_in_pixels(lol(data, config.size_msb, config.size_lsb, 2)), 6)
+    );
+    -- sprite.code     := unsigned(data(SPRITE_HI_CODE_MSB downto SPRITE_HI_CODE_LSB)) & unsigned(data(SPRITE_LO_CODE_MSB downto SPRITE_LO_CODE_LSB));
+    -- sprite.color    := unsigned(data(SPRITE_COLOR_MSB downto SPRITE_COLOR_LSB));
+    -- sprite.enable   := data(SPRITE_ENABLE_BIT);
+    -- sprite.flip_x   := data(SPRITE_FLIP_X_BIT);
+    -- sprite.flip_y   := data(SPRITE_FLIP_Y_BIT);
+    -- sprite.pos.x    := data(SPRITE_HI_POS_X_BIT) & unsigned(data(SPRITE_LO_POS_X_MSB downto SPRITE_LO_POS_X_LSB));
+    -- sprite.pos.y    := data(SPRITE_HI_POS_Y_BIT) & unsigned(data(SPRITE_LO_POS_Y_MSB downto SPRITE_LO_POS_Y_LSB));
+    -- sprite.priority := unsigned(data(SPRITE_PRIORITY_MSB downto SPRITE_PRIORITY_LSB));
+    -- sprite.size     := to_unsigned(sprite_size_in_pixels(data(SPRITE_SIZE_MSB downto SPRITE_SIZE_LSB)), sprite.size'length);
+    -- return sprite;
   end init_sprite;
 
   -- This function determines which graphics layer should be rendered, based on

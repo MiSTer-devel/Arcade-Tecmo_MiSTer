@@ -38,6 +38,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
+use work.config.all;
 
 entity tecmo is
   port (
@@ -310,6 +311,9 @@ begin
   -- graphics subsystem
   gpu : entity work.gpu
   port map (
+    -- configuration
+    config => game_config.gpu_config,
+
     -- clock signals
     clk   => clk,
     cen_6 => cen_6,

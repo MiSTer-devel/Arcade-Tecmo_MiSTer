@@ -7,6 +7,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE tecmo.sv
 set_global_assignment -name VHDL_FILE lib/fixed_float_types_c.vhd
 set_global_assignment -name VHDL_FILE lib/fixed_pkg_c.vhd
 set_global_assignment -name VHDL_FILE src/common.vhd
+set_global_assignment -name VHDL_FILE src/config.vhd
 set_global_assignment -name VHDL_FILE src/gpu/char_layer.vhd
 set_global_assignment -name VHDL_FILE src/gpu/frame_buffer.vhd
 set_global_assignment -name VHDL_FILE src/gpu/gpu.vhd

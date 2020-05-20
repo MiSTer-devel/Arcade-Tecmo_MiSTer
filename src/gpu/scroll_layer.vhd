@@ -59,6 +59,9 @@ entity scroll_layer is
     ROM_DATA_WIDTH : natural
   );
   port (
+    -- configuration
+    config : in scroll_config_t;
+
     -- clock signals
     clk   : in std_logic;
     cen_6 : in std_logic;

@@ -56,6 +56,9 @@ use work.common.all;
 -- sprite tile ROM.
 entity sprite_layer is
   port (
+    -- configuration
+    config : in sprite_config_t;
+
     -- clock signals
     clk   : in std_logic;
     cen_6 : in std_logic;
@@ -226,7 +229,7 @@ begin
     if rising_edge(clk) then
       if cen_6 = '1' then
         if state = LATCH then
-          sprite <= init_sprite(ram_data);
+          sprite <= init_sprite(config, ram_data);
         end if;
       end if;
     end if;
