@@ -192,8 +192,8 @@ package config is
     hi_code_lsb => 0,
     lo_code_msb => 7,
     lo_code_lsb => 0,
-    color_lsb   => 7,
-    color_msb   => 4
+    color_msb   => 7,
+    color_lsb   => 4
   );
 
   constant GEMINI_SCROLL_CONFIG : scroll_config_t := (
@@ -201,8 +201,8 @@ package config is
     hi_code_lsb => 4,
     lo_code_msb => 7,
     lo_code_lsb => 0,
-    color_lsb   => 3,
-    color_msb   => 0
+    color_msb   => 3,
+    color_lsb   => 0
   );
 
   constant RYGAR_GAME_CONFIG : game_config_t := (

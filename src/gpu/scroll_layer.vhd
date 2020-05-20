@@ -38,6 +38,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
+use work.math.all;
 use work.types.all;
 
 -- The scroll module handles the scrolling foreground and background layers in
@@ -153,11 +154,14 @@ begin
 
           when 10 =>
             -- latch tile code
-            tile_code <= unsigned(tile_data(2 downto 0) & ram_data);
+            tile_code <= unsigned(
+              mask_bits(tile_data, config.hi_code_msb, config.hi_code_lsb, 3) &
+              mask_bits(ram_data, config.lo_code_msb, config.lo_code_lsb, 8)
+            );
 
           when 15 =>
             -- latch colour
-            tile_color <= tile_data(7 downto 4);
+            tile_color <= mask_bits(tile_data, config.color_msb, config.color_lsb, 4);
 
           when others => null;
         end case;
@@ -165,8 +169,8 @@ begin
     end if;
   end process;
 
-  -- latch the next row from the tile ROM when rendering the last pixel in
-  -- every row
+  -- latch the next row of tile data from the tile ROM when rendering the last
+  -- pixel in every row
   latch_tile_row : process (clk)
   begin
     if rising_edge(clk) then
