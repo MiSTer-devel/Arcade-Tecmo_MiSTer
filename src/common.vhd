@@ -142,8 +142,11 @@ package common is
   -- calculate sprite size (8x8, 16x16, 32x32, 64x64)
   function sprite_size_in_pixels (size : std_logic_vector(1 downto 0)) return natural;
 
-  -- initialise sprite from a raw 64-bit value
-  function init_sprite (config : sprite_config_t; data : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0)) return sprite_t;
+  -- initialise tile from a 16-bit vector
+  function init_tile (config : scroll_config_t; data : std_logic_vector(15 downto 0)) return tile_t;
+
+  -- initialise sprite from a 64-bit vector
+  function init_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t;
 
   -- determine graphics layer to be rendered
   function mux_layers (
@@ -201,21 +204,37 @@ package body common is
     end case;
   end sprite_size_in_pixels;
 
-  function init_sprite (config : sprite_config_t; data : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0)) return sprite_t is
+  function init_tile (config : scroll_config_t; data : std_logic_vector(15 downto 0)) return tile_t is
+    variable hi_code : std_logic_vector(2 downto 0);
+    variable lo_code : byte_t;
   begin
+    hi_code := mask_bits(data, config.hi_code_msb, config.hi_code_lsb, 3);
+    lo_code := mask_bits(data, config.lo_code_msb, config.lo_code_lsb, 8);
+
     return (
-      code     => unsigned(
-        mask_bits(data, config.hi_code_msb, config.hi_code_lsb, 5) &
-        mask_bits(data, config.lo_code_msb, config.lo_code_lsb, 8)
-      ),
+      code  => unsigned(hi_code & lo_code),
+      color => unsigned(mask_bits(data, config.color_msb, config.color_lsb, 4))
+    );
+  end init_tile;
+
+  function init_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t is
+    variable hi_code : std_logic_vector(4 downto 0);
+    variable lo_code : byte_t;
+    variable lo_pos_x : byte_t;
+    variable lo_pos_y : byte_t;
+  begin
+    hi_code  := mask_bits(data, config.hi_code_msb, config.hi_code_lsb, 5);
+    lo_code  := mask_bits(data, config.lo_code_msb, config.lo_code_lsb, 8);
+    lo_pos_x := mask_bits(data, config.lo_pos_x_msb, config.lo_pos_x_lsb, 8);
+    lo_pos_y := mask_bits(data, config.lo_pos_y_msb, config.lo_pos_y_lsb, 8);
+
+    return (
+      code     => unsigned(hi_code & lo_code),
       color    => unsigned(mask_bits(data, config.color_msb, config.color_lsb, 4)),
       enable   => data(config.enable_bit),
       flip_x   => data(config.flip_x_bit),
       flip_y   => data(config.flip_y_bit),
-      pos      => (
-        data(config.hi_pos_x_bit) & unsigned(mask_bits(data, config.lo_pos_x_msb, config.lo_pos_x_lsb, 8)),
-        data(config.hi_pos_y_bit) & unsigned(mask_bits(data, config.lo_pos_y_msb, config.lo_pos_y_lsb, 8))
-      ),
+      pos      => (unsigned(data(config.hi_pos_x_bit) & lo_pos_x), unsigned(data(config.hi_pos_y_bit) & lo_pos_y)),
       priority => unsigned(mask_bits(data, config.priority_msb, config.priority_lsb, 2)),
       size     => to_unsigned(sprite_size_in_pixels(mask_bits(data, config.size_msb, config.size_lsb, 2)), 6)
     );
