@@ -38,7 +38,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
-use work.config.all;
+use work.math.all;
+use work.types.all;
 
 entity tecmo is
   port (
@@ -94,9 +95,9 @@ entity tecmo is
     vblank : out std_logic;
 
     -- RGB signals
-    r : out std_logic_vector(COLOR_DEPTH_R-1 downto 0);
-    g : out std_logic_vector(COLOR_DEPTH_G-1 downto 0);
-    b : out std_logic_vector(COLOR_DEPTH_B-1 downto 0);
+    r : out std_logic_vector(3 downto 0);
+    g : out std_logic_vector(3 downto 0);
+    b : out std_logic_vector(3 downto 0);
 
     -- audio data
     audio : out audio_t

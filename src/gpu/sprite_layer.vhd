@@ -38,6 +38,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
+use work.types.all;
 
 -- The sprite layer is the part of the graphics pipeline that handles the
 -- moving graphical elements you see on the screen.

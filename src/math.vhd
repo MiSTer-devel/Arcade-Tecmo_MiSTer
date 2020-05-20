@@ -36,45 +36,37 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
-library ieee_proposed;
-use ieee_proposed.fixed_float_types.all;
-use ieee_proposed.fixed_pkg.all;
+package math is
+  -- calculates the log2 of the given number
+  function ilog2(n : natural) return natural;
 
-use work.types.all;
+  -- Masks the given range of bits for a vector.
+  --
+  -- Only the bits between the MSB and LSB (inclusive) will be kept, all other
+  -- bits will be masked out.
+  function mask_bits(data : std_logic_vector; msb : natural; lsb : natural) return std_logic_vector;
+  function mask_bits(data : std_logic_vector; msb : natural; lsb : natural; size : natural) return std_logic_vector;
+end package math;
 
-entity mixer is
-  generic (
-    GAIN_0 : real := 1.0;
-    GAIN_1 : real := 1.0
-  );
-  port (
-    ch0 : in audio_t;
-    ch1 : in audio_t;
-    mix : out audio_t
-  );
-end entity mixer;
+package body math is
+  function ilog2(n : natural) return natural is
+  begin
+    return natural(ceil(log2(real(n))));
+  end ilog2;
 
-architecture arch of mixer is
-  signal g0 : sfixed(4 downto -4);
-  signal g1 : sfixed(4 downto -4);
+  function mask_bits(data : std_logic_vector; msb : natural; lsb : natural) return std_logic_vector is
+    variable n : natural;
+    variable mask : std_logic_vector(data'length-1 downto 0);
+  begin
+    n := (2**(msb-lsb+1))-1;
+    mask := std_logic_vector(shift_left(to_unsigned(n, mask'length), lsb));
+    return std_logic_vector(shift_right(unsigned(data AND mask), lsb));
+  end mask_bits;
 
-  signal c0 : sfixed(20 downto -4);
-  signal c1 : sfixed(20 downto -4);
-begin
-  -- convert the gains to fixed-point values
-  g0 <= to_sfixed(GAIN_0, g0);
-  g1 <= to_sfixed(GAIN_1, g1);
-
-  -- apply the gain values to each channel
-  c0 <= to_sfixed(ch0, 15, 0) * g0;
-  c1 <= to_sfixed(ch1, 15, 0) * g1;
-
-  -- sum the channels
-  mix <= to_signed(
-    c0 + c1,
-    mix'length,
-    fixed_saturate, -- saturate (clip) the summed value
-    fixed_truncate  -- truncate the fractional bits
-  );
-end architecture arch;
+  function mask_bits(data : std_logic_vector; msb : natural; lsb : natural; size : natural) return std_logic_vector is
+  begin
+    return std_logic_vector(resize(unsigned(mask_bits(data, msb, lsb)), size));
+  end mask_bits;
+end package body math;

@@ -39,6 +39,7 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 use work.common.all;
+use work.math.all;
 
 -- This SDRAM controller provides a symmetric 32-bit synchronous read/write
 -- interface for a 16Mx16-bit SDRAM chip (e.g. AS4C16M16SA-6TCN, IS42S16400F,

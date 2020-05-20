@@ -38,6 +38,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
+use work.types.all;
 
 -- The graphical processing unit (GPU) implements the graphical layers of the
 -- original arcade hardware.

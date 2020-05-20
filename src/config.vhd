@@ -37,8 +37,13 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.common.all;
+use work.types.all;
 
+-- This package contains the configuration values for Rygar, Gemini Wing, and
+-- Silkworm.
+--
+-- These games all very similar, but there are some notable differences to
+-- their memory maps and graphics data encodings.
 package config is
   constant RYGAR_MEM_MAP : mem_map_t := (
     prog_rom_1  => (x"0000", x"bfff"),
@@ -65,8 +70,8 @@ package config is
     char_ram    => (x"d000", x"d7ff"),
     fg_ram      => (x"d800", x"dbff"),
     bg_ram      => (x"dc00", x"dfff"),
-    sprite_ram  => (x"e000", x"e7ff"),
-    palette_ram => (x"e800", x"efff"),
+    palette_ram => (x"e000", x"e7ff"),
+    sprite_ram  => (x"e800", x"efff"),
     prog_rom_2  => (x"f000", x"f7ff"),
     scroll      => (x"f800", x"f805"),
     sound       => (x"f806", x"f806"),
@@ -97,6 +102,22 @@ package config is
     coin        => (x"f80f", x"f80f")
   );
 
+  --  byte   bit        description
+  -- ------+-76543210-+-------------
+  --     0 | xxxx---- | hi code
+  --       | -----x-- | enable
+  --       | ------x- | flip y
+  --       | -------x | flip x
+  --     1 | xxxxxxxx | lo code
+  --     2 | ------xx | size
+  --     3 | xx-------| priority
+  --       | --x----- | hi pos y
+  --       | ---x---- | hi pos x
+  --       | ----xxxx | colour
+  --     4 | xxxxxxxx | lo pos y
+  --     5 | xxxxxxxx | lo pos x
+  --     6 | -------- |
+  --     7 | -------- |
   constant RYGAR_SPRITE_CONFIG : sprite_config_t := (
     flip_x_bit   => 0,
     flip_y_bit   => 1,
@@ -119,6 +140,25 @@ package config is
     lo_pos_x_msb => 47
   );
 
+  -- The only difference with Gemini/Silkworm is that the upper portion of the
+  -- tile code is 5 bit wide.
+  --
+  --  byte   bit        description
+  -- ------+-76543210-+-------------
+  --     0 | xxxxx--- | hi code
+  --       | -----x-- | enable
+  --       | ------x- | flip y
+  --       | -------x | flip x
+  --     1 | xxxxxxxx | lo code
+  --     2 | ------xx | size
+  --     3 | xx-------| priority
+  --       | --x----- | hi pos y
+  --       | ---x---- | hi pos x
+  --       | ----xxxx | colour
+  --     4 | xxxxxxxx | lo pos y
+  --     5 | xxxxxxxx | lo pos x
+  --     6 | -------- |
+  --     7 | -------- |
   constant GEMINI_SPRITE_CONFIG : sprite_config_t := (
     flip_x_bit   => 0,
     flip_y_bit   => 1,
@@ -173,18 +213,4 @@ package config is
     mem_map    => SILKWORM_MEM_MAP,
     gpu_config => (RYGAR_SCROLL_CONFIG, GEMINI_SPRITE_CONFIG)
   );
-
-  -- determine the game config for the given index
-  function select_game_config (index : natural) return game_config_t;
 end package config;
-
-package body config is
-  function select_game_config (index : natural) return game_config_t is
-  begin
-    case index is
-      when 2      => return SILKWORM_GAME_CONFIG;
-      when 1      => return GEMINI_GAME_CONFIG;
-      when others => return RYGAR_GAME_CONFIG;
-    end case;
-  end select_game_config;
-end package body config;

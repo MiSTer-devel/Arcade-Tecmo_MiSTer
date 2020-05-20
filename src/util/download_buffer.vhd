@@ -37,7 +37,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.common.all;
+use work.types.all;
 
 -- The download buffer writes a stream of bytes to an internal buffer. When the
 -- buffer is full, it is flushed as a single word.
