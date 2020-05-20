@@ -336,13 +336,13 @@ tecmo tecmo
   .cen_12(cen_12),
 
   .joy_1({up, down, right, left}),
-  .buttons_1({2'b0, jump, fire}),
   .joy_2({up, down, right, left}),
+  .buttons_1({2'b0, jump, fire}),
   .buttons_2({2'b0, jump, fire}),
-  .start_1(start),
-  .start_2(1'b0),
   .coin_1(coin),
   .coin_2(1'b0),
+  .start_1(start),
+  .start_2(1'b0),
 
   .dip_allow_continue(~status[15]),
   .dip_bonus_life(status[12:11]),
