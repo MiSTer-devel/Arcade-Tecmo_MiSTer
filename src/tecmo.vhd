@@ -116,6 +116,9 @@ architecture arch of tecmo is
   -- the current game configuration
   signal game_config : game_config_t;
 
+  -- coin/start states
+  signal coin : nibble_t;
+
   -- CPU signals
   signal cpu_cen     : std_logic;
   signal cpu_addr    : unsigned(CPU_ADDR_WIDTH-1 downto 0);
@@ -189,6 +192,20 @@ architecture arch of tecmo is
 
   -- RGB data
   signal rgb : rgb_t;
+
+  function select_coin (
+    index   : natural;
+    coin_1  : std_logic;
+    coin_2  : std_logic;
+    start_1 : std_logic;
+    start_2 : std_logic
+  ) return nibble_t is
+  begin
+    case index is
+      when 0      => return coin_1 & coin_2 & start_1 & start_2; -- rygar
+      when others => return coin_2 & coin_1 & start_2 & start_1; -- gemini/silkworm
+    end case;
+  end select_coin;
 begin
   -- generate a 12MHz clock enable signal
   clock_divider_12 : entity work.clock_divider
@@ -431,15 +448,18 @@ begin
   -- set game config
   game_config <= select_game_config(to_integer(game_index));
 
+  -- set coin/start signal
+  coin <= select_coin(to_integer(game_index), coin_1, coin_2, start_1, start_2);
+
   -- mux joystick, coin, and DIP switch data
-  io_dout <= joy_1                               when joy_1_cs     = '1' and cpu_rd_n = '0'                       else
-             joy_2                               when joy_2_cs     = '1' and cpu_rd_n = '0'                       else
-             buttons_1                           when buttons_1_cs = '1' and cpu_rd_n = '0'                       else
-             buttons_2                           when buttons_2_cs = '1' and cpu_rd_n = '0'                       else
-             coin_1 & coin_2 & start_1 & start_2 when coin_cs      = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             "0" & dip_cabinet & dip_lives       when dip_sw_1_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
-             dip_difficulty & dip_bonus_life     when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             dip_allow_continue & "000"          when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
+  io_dout <= joy_1                           when joy_1_cs     = '1' and cpu_rd_n = '0'                       else
+             joy_2                           when joy_2_cs     = '1' and cpu_rd_n = '0'                       else
+             buttons_1                       when buttons_1_cs = '1' and cpu_rd_n = '0'                       else
+             buttons_2                       when buttons_2_cs = '1' and cpu_rd_n = '0'                       else
+             coin                            when coin_cs      = '1' and cpu_rd_n = '0'                       else
+             "0" & dip_cabinet & dip_lives   when dip_sw_1_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
+             dip_difficulty & dip_bonus_life when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
+             dip_allow_continue & "000"      when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
              (others => '0');
 
   -- set chip select signals
