@@ -96,9 +96,9 @@ architecture arch of scroll_layer is
 
   -- tile signals
   signal tile       : tile_t;
-  signal tile_color : tile_color_t;
-  signal tile_row   : tile_row_t;
-  signal tile_pixel : tile_pixel_t;
+  signal tile_color : color_t;
+  signal tile_row   : row_t;
+  signal tile_pixel : pixel_t;
 
   -- destination position
   signal dest_pos : pos_t;

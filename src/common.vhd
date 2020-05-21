@@ -137,7 +137,7 @@ package common is
   function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean;
 
   -- decodes a single pixel from a tile row at the given offset
-  function decode_tile_row (tile_row : tile_row_t; offset : unsigned(2 downto 0)) return tile_pixel_t;
+  function decode_tile_row (row : row_t; offset : unsigned(2 downto 0)) return pixel_t;
 
   -- calculate sprite size (8x8, 16x16, 32x32, 64x64)
   function sprite_size_in_pixels (size : std_logic_vector(1 downto 0)) return natural;
@@ -178,19 +178,19 @@ package body common is
   end addr_in_range;
 
   function decode_tile_row (
-    tile_row : tile_row_t;
+    row : row_t;
     offset   : unsigned(2 downto 0)
-  ) return tile_pixel_t is
+  ) return pixel_t is
   begin
     case offset is
-      when "000" => return tile_row(31 downto 28);
-      when "001" => return tile_row(27 downto 24);
-      when "010" => return tile_row(23 downto 20);
-      when "011" => return tile_row(19 downto 16);
-      when "100" => return tile_row(15 downto 12);
-      when "101" => return tile_row(11 downto 8);
-      when "110" => return tile_row(7 downto 4);
-      when "111" => return tile_row(3 downto 0);
+      when "000" => return row(31 downto 28);
+      when "001" => return row(27 downto 24);
+      when "010" => return row(23 downto 20);
+      when "011" => return row(19 downto 16);
+      when "100" => return row(15 downto 12);
+      when "101" => return row(11 downto 8);
+      when "110" => return row(7 downto 4);
+      when "111" => return row(3 downto 0);
     end case;
   end decode_tile_row;
 

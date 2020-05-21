@@ -85,8 +85,8 @@ architecture arch of sprite_blitter is
   signal state, next_state : state_t;
 
   -- tile signals
-  signal tile_row   : tile_row_t;
-  signal tile_pixel : tile_pixel_t;
+  signal tile_row   : row_t;
+  signal tile_pixel : pixel_t;
 
   -- position signals
   signal src_pos  : sprite_pos_t;

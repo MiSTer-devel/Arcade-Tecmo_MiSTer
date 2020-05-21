@@ -78,9 +78,9 @@ architecture arch of char_layer is
 
   -- tile signals
   signal tile       : tile_t;
-  signal tile_color : tile_color_t;
-  signal tile_row   : tile_row_t;
-  signal tile_pixel : tile_pixel_t;
+  signal tile_color : color_t;
+  signal tile_row   : row_t;
+  signal tile_pixel : pixel_t;
 
   -- aliases to extract the components of the horizontal and vertical position
   alias col      : unsigned(4 downto 0) is video.pos.x(7 downto 3);

@@ -42,17 +42,14 @@ package types is
   subtype nibble_t is std_logic_vector(3 downto 0);
   subtype byte_t is std_logic_vector(7 downto 0);
 
-  -- index of a tile in a tilemap
-  subtype tile_code_t is unsigned(10 downto 0);
+  -- colour value
+  subtype color_t is std_logic_vector(3 downto 0);
 
-  -- 4BPP tile colour value
-  subtype tile_color_t is std_logic_vector(3 downto 0);
-
-  -- tile pixel value
-  subtype tile_pixel_t is std_logic_vector(3 downto 0);
+  -- pixel value
+  subtype pixel_t is std_logic_vector(3 downto 0);
 
   -- row of pixels in a 8x8 tile
-  subtype tile_row_t is std_logic_vector(31 downto 0);
+  subtype row_t is std_logic_vector(31 downto 0);
 
   -- layer priority value
   subtype priority_t is std_logic_vector(1 downto 0);
@@ -101,14 +98,14 @@ package types is
 
   -- tile descriptor
   type tile_t is record
-    code  : tile_code_t;
-    color : tile_color_t;
+    code  : unsigned(10 downto 0);
+    color : color_t;
   end record tile_t;
 
   -- sprite descriptor
   type sprite_t is record
     code     : unsigned(12 downto 0);
-    color    : tile_color_t;
+    color    : color_t;
     enable   : std_logic;
     flip_x   : std_logic;
     flip_y   : std_logic;
