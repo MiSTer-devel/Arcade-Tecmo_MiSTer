@@ -377,6 +377,10 @@ begin
   -- sound subsystem
   snd : entity work.snd
   port map (
+    -- configuration
+    snd_map => game_config.snd_map,
+
+    -- reset
     reset => reset,
 
     -- clock signals

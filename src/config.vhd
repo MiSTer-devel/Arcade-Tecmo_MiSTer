@@ -108,6 +108,17 @@ package config is
     coin        => (x"f80f", x"f80f")
   );
 
+  constant RYGAR_SND_MAP : snd_map_t := (
+    prog_rom => (x"0000", x"3fff"),
+    work_ram => (x"4000", x"7fff"),
+    fm       => (x"8000", x"bfff"),
+    req      => (x"c000", x"ffff"),
+    pcm_lo   => (x"c000", x"cfff"),
+    pcm_hi   => (x"d000", x"dfff"),
+    pcm_vol  => (x"e000", x"efff"),
+    req_off  => (x"f000", x"ffff")
+  );
+
   --  byte   bit        description
   -- ------+-76543210-+-------------
   --     0 | xxxx---- | hi code
@@ -207,16 +218,19 @@ package config is
 
   constant RYGAR_GAME_CONFIG : game_config_t := (
     mem_map    => RYGAR_MEM_MAP,
+    snd_map    => RYGAR_SND_MAP,
     gpu_config => (DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_SPRITE_CONFIG)
   );
 
   constant GEMINI_GAME_CONFIG : game_config_t := (
     mem_map    => GEMINI_MEM_MAP,
+    snd_map    => RYGAR_SND_MAP,
     gpu_config => (DEFAULT_TILE_CONFIG, GEMINI_TILE_CONFIG, GEMINI_TILE_CONFIG, GEMINI_SPRITE_CONFIG)
   );
 
   constant SILKWORM_GAME_CONFIG : game_config_t := (
     mem_map    => SILKWORM_MEM_MAP,
+    snd_map    => RYGAR_SND_MAP,
     gpu_config => (DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, GEMINI_SPRITE_CONFIG)
   );
 end package config;
