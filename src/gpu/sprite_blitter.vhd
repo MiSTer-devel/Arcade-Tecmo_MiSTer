@@ -243,5 +243,5 @@ begin
   frame_buffer_addr <= dest_pos.y(7 downto 0) & dest_pos.x(7 downto 0);
 
   -- set frame buffer data
-  frame_buffer_data <= std_logic_vector(sprite.priority & sprite.color) & tile_pixel;
+  frame_buffer_data <= sprite.priority & sprite.color & tile_pixel;
 end architecture arch;

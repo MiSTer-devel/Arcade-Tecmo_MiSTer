@@ -230,12 +230,12 @@ package body common is
 
     return (
       code     => unsigned(hi_code & lo_code),
-      color    => unsigned(mask_bits(data, config.color_msb, config.color_lsb, 4)),
+      color    => mask_bits(data, config.color_msb, config.color_lsb, 4),
       enable   => data(config.enable_bit),
       flip_x   => data(config.flip_x_bit),
       flip_y   => data(config.flip_y_bit),
       pos      => (unsigned(data(config.hi_pos_x_bit) & lo_pos_x), unsigned(data(config.hi_pos_y_bit) & lo_pos_y)),
-      priority => unsigned(mask_bits(data, config.priority_msb, config.priority_lsb, 2)),
+      priority => mask_bits(data, config.priority_msb, config.priority_lsb, 2),
       size     => to_unsigned(sprite_size_in_pixels(mask_bits(data, config.size_msb, config.size_lsb, 2)), 6)
     );
   end init_sprite;

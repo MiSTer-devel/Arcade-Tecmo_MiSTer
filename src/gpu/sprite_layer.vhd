@@ -267,7 +267,7 @@ begin
   begin
     if rising_edge(clk) then
       if cen_6 = '1' then
-        priority <= unsigned(frame_buffer_dout_b(9 downto 8));
+        priority <= frame_buffer_dout_b(9 downto 8);
         data     <= frame_buffer_dout_b(7 downto 0);
       end if;
     end if;
