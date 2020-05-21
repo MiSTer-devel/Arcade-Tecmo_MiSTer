@@ -179,8 +179,8 @@ begin
   -- This address points to a row of an 8x8 tile.
   rom_addr <= tile.code & offset_y(3) & (not offset_x(3)) & offset_y(2 downto 0);
 
-  -- decode the pixel from the tile row data
-  tile_pixel <= decode_tile_row(tile_row, dest_pos.x(2 downto 0));
+  -- select the pixel from the tile row data
+  tile_pixel <= select_pixel(tile_row, dest_pos.x(2 downto 0));
 
   -- set graphics data
   data <= tile_color & tile_pixel;

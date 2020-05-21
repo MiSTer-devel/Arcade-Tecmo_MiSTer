@@ -236,8 +236,8 @@ begin
   -- the blit is done when all the pixels have been copied
   blit_done <= '1' when src_pos.x = sprite.size-1 and src_pos.y = sprite.size-1 else '0';
 
-  -- decode the pixel from the tile row data
-  tile_pixel <= decode_tile_row(tile_row, src_pos.x(2 downto 0));
+  -- select the pixel from the tile row data
+  tile_pixel <= select_pixel(tile_row, src_pos.x(2 downto 0));
 
   -- set frame buffer address
   frame_buffer_addr <= dest_pos.y(7 downto 0) & dest_pos.x(7 downto 0);

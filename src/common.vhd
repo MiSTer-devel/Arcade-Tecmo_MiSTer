@@ -130,16 +130,13 @@ package common is
   constant FRAME_BUFFER_ADDR_WIDTH : natural := 16;
   constant FRAME_BUFFER_DATA_WIDTH : natural := 10;
 
-  -- determine the game config for the given index
+  -- determines the game config for the given index
   function select_game_config (index : natural) return game_config_t;
 
-  -- determine whether an address is within a given range
+  -- determines whether an address is within a given range
   function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean;
 
-  -- decodes a single pixel from a tile row at the given offset
-  function decode_tile_row (row : row_t; offset : unsigned(2 downto 0)) return pixel_t;
-
-  -- calculate sprite size (8x8, 16x16, 32x32, 64x64)
+  -- calculates the sprite size (8x8, 16x16, 32x32, 64x64)
   function sprite_size_in_pixels (size : std_logic_vector(1 downto 0)) return natural;
 
   -- decodes a tile from a 16-bit vector
@@ -148,7 +145,10 @@ package common is
   -- decodes a sprite from a 64-bit vector
   function decode_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t;
 
-  -- determine graphics layer to be rendered
+  -- selects a pixel from a tile row at the given offset
+  function select_pixel (row : row_t; offset : unsigned(2 downto 0)) return pixel_t;
+
+  -- determines the graphics layer to be rendered
   function mux_layers (
     sprite_priority : priority_t;
     sprite_data     : byte_t;
@@ -176,23 +176,6 @@ package body common is
       return false;
     end if;
   end addr_in_range;
-
-  function decode_tile_row (
-    row : row_t;
-    offset   : unsigned(2 downto 0)
-  ) return pixel_t is
-  begin
-    case offset is
-      when "000" => return row(31 downto 28);
-      when "001" => return row(27 downto 24);
-      when "010" => return row(23 downto 20);
-      when "011" => return row(19 downto 16);
-      when "100" => return row(15 downto 12);
-      when "101" => return row(11 downto 8);
-      when "110" => return row(7 downto 4);
-      when "111" => return row(3 downto 0);
-    end case;
-  end decode_tile_row;
 
   function sprite_size_in_pixels (size : std_logic_vector(1 downto 0)) return natural is
   begin
@@ -239,6 +222,20 @@ package body common is
       size     => to_unsigned(sprite_size_in_pixels(mask_bits(data, config.size_msb, config.size_lsb, 2)), 6)
     );
   end decode_sprite;
+
+  function select_pixel (row : row_t; offset : unsigned(2 downto 0)) return pixel_t is
+  begin
+    case offset is
+      when "000" => return row(31 downto 28);
+      when "001" => return row(27 downto 24);
+      when "010" => return row(23 downto 20);
+      when "011" => return row(19 downto 16);
+      when "100" => return row(15 downto 12);
+      when "101" => return row(11 downto 8);
+      when "110" => return row(7 downto 4);
+      when "111" => return row(3 downto 0);
+    end case;
+  end select_pixel;
 
   -- This function determines which graphics layer should be rendered, based on
   -- the sprite priority and graphics layer data.
