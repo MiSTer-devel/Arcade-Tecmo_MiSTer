@@ -77,10 +77,10 @@ architecture arch of char_layer is
   end record tile_pos_t;
 
   -- tile signals
-  signal tile       : tile_t;
-  signal tile_color : color_t;
-  signal tile_row   : row_t;
-  signal tile_pixel : pixel_t;
+  signal tile     : tile_t;
+  signal color    : color_t;
+  signal pixel    : pixel_t;
+  signal tile_row : row_t;
 
   -- aliases to extract the components of the horizontal and vertical position
   alias col      : unsigned(4 downto 0) is video.pos.x(7 downto 3);
@@ -114,7 +114,7 @@ begin
 
           when 7 =>
             -- latch tile color
-            tile_color <= tile.color;
+            color <= tile.color;
 
           when others => null;
         end case;
@@ -140,9 +140,9 @@ begin
   -- This address points to a row of an 8x8 tile.
   rom_addr <= tile.code(9 downto 0) & offset_y(2 downto 0);
 
-  -- select the pixel from the tile row data
-  tile_pixel <= select_pixel(tile_row, video.pos.x(2 downto 0));
+  -- select the current pixel from the tile row data
+  pixel <= select_pixel(tile_row, video.pos.x(2 downto 0));
 
   -- set graphics data
-  data <= tile_color & tile_pixel;
+  data <= color & pixel;
 end architecture arch;

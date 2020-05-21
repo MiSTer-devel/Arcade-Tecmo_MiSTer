@@ -85,8 +85,8 @@ architecture arch of sprite_blitter is
   signal state, next_state : state_t;
 
   -- tile signals
-  signal tile_row   : row_t;
-  signal tile_pixel : pixel_t;
+  signal pixel    : pixel_t;
+  signal tile_row : row_t;
 
   -- position signals
   signal src_pos  : sprite_pos_t;
@@ -209,7 +209,7 @@ begin
   end process;
 
   -- write to the frame buffer when we're blitting to the visible part of the frame
-  frame_buffer_we <= '1' when state = BLIT and tile_pixel /= "0000" and dest_pos.x(8) = '0' and dest_pos.y(8) = '0' else '0';
+  frame_buffer_we <= '1' when state = BLIT and pixel /= "0000" and dest_pos.x(8) = '0' and dest_pos.y(8) = '0' else '0';
 
   -- set ready output
   ready <= '1' when state = IDLE else '0';
@@ -236,12 +236,12 @@ begin
   -- the blit is done when all the pixels have been copied
   blit_done <= '1' when src_pos.x = sprite.size-1 and src_pos.y = sprite.size-1 else '0';
 
-  -- select the pixel from the tile row data
-  tile_pixel <= select_pixel(tile_row, src_pos.x(2 downto 0));
+  -- select the current pixel from the tile row data
+  pixel <= select_pixel(tile_row, src_pos.x(2 downto 0));
 
   -- set frame buffer address
   frame_buffer_addr <= dest_pos.y(7 downto 0) & dest_pos.x(7 downto 0);
 
   -- set frame buffer data
-  frame_buffer_data <= sprite.priority & sprite.color & tile_pixel;
+  frame_buffer_data <= sprite.priority & sprite.color & pixel;
 end architecture arch;
