@@ -230,7 +230,7 @@ begin
     if rising_edge(clk) then
       if cen_6 = '1' then
         if state = LATCH then
-          sprite <= init_sprite(config, ram_data);
+          sprite <= decode_sprite(config, ram_data);
         end if;
       end if;
     end if;

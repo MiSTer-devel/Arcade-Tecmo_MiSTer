@@ -145,8 +145,8 @@ package common is
   -- decodes a tile from a 16-bit vector
   function decode_tile (config : tile_config_t; data : std_logic_vector(15 downto 0)) return tile_t;
 
-  -- initialise sprite from a 64-bit vector
-  function init_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t;
+  -- decodes a sprite from a 64-bit vector
+  function decode_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t;
 
   -- determine graphics layer to be rendered
   function mux_layers (
@@ -217,7 +217,7 @@ package body common is
     );
   end decode_tile;
 
-  function init_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t is
+  function decode_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t is
     variable hi_code : std_logic_vector(4 downto 0);
     variable lo_code : byte_t;
     variable lo_pos_x : byte_t;
@@ -238,7 +238,7 @@ package body common is
       priority => mask_bits(data, config.priority_msb, config.priority_lsb, 2),
       size     => to_unsigned(sprite_size_in_pixels(mask_bits(data, config.size_msb, config.size_lsb, 2)), 6)
     );
-  end init_sprite;
+  end decode_sprite;
 
   -- This function determines which graphics layer should be rendered, based on
   -- the sprite priority and graphics layer data.
