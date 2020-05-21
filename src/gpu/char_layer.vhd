@@ -110,7 +110,7 @@ begin
 
           when 1 =>
             -- latch tile
-            tile <= init_tile(config, ram_data);
+            tile <= decode_tile(config, ram_data);
 
           when 7 =>
             -- latch tile color

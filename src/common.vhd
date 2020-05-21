@@ -142,8 +142,8 @@ package common is
   -- calculate sprite size (8x8, 16x16, 32x32, 64x64)
   function sprite_size_in_pixels (size : std_logic_vector(1 downto 0)) return natural;
 
-  -- initialise tile from a 16-bit vector
-  function init_tile (config : tile_config_t; data : std_logic_vector(15 downto 0)) return tile_t;
+  -- decodes a tile from a 16-bit vector
+  function decode_tile (config : tile_config_t; data : std_logic_vector(15 downto 0)) return tile_t;
 
   -- initialise sprite from a 64-bit vector
   function init_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t;
@@ -204,7 +204,7 @@ package body common is
     end case;
   end sprite_size_in_pixels;
 
-  function init_tile (config : tile_config_t; data : std_logic_vector(15 downto 0)) return tile_t is
+  function decode_tile (config : tile_config_t; data : std_logic_vector(15 downto 0)) return tile_t is
     variable hi_code : std_logic_vector(2 downto 0);
     variable lo_code : byte_t;
   begin
@@ -215,7 +215,7 @@ package body common is
       code  => unsigned(hi_code & lo_code),
       color => mask_bits(data, config.color_msb, config.color_lsb, 4)
     );
-  end init_tile;
+  end decode_tile;
 
   function init_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t is
     variable hi_code : std_logic_vector(4 downto 0);

@@ -146,7 +146,7 @@ begin
 
           when 9 =>
             -- latch tile
-            tile <= init_tile(config, ram_data);
+            tile <= decode_tile(config, ram_data);
 
           when 15 =>
             -- latch tile color
