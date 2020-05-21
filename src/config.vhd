@@ -124,7 +124,7 @@ package config is
   --     5 | xxxxxxxx | lo pos x
   --     6 | -------- |
   --     7 | -------- |
-  constant RYGAR_SPRITE_CONFIG : sprite_config_t := (
+  constant DEFAULT_SPRITE_CONFIG : sprite_config_t := (
     flip_x_bit   => 0,
     flip_y_bit   => 1,
     enable_bit   => 2,
@@ -187,36 +187,36 @@ package config is
     lo_pos_x_msb => 47
   );
 
-  constant RYGAR_SCROLL_CONFIG : scroll_config_t := (
-    hi_code_msb => 2,
-    hi_code_lsb => 0,
-    lo_code_msb => 7,
+  constant DEFAULT_TILE_CONFIG : tile_config_t := (
     lo_code_lsb => 0,
-    color_msb   => 7,
-    color_lsb   => 4
+    lo_code_msb => 7,
+    hi_code_lsb => 8,
+    hi_code_msb => 10,
+    color_lsb   => 12,
+    color_msb   => 15
   );
 
-  constant GEMINI_SCROLL_CONFIG : scroll_config_t := (
-    hi_code_msb => 6,
-    hi_code_lsb => 4,
-    lo_code_msb => 7,
+  constant GEMINI_TILE_CONFIG : tile_config_t := (
     lo_code_lsb => 0,
-    color_msb   => 3,
-    color_lsb   => 0
+    lo_code_msb => 7,
+    hi_code_lsb => 12,
+    hi_code_msb => 14,
+    color_lsb   => 8,
+    color_msb   => 11
   );
 
   constant RYGAR_GAME_CONFIG : game_config_t := (
     mem_map    => RYGAR_MEM_MAP,
-    gpu_config => (RYGAR_SCROLL_CONFIG, RYGAR_SPRITE_CONFIG)
+    gpu_config => (DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_SPRITE_CONFIG)
   );
 
   constant GEMINI_GAME_CONFIG : game_config_t := (
     mem_map    => GEMINI_MEM_MAP,
-    gpu_config => (GEMINI_SCROLL_CONFIG, GEMINI_SPRITE_CONFIG)
+    gpu_config => (DEFAULT_TILE_CONFIG, GEMINI_TILE_CONFIG, GEMINI_TILE_CONFIG, GEMINI_SPRITE_CONFIG)
   );
 
   constant SILKWORM_GAME_CONFIG : game_config_t := (
     mem_map    => SILKWORM_MEM_MAP,
-    gpu_config => (RYGAR_SCROLL_CONFIG, GEMINI_SPRITE_CONFIG)
+    gpu_config => (DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, GEMINI_SPRITE_CONFIG)
   );
 end package config;

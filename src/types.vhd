@@ -102,7 +102,7 @@ package types is
   -- tile descriptor
   type tile_t is record
     code  : unsigned(10 downto 0);
-    color : unsigned(3 downto 0);
+    color : std_logic_vector(3 downto 0);
   end record tile_t;
 
   -- sprite descriptor
@@ -162,19 +162,21 @@ package types is
     lo_pos_x_lsb : natural;
   end record sprite_config_t;
 
-  -- scroll layer configuration
-  type scroll_config_t is record
+  -- tile configuration
+  type tile_config_t is record
     hi_code_msb : natural;
     hi_code_lsb : natural;
     lo_code_msb : natural;
     lo_code_lsb : natural;
     color_msb   : natural;
     color_lsb   : natural;
-  end record scroll_config_t;
+  end record tile_config_t;
 
   -- GPU configuration
   type gpu_config_t is record
-    scroll_config : scroll_config_t;
+    char_config   : tile_config_t;
+    fg_config     : tile_config_t;
+    bg_config     : tile_config_t;
     sprite_config : sprite_config_t;
   end record gpu_config_t;
 

@@ -107,21 +107,21 @@ package common is
   constant SOUND_ROM_2_SIZE   : natural := 16#08000#; -- 32kB
 
   -- VRAM
-  constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
-  constant BG_RAM_GPU_ADDR_WIDTH      : natural := 10;
-  constant BG_RAM_GPU_DATA_WIDTH      : natural := 8;
   constant CHAR_RAM_CPU_ADDR_WIDTH    : natural := 11; -- 2kB
-  constant CHAR_RAM_GPU_ADDR_WIDTH    : natural := 11;
-  constant CHAR_RAM_GPU_DATA_WIDTH    : natural := 8;
+  constant CHAR_RAM_GPU_ADDR_WIDTH    : natural := 10;
+  constant CHAR_RAM_GPU_DATA_WIDTH    : natural := 16;
   constant FG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
-  constant FG_RAM_GPU_ADDR_WIDTH      : natural := 10;
-  constant FG_RAM_GPU_DATA_WIDTH      : natural := 8;
-  constant PALETTE_RAM_CPU_ADDR_WIDTH : natural := 11; -- 2kB
-  constant PALETTE_RAM_GPU_ADDR_WIDTH : natural := 10;
-  constant PALETTE_RAM_GPU_DATA_WIDTH : natural := 16;
+  constant FG_RAM_GPU_ADDR_WIDTH      : natural := 9;
+  constant FG_RAM_GPU_DATA_WIDTH      : natural := 16;
+  constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
+  constant BG_RAM_GPU_ADDR_WIDTH      : natural := 9;
+  constant BG_RAM_GPU_DATA_WIDTH      : natural := 16;
   constant SPRITE_RAM_CPU_ADDR_WIDTH  : natural := 11; -- 2kB
   constant SPRITE_RAM_GPU_ADDR_WIDTH  : natural := 8;
   constant SPRITE_RAM_GPU_DATA_WIDTH  : natural := 64;
+  constant PALETTE_RAM_CPU_ADDR_WIDTH : natural := 11; -- 2kB
+  constant PALETTE_RAM_GPU_ADDR_WIDTH : natural := 10;
+  constant PALETTE_RAM_GPU_DATA_WIDTH : natural := 16;
 
   -- sound RAM
   constant SOUND_RAM_ADDR_WIDTH : natural := 11;
@@ -143,7 +143,7 @@ package common is
   function sprite_size_in_pixels (size : std_logic_vector(1 downto 0)) return natural;
 
   -- initialise tile from a 16-bit vector
-  function init_tile (config : scroll_config_t; data : std_logic_vector(15 downto 0)) return tile_t;
+  function init_tile (config : tile_config_t; data : std_logic_vector(15 downto 0)) return tile_t;
 
   -- initialise sprite from a 64-bit vector
   function init_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t;
@@ -204,7 +204,7 @@ package body common is
     end case;
   end sprite_size_in_pixels;
 
-  function init_tile (config : scroll_config_t; data : std_logic_vector(15 downto 0)) return tile_t is
+  function init_tile (config : tile_config_t; data : std_logic_vector(15 downto 0)) return tile_t is
     variable hi_code : std_logic_vector(2 downto 0);
     variable lo_code : byte_t;
   begin
@@ -213,7 +213,7 @@ package body common is
 
     return (
       code  => unsigned(hi_code & lo_code),
-      color => unsigned(mask_bits(data, config.color_msb, config.color_lsb, 4))
+      color => mask_bits(data, config.color_msb, config.color_lsb, 4)
     );
   end init_tile;
 

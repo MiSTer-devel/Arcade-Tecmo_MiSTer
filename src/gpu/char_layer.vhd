@@ -46,6 +46,9 @@ use work.types.all;
 -- It consists of a 32x32 grid of 8x8 tiles.
 entity char_layer is
   port (
+    -- configuration
+    config : in tile_config_t;
+
     -- clock signals
     clk   : in std_logic;
     cen_6 : in std_logic;
@@ -74,8 +77,7 @@ architecture arch of char_layer is
   end record tile_pos_t;
 
   -- tile signals
-  signal tile_data  : byte_t;
-  signal tile_code  : tile_code_t;
+  signal tile       : tile_t;
   signal tile_color : tile_color_t;
   signal tile_row   : tile_row_t;
   signal tile_pixel : tile_pixel_t;
@@ -103,23 +105,16 @@ begin
       if cen_6 = '1' then
         case to_integer(offset_x) is
           when 0 =>
-            -- load high byte
-            ram_addr <= row & (col+1) & '1';
+            -- load tile
+            ram_addr <= row & (col+1);
 
           when 1 =>
-            -- latch high byte
-            tile_data <= ram_data;
-
-            -- load low byte
-            ram_addr <= row & (col+1) & '0';
-
-          when 2 =>
-            -- latch tile code
-            tile_code <= unsigned(tile_data(2 downto 0) & ram_data);
+            -- latch tile
+            tile <= init_tile(config, ram_data);
 
           when 7 =>
-            -- latch colour
-            tile_color <= tile_data(7 downto 4);
+            -- latch tile color
+            tile_color <= tile.color;
 
           when others => null;
         end case;
@@ -143,7 +138,7 @@ begin
   -- Set the tile ROM address.
   --
   -- This address points to a row of an 8x8 tile.
-  rom_addr <= tile_code(9 downto 0) & offset_y(2 downto 0);
+  rom_addr <= tile.code(9 downto 0) & offset_y(2 downto 0);
 
   -- decode the pixel from the tile row data
   tile_pixel <= decode_tile_row(tile_row, video.pos.x(2 downto 0));

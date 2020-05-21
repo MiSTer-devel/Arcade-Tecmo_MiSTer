@@ -289,6 +289,9 @@ begin
     -- character layer
     char_layer : entity work.char_layer
     port map (
+      -- configuration
+      config => config.char_config,
+
       -- clock signals
       clk   => clk,
       cen_6 => cen_6,
@@ -318,7 +321,7 @@ begin
     )
     port map (
       -- configuration
-      config => config.scroll_config,
+      config => config.fg_config,
 
       -- clock signals
       clk   => clk,
@@ -350,7 +353,7 @@ begin
     )
     port map (
       -- configuration
-      config => config.scroll_config,
+      config => config.bg_config,
 
       -- clock signals
       clk   => clk,
@@ -403,7 +406,7 @@ begin
   -- upper and lower-half of the RAM.
   char_ram_cpu_addr <= rotate_left(ram_addr(CHAR_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
   fg_ram_cpu_addr   <= rotate_left(ram_addr(FG_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
-  bg_ram_cpu_addr   <= rotate_left(remap_tile_addr(ram_addr(BG_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
+  bg_ram_cpu_addr   <= rotate_left(ram_addr(BG_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
 
   -- set sprite RAM address
   sprite_ram_cpu_addr <= ram_addr(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
