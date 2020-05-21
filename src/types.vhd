@@ -140,11 +140,11 @@ package types is
     prog_rom : addr_range_t; -- program ROM
     work_ram : addr_range_t; -- work RAM
     fm       : addr_range_t; -- FM sound
-    req      : addr_range_t; -- request
     pcm_lo   : addr_range_t; -- PCM low
     pcm_hi   : addr_range_t; -- PCM high
     pcm_vol  : addr_range_t; -- PCM volume
     req_off  : addr_range_t; -- request off
+    req      : addr_range_t; -- request
   end record snd_map_t;
 
   -- sprite configuration

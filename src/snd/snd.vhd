@@ -220,11 +220,11 @@ begin
   sound_rom_1_cs <= '1' when addr_in_range(cpu_addr, snd_map.prog_rom) and cpu_rfsh_n = '1' else '0';
   sound_ram_cs   <= '1' when addr_in_range(cpu_addr, snd_map.work_ram) and cpu_rfsh_n = '1' else '0';
   fm_cs          <= '1' when addr_in_range(cpu_addr, snd_map.fm)       and cpu_rfsh_n = '1' else '0';
-  req_cs         <= '1' when addr_in_range(cpu_addr, snd_map.req)      and cpu_rfsh_n = '1' else '0';
   pcm_low_cs     <= '1' when addr_in_range(cpu_addr, snd_map.pcm_lo)   and cpu_rfsh_n = '1' else '0';
   pcm_high_cs    <= '1' when addr_in_range(cpu_addr, snd_map.pcm_hi)   and cpu_rfsh_n = '1' else '0';
   pcm_vol_cs     <= '1' when addr_in_range(cpu_addr, snd_map.pcm_vol)  and cpu_rfsh_n = '1' else '0';
   req_off_cs     <= '1' when addr_in_range(cpu_addr, snd_map.req_off)  and cpu_rfsh_n = '1' else '0';
+  req_cs         <= '1' when addr_in_range(cpu_addr, snd_map.req)      and cpu_rfsh_n = '1' else '0';
 
   -- set request data
   req_data <= data_reg when req_cs = '1' and cpu_rd_n = '0' else (others => '0');

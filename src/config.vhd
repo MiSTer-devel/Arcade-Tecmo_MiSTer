@@ -110,13 +110,24 @@ package config is
 
   constant RYGAR_SND_MAP : snd_map_t := (
     prog_rom => (x"0000", x"3fff"),
-    work_ram => (x"4000", x"7fff"),
-    fm       => (x"8000", x"bfff"),
-    req      => (x"c000", x"ffff"),
-    pcm_lo   => (x"c000", x"cfff"),
-    pcm_hi   => (x"d000", x"dfff"),
-    pcm_vol  => (x"e000", x"efff"),
-    req_off  => (x"f000", x"ffff")
+    work_ram => (x"4000", x"47ff"),
+    fm       => (x"8000", x"8001"),
+    pcm_lo   => (x"c000", x"c000"),
+    pcm_hi   => (x"d000", x"d000"),
+    pcm_vol  => (x"e000", x"e000"),
+    req_off  => (x"f000", x"f000"),
+    req      => (x"c000", x"ffff")
+  );
+
+  constant GEMINI_SND_MAP : snd_map_t := (
+    prog_rom => (x"0000", x"7fff"),
+    work_ram => (x"8000", x"87ff"),
+    fm       => (x"a000", x"a001"),
+    pcm_lo   => (x"c000", x"c000"),
+    pcm_hi   => (x"c400", x"c400"),
+    pcm_vol  => (x"c800", x"c800"),
+    req_off  => (x"cc00", x"cc00"),
+    req      => (x"c000", x"ffff")
   );
 
   --  byte   bit        description
@@ -224,13 +235,13 @@ package config is
 
   constant GEMINI_GAME_CONFIG : game_config_t := (
     mem_map    => GEMINI_MEM_MAP,
-    snd_map    => RYGAR_SND_MAP,
+    snd_map    => GEMINI_SND_MAP,
     gpu_config => (DEFAULT_TILE_CONFIG, GEMINI_TILE_CONFIG, GEMINI_TILE_CONFIG, GEMINI_SPRITE_CONFIG)
   );
 
   constant SILKWORM_GAME_CONFIG : game_config_t := (
     mem_map    => SILKWORM_MEM_MAP,
-    snd_map    => RYGAR_SND_MAP,
+    snd_map    => GEMINI_SND_MAP,
     gpu_config => (DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, GEMINI_SPRITE_CONFIG)
   );
 end package config;
