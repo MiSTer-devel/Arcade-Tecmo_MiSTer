@@ -349,20 +349,20 @@ begin
     ram_we   => not cpu_wr_n,
 
     -- tile ROM interface
-    sprite_rom_addr => sprite_rom_addr,
-    sprite_rom_data => sprite_rom_data,
     char_rom_addr   => char_rom_addr,
     char_rom_data   => char_rom_data,
     fg_rom_addr     => fg_rom_addr,
     fg_rom_data     => fg_rom_data,
     bg_rom_addr     => bg_rom_addr,
     bg_rom_data     => bg_rom_data,
+    sprite_rom_addr => sprite_rom_addr,
+    sprite_rom_data => sprite_rom_data,
 
     -- chip select signals
-    sprite_ram_cs  => sprite_ram_cs,
     char_ram_cs    => char_ram_cs,
     fg_ram_cs      => fg_ram_cs,
     bg_ram_cs      => bg_ram_cs,
+    sprite_ram_cs  => sprite_ram_cs,
     palette_ram_cs => palette_ram_cs,
 
     -- scroll layer positions

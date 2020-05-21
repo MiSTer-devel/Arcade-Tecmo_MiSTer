@@ -53,10 +53,10 @@ entity palette is
     ram_data : in std_logic_vector(PALETTE_RAM_GPU_DATA_WIDTH-1 downto 0);
 
     -- layer data
-    sprite_data : in byte_t;
     char_data   : in byte_t;
     fg_data     : in byte_t;
     bg_data     : in byte_t;
+    sprite_data : in byte_t;
 
     -- sprite priority
     sprite_priority : in priority_t;
