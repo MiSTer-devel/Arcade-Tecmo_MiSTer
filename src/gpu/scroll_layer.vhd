@@ -62,7 +62,7 @@ entity scroll_layer is
   );
   port (
     -- configuration
-    config : in scroll_config_t;
+    config : in tile_config_t;
 
     -- clock signals
     clk   : in std_logic;
@@ -95,11 +95,10 @@ architecture arch of scroll_layer is
   end record tile_pos_t;
 
   -- tile signals
-  signal tile_data  : byte_t;
-  signal tile_code  : tile_code_t;
-  signal tile_color : tile_color_t;
-  signal tile_pixel : tile_pixel_t;
-  signal tile_row   : tile_row_t;
+  signal tile     : tile_t;
+  signal color    : color_t;
+  signal pixel    : pixel_t;
+  signal tile_row : row_t;
 
   -- destination position
   signal dest_pos : pos_t;
@@ -142,26 +141,16 @@ begin
       if cen_6 = '1' then
         case to_integer(offset_x) is
           when 8 =>
-            -- load high byte
-            ram_addr <= '1' & row & (col+1);
+            -- load tile
+            ram_addr <= row & (col+1);
 
           when 9 =>
-            -- latch high byte
-            tile_data <= ram_data;
-
-            -- load low byte
-            ram_addr <= '0' & row & (col+1);
-
-          when 10 =>
-            -- latch tile code
-            tile_code <= unsigned(
-              mask_bits(tile_data, config.hi_code_msb, config.hi_code_lsb, 3) &
-              mask_bits(ram_data, config.lo_code_msb, config.lo_code_lsb, 8)
-            );
+            -- latch tile
+            tile <= decode_tile(config, ram_data);
 
           when 15 =>
-            -- latch colour
-            tile_color <= mask_bits(tile_data, config.color_msb, config.color_lsb, 4);
+            -- latch tile color
+            color <= tile.color;
 
           when others => null;
         end case;
@@ -188,11 +177,11 @@ begin
   -- Set the tile ROM address.
   --
   -- This address points to a row of an 8x8 tile.
-  rom_addr <= tile_code & offset_y(3) & (not offset_x(3)) & offset_y(2 downto 0);
+  rom_addr <= tile.code & offset_y(3) & (not offset_x(3)) & offset_y(2 downto 0);
 
-  -- decode the pixel from the tile row data
-  tile_pixel <= decode_tile_row(tile_row, dest_pos.x(2 downto 0));
+  -- select the current pixel from the tile row data
+  pixel <= select_pixel(tile_row, dest_pos.x(2 downto 0));
 
   -- set graphics data
-  data <= tile_color & tile_pixel;
+  data <= color & pixel;
 end architecture arch;

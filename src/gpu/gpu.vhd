@@ -52,10 +52,10 @@ use work.types.all;
 -- don't need all the additional logic required to coordinate RAM access.
 entity gpu is
   generic (
-    SPRITE_LAYER_ENABLE : boolean := true;
     CHAR_LAYER_ENABLE   : boolean := true;
     FG_LAYER_ENABLE     : boolean := true;
-    BG_LAYER_ENABLE     : boolean := true
+    BG_LAYER_ENABLE     : boolean := true;
+    SPRITE_LAYER_ENABLE : boolean := true
   );
   port (
     -- configuration
@@ -72,20 +72,20 @@ entity gpu is
     ram_we   : in std_logic;
 
     -- tile ROM interface
-    sprite_rom_addr : out unsigned(SPRITE_ROM_ADDR_WIDTH-1 downto 0) := (others => '0');
-    sprite_rom_data : in std_logic_vector(SPRITE_ROM_DATA_WIDTH-1 downto 0);
     char_rom_addr   : out unsigned(CHAR_ROM_ADDR_WIDTH-1 downto 0) := (others => '0');
     char_rom_data   : in std_logic_vector(CHAR_ROM_DATA_WIDTH-1 downto 0);
     fg_rom_addr     : out unsigned(FG_ROM_ADDR_WIDTH-1 downto 0) := (others => '0');
     fg_rom_data     : in std_logic_vector(FG_ROM_DATA_WIDTH-1 downto 0);
     bg_rom_addr     : out unsigned(BG_ROM_ADDR_WIDTH-1 downto 0) := (others => '0');
     bg_rom_data     : in std_logic_vector(BG_ROM_DATA_WIDTH-1 downto 0);
+    sprite_rom_addr : out unsigned(SPRITE_ROM_ADDR_WIDTH-1 downto 0) := (others => '0');
+    sprite_rom_data : in std_logic_vector(SPRITE_ROM_DATA_WIDTH-1 downto 0);
 
     -- chip select signals
-    sprite_ram_cs  : in std_logic;
     char_ram_cs    : in std_logic;
     fg_ram_cs      : in std_logic;
     bg_ram_cs      : in std_logic;
+    sprite_ram_cs  : in std_logic;
     palette_ram_cs : in std_logic;
 
     -- scroll layer positions
@@ -99,25 +99,29 @@ entity gpu is
 end gpu;
 
 architecture arch of gpu is
-  -- sprite RAM
-  signal sprite_ram_cpu_dout : byte_t;
-  signal sprite_ram_gpu_addr : unsigned(SPRITE_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
-  signal sprite_ram_gpu_dout : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0);
-
   -- character RAM
+  signal char_ram_cpu_addr : unsigned(CHAR_RAM_CPU_ADDR_WIDTH-1 downto 0);
   signal char_ram_cpu_dout : byte_t;
   signal char_ram_gpu_addr : unsigned(CHAR_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
   signal char_ram_gpu_dout : std_logic_vector(CHAR_RAM_GPU_DATA_WIDTH-1 downto 0);
 
   -- foreground RAM
+  signal fg_ram_cpu_addr : unsigned(FG_RAM_CPU_ADDR_WIDTH-1 downto 0);
   signal fg_ram_cpu_dout : byte_t;
   signal fg_ram_gpu_addr : unsigned(FG_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
   signal fg_ram_gpu_dout : std_logic_vector(FG_RAM_GPU_DATA_WIDTH-1 downto 0);
 
   -- background RAM
+  signal bg_ram_cpu_addr : unsigned(BG_RAM_CPU_ADDR_WIDTH-1 downto 0);
   signal bg_ram_cpu_dout : byte_t;
   signal bg_ram_gpu_addr : unsigned(BG_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
   signal bg_ram_gpu_dout : std_logic_vector(BG_RAM_GPU_DATA_WIDTH-1 downto 0);
+
+  -- sprite RAM
+  signal sprite_ram_cpu_addr : unsigned(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
+  signal sprite_ram_cpu_dout : byte_t;
+  signal sprite_ram_gpu_addr : unsigned(SPRITE_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
+  signal sprite_ram_gpu_dout : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0);
 
   -- palette RAM
   signal palette_ram_cpu_dout : byte_t;
@@ -125,10 +129,10 @@ architecture arch of gpu is
   signal palette_ram_gpu_dout : std_logic_vector(PALETTE_RAM_GPU_DATA_WIDTH-1 downto 0);
 
   -- layer output signals
-  signal sprite_data : byte_t := (others => '0');
   signal char_data   : byte_t := (others => '0');
   signal fg_data     : byte_t := (others => '0');
   signal bg_data     : byte_t := (others => '0');
+  signal sprite_data : byte_t := (others => '0');
 
   -- sprite priority data
   signal sprite_priority : priority_t;
@@ -139,28 +143,6 @@ begin
     clk   => clk,
     cen   => cen_6,
     video => video
-  );
-
-  -- The sprite RAM (2kB) contains the sprite data.
-  sprite_ram : entity work.true_dual_port_ram
-  generic map (
-    ADDR_WIDTH_A => SPRITE_RAM_CPU_ADDR_WIDTH,
-    ADDR_WIDTH_B => SPRITE_RAM_GPU_ADDR_WIDTH,
-    DATA_WIDTH_B => SPRITE_RAM_GPU_DATA_WIDTH
-  )
-  port map (
-    -- CPU interface
-    clk_a  => clk,
-    cs_a   => sprite_ram_cs,
-    addr_a => ram_addr(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0),
-    din_a  => ram_din,
-    dout_a => sprite_ram_cpu_dout,
-    we_a   => ram_we,
-
-    -- GPU interface
-    clk_b  => clk,
-    addr_b => sprite_ram_gpu_addr,
-    dout_b => sprite_ram_gpu_dout
   );
 
   -- The character RAM (2kB) contains the code and colour of each tile in the
@@ -175,7 +157,7 @@ begin
     -- CPU interface
     clk_a  => clk,
     cs_a   => char_ram_cs,
-    addr_a => ram_addr(CHAR_RAM_CPU_ADDR_WIDTH-1 downto 0),
+    addr_a => char_ram_cpu_addr,
     din_a  => ram_din,
     dout_a => char_ram_cpu_dout,
     we_a   => ram_we,
@@ -198,7 +180,7 @@ begin
     -- CPU interface
     clk_a  => clk,
     cs_a   => fg_ram_cs,
-    addr_a => ram_addr(FG_RAM_CPU_ADDR_WIDTH-1 downto 0),
+    addr_a => fg_ram_cpu_addr,
     din_a  => ram_din,
     dout_a => fg_ram_cpu_dout,
     we_a   => ram_we,
@@ -221,7 +203,7 @@ begin
     -- CPU interface
     clk_a  => clk,
     cs_a   => bg_ram_cs,
-    addr_a => ram_addr(BG_RAM_CPU_ADDR_WIDTH-1 downto 0),
+    addr_a => bg_ram_cpu_addr,
     din_a  => ram_din,
     dout_a => bg_ram_cpu_dout,
     we_a   => ram_we,
@@ -230,6 +212,28 @@ begin
     clk_b  => clk,
     addr_b => bg_ram_gpu_addr,
     dout_b => bg_ram_gpu_dout
+  );
+
+  -- The sprite RAM (2kB) contains the sprite data.
+  sprite_ram : entity work.true_dual_port_ram
+  generic map (
+    ADDR_WIDTH_A => SPRITE_RAM_CPU_ADDR_WIDTH,
+    ADDR_WIDTH_B => SPRITE_RAM_GPU_ADDR_WIDTH,
+    DATA_WIDTH_B => SPRITE_RAM_GPU_DATA_WIDTH
+  )
+  port map (
+    -- CPU interface
+    clk_a  => clk,
+    cs_a   => sprite_ram_cs,
+    addr_a => sprite_ram_cpu_addr,
+    din_a  => ram_din,
+    dout_a => sprite_ram_cpu_dout,
+    we_a   => ram_we,
+
+    -- GPU interface
+    clk_b  => clk,
+    addr_b => sprite_ram_gpu_addr,
+    dout_b => sprite_ram_gpu_dout
   );
 
   -- The palette RAM contains 1024 16-bit RGB colour values, stored in
@@ -255,36 +259,13 @@ begin
     dout_b => palette_ram_gpu_dout
   );
 
-  sprite_layer_gen : if SPRITE_LAYER_ENABLE generate
-    -- sprite layer
-    sprite_layer : entity work.sprite_layer
-    port map (
-      -- configuration
-      config => config.sprite_config,
-
-      -- clock signals
-      clk   => clk,
-      cen_6 => cen_6,
-
-      -- RAM interface
-      ram_addr => sprite_ram_gpu_addr,
-      ram_data => sprite_ram_gpu_dout,
-
-      -- ROM interface
-      rom_addr => sprite_rom_addr,
-      rom_data => sprite_rom_data,
-
-      -- video signals
-      video    => video,
-      priority => sprite_priority,
-      data     => sprite_data
-    );
-  end generate;
-
   char_layer_gen : if CHAR_LAYER_ENABLE generate
     -- character layer
     char_layer : entity work.char_layer
     port map (
+      -- configuration
+      config => config.char_config,
+
       -- clock signals
       clk   => clk,
       cen_6 => cen_6,
@@ -314,7 +295,7 @@ begin
     )
     port map (
       -- configuration
-      config => config.scroll_config,
+      config => config.fg_config,
 
       -- clock signals
       clk   => clk,
@@ -346,7 +327,7 @@ begin
     )
     port map (
       -- configuration
-      config => config.scroll_config,
+      config => config.bg_config,
 
       -- clock signals
       clk   => clk,
@@ -367,6 +348,32 @@ begin
     );
   end generate;
 
+  sprite_layer_gen : if SPRITE_LAYER_ENABLE generate
+    -- sprite layer
+    sprite_layer : entity work.sprite_layer
+    port map (
+      -- configuration
+      config => config.sprite_config,
+
+      -- clock signals
+      clk   => clk,
+      cen_6 => cen_6,
+
+      -- RAM interface
+      ram_addr => sprite_ram_gpu_addr,
+      ram_data => sprite_ram_gpu_dout,
+
+      -- ROM interface
+      rom_addr => sprite_rom_addr,
+      rom_data => sprite_rom_data,
+
+      -- video signals
+      video    => video,
+      priority => sprite_priority,
+      data     => sprite_data
+    );
+  end generate;
+
   -- colour palette
   palette : entity work.palette
   port map (
@@ -379,10 +386,10 @@ begin
     ram_data => palette_ram_gpu_dout,
 
     -- layer data
-    sprite_data => sprite_data,
     char_data   => char_data,
     fg_data     => fg_data,
     bg_data     => bg_data,
+    sprite_data => sprite_data,
 
     -- sprite priority
     sprite_priority => sprite_priority,
@@ -391,6 +398,18 @@ begin
     video => video,
     rgb   => rgb
   );
+
+  -- Rotate tile RAM addresses.
+  --
+  -- This allows tiles to be stored as 16-bit words (i.e. two contiguous bytes)
+  -- in memory, rather than spliting them into high and low bytes stored in the
+  -- upper and lower-half of the RAM.
+  char_ram_cpu_addr <= rotate_left(ram_addr(CHAR_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
+  fg_ram_cpu_addr   <= rotate_left(ram_addr(FG_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
+  bg_ram_cpu_addr   <= rotate_left(ram_addr(BG_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
+
+  -- set sprite RAM address
+  sprite_ram_cpu_addr <= ram_addr(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
 
   -- mux GPU data output
   ram_dout <= sprite_ram_cpu_dout or

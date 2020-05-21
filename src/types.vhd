@@ -42,20 +42,17 @@ package types is
   subtype nibble_t is std_logic_vector(3 downto 0);
   subtype byte_t is std_logic_vector(7 downto 0);
 
-  -- layer priority value
-  subtype priority_t is unsigned(1 downto 0);
+  -- colour value
+  subtype color_t is std_logic_vector(3 downto 0);
 
-  -- tile pixel value
-  subtype tile_pixel_t is std_logic_vector(3 downto 0);
-
-  -- 4BPP tile colour value
-  subtype tile_color_t is std_logic_vector(3 downto 0);
+  -- pixel value
+  subtype pixel_t is std_logic_vector(3 downto 0);
 
   -- row of pixels in a 8x8 tile
-  subtype tile_row_t is std_logic_vector(31 downto 0);
+  subtype row_t is std_logic_vector(31 downto 0);
 
-  -- index of a tile in a tilemap
-  subtype tile_code_t is unsigned(10 downto 0);
+  -- layer priority value
+  subtype priority_t is std_logic_vector(1 downto 0);
 
   -- 16-bit audio sample
   subtype audio_t is signed(15 downto 0);
@@ -99,10 +96,16 @@ package types is
     enable : std_logic;
   end record video_t;
 
-  -- sprite
+  -- tile descriptor
+  type tile_t is record
+    code  : unsigned(10 downto 0);
+    color : color_t;
+  end record tile_t;
+
+  -- sprite descriptor
   type sprite_t is record
     code     : unsigned(12 downto 0);
-    color    : unsigned(3 downto 0);
+    color    : color_t;
     enable   : std_logic;
     flip_x   : std_logic;
     flip_y   : std_logic;
@@ -156,19 +159,21 @@ package types is
     lo_pos_x_lsb : natural;
   end record sprite_config_t;
 
-  -- scroll layer configuration
-  type scroll_config_t is record
+  -- tile configuration
+  type tile_config_t is record
     hi_code_msb : natural;
     hi_code_lsb : natural;
     lo_code_msb : natural;
     lo_code_lsb : natural;
     color_msb   : natural;
     color_lsb   : natural;
-  end record scroll_config_t;
+  end record tile_config_t;
 
   -- GPU configuration
   type gpu_config_t is record
-    scroll_config : scroll_config_t;
+    char_config   : tile_config_t;
+    fg_config     : tile_config_t;
+    bg_config     : tile_config_t;
     sprite_config : sprite_config_t;
   end record gpu_config_t;
 
