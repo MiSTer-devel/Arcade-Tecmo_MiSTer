@@ -46,6 +46,9 @@ use work.types.all;
 -- in response to requests from the main CPU.
 entity snd is
   port (
+    -- memory map
+    snd_map : in snd_map_t;
+
     -- reset
     reset : in std_logic;
 
@@ -213,24 +216,15 @@ begin
     end if;
   end process;
 
-  --  address    description
-  -- ----------+-----------------
-  -- 0000-3fff | sound ROM #1
-  -- 4000-7fff | sound RAM
-  -- 8000-bfff | FM
-  -- c000-ffff | request
-  -- c000-cfff | PCM low
-  -- d000-dfff | PCM high
-  -- e000-efff | PCM volume
-  -- f000-ffff | request off
-  sound_rom_1_cs <= '1' when cpu_addr >= x"0000" and cpu_addr <= x"3fff" and cpu_rfsh_n = '1' else '0';
-  sound_ram_cs   <= '1' when cpu_addr >= x"4000" and cpu_addr <= x"7fff" and cpu_rfsh_n = '1' else '0';
-  fm_cs          <= '1' when cpu_addr >= x"8000" and cpu_addr <= x"bfff" and cpu_rfsh_n = '1' else '0';
-  req_cs         <= '1' when cpu_addr >= x"c000" and cpu_addr <= x"ffff" and cpu_rfsh_n = '1' else '0';
-  pcm_low_cs     <= '1' when cpu_addr >= x"c000" and cpu_addr <= x"cfff" and cpu_rfsh_n = '1' else '0';
-  pcm_high_cs    <= '1' when cpu_addr >= x"d000" and cpu_addr <= x"dfff" and cpu_rfsh_n = '1' else '0';
-  pcm_vol_cs     <= '1' when cpu_addr >= x"e000" and cpu_addr <= x"efff" and cpu_rfsh_n = '1' else '0';
-  req_off_cs     <= '1' when cpu_addr >= x"f000" and cpu_addr <= x"ffff" and cpu_rfsh_n = '1' else '0';
+  -- set chip select signals
+  sound_rom_1_cs <= '1' when addr_in_range(cpu_addr, snd_map.prog_rom) and cpu_rfsh_n = '1' else '0';
+  sound_ram_cs   <= '1' when addr_in_range(cpu_addr, snd_map.work_ram) and cpu_rfsh_n = '1' else '0';
+  fm_cs          <= '1' when addr_in_range(cpu_addr, snd_map.fm)       and cpu_rfsh_n = '1' else '0';
+  pcm_low_cs     <= '1' when addr_in_range(cpu_addr, snd_map.pcm_lo)   and cpu_rfsh_n = '1' else '0';
+  pcm_high_cs    <= '1' when addr_in_range(cpu_addr, snd_map.pcm_hi)   and cpu_rfsh_n = '1' else '0';
+  pcm_vol_cs     <= '1' when addr_in_range(cpu_addr, snd_map.pcm_vol)  and cpu_rfsh_n = '1' else '0';
+  req_off_cs     <= '1' when addr_in_range(cpu_addr, snd_map.req_off)  and cpu_rfsh_n = '1' else '0';
+  req_cs         <= '1' when addr_in_range(cpu_addr, snd_map.req)      and cpu_rfsh_n = '1' else '0';
 
   -- set request data
   req_data <= data_reg when req_cs = '1' and cpu_rd_n = '0' else (others => '0');

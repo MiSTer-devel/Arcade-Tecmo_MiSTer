@@ -136,6 +136,17 @@ package types is
     dip_sw_2    : addr_range_t; -- DIP switch #2
   end record mem_map_t;
 
+  type snd_map_t is record
+    prog_rom : addr_range_t; -- program ROM
+    work_ram : addr_range_t; -- work RAM
+    fm       : addr_range_t; -- FM sound
+    pcm_lo   : addr_range_t; -- PCM low
+    pcm_hi   : addr_range_t; -- PCM high
+    pcm_vol  : addr_range_t; -- PCM volume
+    req_off  : addr_range_t; -- request off
+    req      : addr_range_t; -- request
+  end record snd_map_t;
+
   -- sprite configuration
   type sprite_config_t is record
     hi_code_msb  : natural;
@@ -180,6 +191,7 @@ package types is
   -- game configuration
   type game_config_t is record
     mem_map    : mem_map_t;
+    snd_map    : snd_map_t;
     gpu_config : gpu_config_t;
   end record game_config_t;
 end package types;
