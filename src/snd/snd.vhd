@@ -104,7 +104,8 @@ architecture arch of snd is
   signal req_data       : byte_t;
 
   -- registers
-  signal data_reg : byte_t;
+  signal data_reg    : byte_t;
+  signal pcm_vol_reg : unsigned(3 downto 0);
 
   -- FM signals
   signal fm_cs     : std_logic;
@@ -196,11 +197,11 @@ begin
 
   -- audio mixer
   mixer : entity work.mixer
-  generic map (GAIN_0 => 1.0, GAIN_1 => 0.8)
   port map (
-    ch0 => fm_sample,
-    ch1 => pcm_sample,
-    mix => audio
+    ch_0   => fm_sample,
+    ch_1   => pcm_sample,
+    gain_1 => pcm_vol_reg,
+    mix    => audio
   );
 
   nmi : process (clk, reset)
@@ -217,6 +218,16 @@ begin
 
         -- latch input data
         data_reg <= data;
+      end if;
+    end if;
+  end process;
+
+  -- set PCM volume register
+  set_pcm_vol_register : process (clk)
+  begin
+    if rising_edge(clk) then
+      if pcm_vol_cs = '1' and cpu_wr_n = '0' then
+        pcm_vol_reg <= unsigned(cpu_dout(3 downto 0));
       end if;
     end if;
   end process;
