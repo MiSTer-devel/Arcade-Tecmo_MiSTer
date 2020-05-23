@@ -124,7 +124,8 @@ package types is
     sprite_ram  : addr_range_t; -- sprite RAM
     palette_ram : addr_range_t; -- palette RAM
     prog_rom_2  : addr_range_t; -- program ROM #2 (bank switched)
-    scroll      : addr_range_t; -- scroll register
+    fg_scroll   : addr_range_t; -- foreground scroll register
+    bg_scroll   : addr_range_t; -- background scroll register
     sound       : addr_range_t; -- sound
     bank        : addr_range_t; -- bank register
     joy_1       : addr_range_t; -- joystick 1

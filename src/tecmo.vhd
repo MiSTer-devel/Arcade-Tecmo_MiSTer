@@ -145,7 +145,8 @@ architecture arch of tecmo is
   signal fg_ram_cs      : std_logic;
   signal bg_ram_cs      : std_logic;
   signal palette_ram_cs : std_logic;
-  signal scroll_cs      : std_logic;
+  signal fg_scroll_cs   : std_logic;
+  signal bg_scroll_cs   : std_logic;
   signal joy_1_cs       : std_logic;
   signal buttons_1_cs   : std_logic;
   signal joy_2_cs       : std_logic;
@@ -432,18 +433,34 @@ begin
     end if;
   end process;
 
-  -- set foreground and background scroll position registers
-  set_scroll_pos_registers : process (clk)
+  -- Set foreground scroll registers
+  --
+  -- These registers control the foreground position.
+  set_fb_scroll_registers : process (clk)
   begin
     if rising_edge(clk) then
-      if scroll_cs = '1' and cpu_wr_n = '0' then
+      if fg_scroll_cs = '1' and cpu_wr_n = '0' then
         case cpu_addr(2 downto 0) is
-          when "000" => fg_scroll_pos_reg.x(7 downto 0) <= unsigned(cpu_dout(7 downto 0));
-          when "001" => fg_scroll_pos_reg.x(8 downto 8) <= unsigned(cpu_dout(0 downto 0));
-          when "010" => fg_scroll_pos_reg.y(7 downto 0) <= unsigned(cpu_dout(7 downto 0));
-          when "011" => bg_scroll_pos_reg.x(7 downto 0) <= unsigned(cpu_dout(7 downto 0));
-          when "100" => bg_scroll_pos_reg.x(8 downto 8) <= unsigned(cpu_dout(0 downto 0));
-          when "101" => bg_scroll_pos_reg.y(7 downto 0) <= unsigned(cpu_dout(7 downto 0));
+          when "000"  => fg_scroll_pos_reg.x(7 downto 0) <= unsigned(cpu_dout(7 downto 0));
+          when "001"  => fg_scroll_pos_reg.x(8 downto 8) <= unsigned(cpu_dout(0 downto 0));
+          when "010"  => fg_scroll_pos_reg.y(7 downto 0) <= unsigned(cpu_dout(7 downto 0));
+          when others => null;
+        end case;
+      end if;
+    end if;
+  end process;
+
+  -- Set background scroll registers
+  --
+  -- These registers control the background position.
+  set_bg_scroll_registers : process (clk)
+  begin
+    if rising_edge(clk) then
+      if bg_scroll_cs = '1' and cpu_wr_n = '0' then
+        case cpu_addr(2 downto 0) is
+          when "011"  => bg_scroll_pos_reg.x(7 downto 0) <= unsigned(cpu_dout(7 downto 0));
+          when "100"  => bg_scroll_pos_reg.x(8 downto 8) <= unsigned(cpu_dout(0 downto 0));
+          when "101"  => bg_scroll_pos_reg.y(7 downto 0) <= unsigned(cpu_dout(7 downto 0));
           when others => null;
         end case;
       end if;
@@ -471,7 +488,8 @@ begin
   bg_ram_cs      <= '1' when addr_in_range(cpu_addr, game_config.mem_map.bg_ram)      else '0';
   sprite_ram_cs  <= '1' when addr_in_range(cpu_addr, game_config.mem_map.sprite_ram)  else '0';
   palette_ram_cs <= '1' when addr_in_range(cpu_addr, game_config.mem_map.palette_ram) else '0';
-  scroll_cs      <= '1' when addr_in_range(cpu_addr, game_config.mem_map.scroll)      else '0';
+  fg_scroll_cs   <= '1' when addr_in_range(cpu_addr, game_config.mem_map.fg_scroll)   else '0';
+  bg_scroll_cs   <= '1' when addr_in_range(cpu_addr, game_config.mem_map.bg_scroll)   else '0';
   sound_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.sound)       else '0';
   bank_cs        <= '1' when addr_in_range(cpu_addr, game_config.mem_map.bank)        else '0';
   joy_1_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.joy_1)       else '0';
