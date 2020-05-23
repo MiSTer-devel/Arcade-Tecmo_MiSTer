@@ -42,14 +42,16 @@ use work.math.all;
 use work.types.all;
 
 entity tecmo is
+  generic (
+    -- clock frequency (in MHz)
+    CLK_FREQ : real
+  );
   port (
     -- reset
     reset : in std_logic;
 
-    -- 48MHz clock
-    clk : in std_logic;
-
-    -- clock enable signals
+    -- clock signals
+    clk     : in std_logic;
     cen_384 : buffer std_logic;
     cen_12  : buffer std_logic;
     cen_6   : buffer std_logic;
@@ -211,22 +213,22 @@ architecture arch of tecmo is
 begin
   -- generate a 12MHz clock enable signal
   clock_divider_12 : entity work.clock_divider
-  generic map (DIVISOR => 4)
+  generic map (DIVISOR => natural(CLK_FREQ/12.0))
   port map (clk => clk, cen => cen_12);
 
   -- generate a 6MHz clock enable signal
   clock_divider_6 : entity work.clock_divider
-  generic map (DIVISOR => 8)
+  generic map (DIVISOR => natural(CLK_FREQ/6.0))
   port map (clk => clk, cen => cen_6);
 
   -- generate a 4MHz clock enable signal
   clock_divider_4 : entity work.clock_divider
-  generic map (DIVISOR => 12)
+  generic map (DIVISOR => natural(CLK_FREQ/4.0))
   port map (clk => clk, cen => cen_4);
 
   -- generate a 384KHz clock enable signal
   clock_divider_384 : entity work.clock_divider
-  generic map (DIVISOR => 125)
+  generic map (DIVISOR => natural(CLK_FREQ/0.384))
   port map (clk => clk, cen => cen_384);
 
   -- detect falling edges of the VBLANK signal
@@ -376,6 +378,7 @@ begin
 
   -- sound subsystem
   snd : entity work.snd
+  generic map (CLK_FREQ => CLK_FREQ)
   port map (
     -- configuration
     snd_map => game_config.snd_map,

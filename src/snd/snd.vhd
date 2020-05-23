@@ -45,6 +45,10 @@ use work.types.all;
 -- It has its own Z80 CPU that is responsible for starting and stopping sounds
 -- in response to requests from the main CPU.
 entity snd is
+  generic (
+    -- clock frequency (in MHz)
+    CLK_FREQ : real
+  );
   port (
     -- memory map
     snd_map : in snd_map_t;
@@ -150,6 +154,7 @@ begin
 
   -- FM player
   fm : entity work.fm
+  generic map (CLK_FREQ => CLK_FREQ)
   port map (
     reset  => reset,
     clk    => clk,

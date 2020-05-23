@@ -247,7 +247,7 @@ wire        sdram_ack;
 wire        sdram_valid;
 wire [31:0] sdram_q;
 
-sdram #(.CLK_FREQ(48.0)) sdram
+sdram #(.CLK_FREQ(96.0)) sdram
 (
   .reset(~locked),
   .clk(clk_sys),
@@ -329,9 +329,10 @@ always @(posedge clk_sys) begin
   if (ioctl_wr & (ioctl_index == 1)) game_index <= ioctl_data[3:0];
 end
 
-tecmo tecmo
+tecmo #(.CLK_FREQ(96.0)) tecmo
 (
   .reset(reset),
+
   .clk(clk_sys),
   .cen_12(cen_12),
 
