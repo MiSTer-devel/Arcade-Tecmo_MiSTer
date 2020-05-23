@@ -319,7 +319,7 @@ begin
   port map (
     RESET_n     => not reset,
     CLK         => clk,
-    CEN         => cen_4,
+    CEN         => cpu_cen,
     INT_n       => cpu_int_n,
     M1_n        => cpu_m1_n,
     MREQ_n      => cpu_mreq_n,
@@ -453,6 +453,12 @@ begin
       end if;
     end if;
   end process;
+
+  -- Set CPU clock enable
+  --
+  -- Different games run the CPU clock at different frequencies (i.e. 4Mhz or
+  -- 6Mhz).
+  cpu_cen <= cen_6 when game_config.cpu_freq = 6 else cen_4;
 
   -- set game config
   game_config <= select_game_config(to_integer(game_index));
