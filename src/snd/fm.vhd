@@ -41,6 +41,10 @@ use ieee.numeric_std.all;
 --
 -- We are using an implementation of the YM3526 by Aleksander Osman.
 entity fm is
+  generic (
+    -- clock frequency (in MHz)
+    CLK_FREQ : real
+  );
   port (
     reset : in std_logic;
     clk   : in std_logic;
@@ -83,9 +87,7 @@ architecture arch of fm is
   end component opl3;
 begin
   opl3_inst : component opl3
-  generic map (
-    OPLCLK => 48000000
-  )
+  generic map (OPLCLK => natural(CLK_FREQ*1000000.0))
   port map (
     rst_n => not reset,
 
@@ -94,7 +96,8 @@ begin
 
     irq_n => irq_n,
 
-    period_80us => std_logic_vector(to_unsigned(3840, 13)),
+    -- calculate an 80us period in clock cycles
+    period_80us => std_logic_vector(to_unsigned(natural(80.0/(1.0/CLK_FREQ)), 13)),
 
     addr => addr,
     din  => din,
