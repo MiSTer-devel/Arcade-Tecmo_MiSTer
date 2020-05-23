@@ -44,13 +44,16 @@ use ieee_proposed.fixed_pkg.all;
 use work.types.all;
 
 entity mixer is
-  generic (
-    GAIN_0 : real := 1.0;
-    GAIN_1 : real := 1.0
-  );
   port (
-    ch0 : in audio_t;
-    ch1 : in audio_t;
+    -- channel inputs
+    ch_0 : in audio_t;
+    ch_1 : in audio_t;
+
+    -- channel gains
+    gain_0 : in unsigned(3 downto 0) := "1111";
+    gain_1 : in unsigned(3 downto 0) := "1111";
+
+    -- mix output
     mix : out audio_t
   );
 end entity mixer;
@@ -63,12 +66,12 @@ architecture arch of mixer is
   signal c1 : sfixed(20 downto -4);
 begin
   -- convert the gains to fixed-point values
-  g0 <= to_sfixed(GAIN_0, g0);
-  g1 <= to_sfixed(GAIN_1, g1);
+  g0 <= sfixed("00000" & gain_0);
+  g1 <= sfixed("00000" & gain_1);
 
   -- apply the gain values to each channel
-  c0 <= to_sfixed(ch0, 15, 0) * g0;
-  c1 <= to_sfixed(ch1, 15, 0) * g1;
+  c0 <= to_sfixed(ch_0, 15, 0) * g0;
+  c1 <= to_sfixed(ch_1, 15, 0) * g1;
 
   -- sum the channels
   mix <= to_signed(
