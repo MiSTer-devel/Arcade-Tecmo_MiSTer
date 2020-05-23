@@ -121,8 +121,8 @@ assign AUDIO_R = AUDIO_L;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
 
-assign HDMI_ARX = status[1] ? 8'd16 : 8'd4;
-assign HDMI_ARY = status[1] ? 8'd9  : 8'd3;
+assign HDMI_ARX = status[1] ? 8'd16 : status[2] ? 8'd4 : 8'd3;
+assign HDMI_ARY = status[1] ? 8'd9  : status[2] ? 8'd3 : 8'd4;
 
 assign SDRAM_CLK = clk_sdram;
 
@@ -130,6 +130,7 @@ assign SDRAM_CLK = clk_sdram;
 localparam CONF_STR = {
   "A.Tecmo;;",
   "H0O1,Aspect Ratio,Original,Wide;",
+  "H0O2,Orientation,Vert,Horz;",
   "O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
   "-;",
   "O89,Lives,3,4,5,2;",
@@ -148,7 +149,6 @@ localparam CONF_STR = {
 ////////////////////////////////////////////////////////////////////////////////
 
 wire clk_sys, clk_sdram;
-wire cen_12;
 wire locked;
 
 pll pll
@@ -210,17 +210,19 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 // VIDEO
 ////////////////////////////////////////////////////////////////////////////////
 
+wire       ce_pix;
 wire [3:0] r, g, b;
 wire       hsync, vsync;
 wire       hblank, vblank;
+wire       no_rotate = status[2] & ~direct_video;
 
-arcade_video #(256, 224, 12, 0) arcade_video
+arcade_video #(256, 224, 12) arcade_video
 (
   .*,
 
   // clock
   .clk_video(clk_sys),
-  .ce_pix(cen_12),
+  .ce_pix(ce_pix),
 
   // video
   .RGB_in({r, g, b}),
@@ -230,7 +232,7 @@ arcade_video #(256, 224, 12, 0) arcade_video
   .VSync(vsync),
 
   // rotate/aspect
-  .no_rotate(1),
+  .no_rotate(no_rotate),
   .rotate_ccw(0),
   .fx(status[5:3])
 );
@@ -334,7 +336,7 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
   .reset(reset),
 
   .clk(clk_sys),
-  .cen_12(cen_12),
+  .cen_6(ce_pix),
 
   .joy_1({up, down, right, left}),
   .joy_2({up, down, right, left}),

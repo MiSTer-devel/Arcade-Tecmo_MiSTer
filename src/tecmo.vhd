@@ -52,10 +52,9 @@ entity tecmo is
 
     -- clock signals
     clk     : in std_logic;
-    cen_384 : buffer std_logic;
-    cen_12  : buffer std_logic;
-    cen_6   : buffer std_logic;
-    cen_4   : buffer std_logic;
+    cen_6   : buffer std_logic; -- 6MHz
+    cen_4   : buffer std_logic; -- 4MHz
+    cen_384 : buffer std_logic; -- 384KHz
 
     -- player controls
     joy_1     : in nibble_t;
@@ -104,6 +103,7 @@ entity tecmo is
     r : out std_logic_vector(3 downto 0);
     g : out std_logic_vector(3 downto 0);
     b : out std_logic_vector(3 downto 0);
+
 
     -- audio data
     audio : out audio_t
@@ -211,11 +211,6 @@ architecture arch of tecmo is
     end case;
   end select_coin;
 begin
-  -- generate a 12MHz clock enable signal
-  clock_divider_12 : entity work.clock_divider
-  generic map (DIVISOR => natural(CLK_FREQ/12.0))
-  port map (clk => clk, cen => cen_12);
-
   -- generate a 6MHz clock enable signal
   clock_divider_6 : entity work.clock_divider
   generic map (DIVISOR => natural(CLK_FREQ/6.0))
