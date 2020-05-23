@@ -115,22 +115,22 @@ package config is
     prog_rom => (x"0000", x"3fff"),
     work_ram => (x"4000", x"47ff"),
     fm       => (x"8000", x"8001"),
+    req      => (x"c000", x"c000"),
     pcm_lo   => (x"c000", x"c000"),
     pcm_hi   => (x"d000", x"d000"),
     pcm_vol  => (x"e000", x"e000"),
-    req_off  => (x"f000", x"f000"),
-    req      => (x"c000", x"ffff")
+    req_off  => (x"f000", x"f000")
   );
 
   constant GEMINI_SND_MAP : snd_map_t := (
     prog_rom => (x"0000", x"7fff"),
     work_ram => (x"8000", x"87ff"),
     fm       => (x"a000", x"a001"),
+    req      => (x"c000", x"c000"),
     pcm_lo   => (x"c000", x"c000"),
     pcm_hi   => (x"c400", x"c400"),
     pcm_vol  => (x"c800", x"c800"),
-    req_off  => (x"cc00", x"cc00"),
-    req      => (x"c000", x"ffff")
+    req_off  => (x"cc00", x"cc00")
   );
 
   --  byte   bit        description

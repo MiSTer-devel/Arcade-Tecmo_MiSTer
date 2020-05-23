@@ -500,7 +500,7 @@ begin
   dip_sw_1_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.dip_sw_1)    else '0';
   dip_sw_2_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.dip_sw_2)    else '0';
 
-  -- mux joystick, coin, and DIP switch data
+  -- mux joysticks, buttons, and DIP switches
   io_dout <= joy_1                           when joy_1_cs     = '1' and cpu_rd_n = '0'                       else
              joy_2                           when joy_2_cs     = '1' and cpu_rd_n = '0'                       else
              buttons_1                       when buttons_1_cs = '1' and cpu_rd_n = '0'                       else
