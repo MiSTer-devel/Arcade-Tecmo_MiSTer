@@ -140,7 +140,7 @@ localparam CONF_STR = {
   "OF,Allow Continue,Yes,No;",
   "-;",
   "R0,Reset;",
-  "J1,Fire,Jump,Start,Coin;",
+  "J1,B0,B1,Start,Coin;",
   "V,v",`BUILD_DATE
 };
 
@@ -287,8 +287,8 @@ reg key_left  = 0;
 reg key_right = 0;
 reg key_down  = 0;
 reg key_up    = 0;
-reg key_jump  = 0;
-reg key_fire  = 0;
+reg key_but_0 = 0;
+reg key_but_1 = 0;
 reg key_start = 0;
 reg key_coin  = 0;
 
@@ -302,20 +302,20 @@ always @(posedge clk_sys) begin
       'h72: key_down  <= pressed; // down
       'h6B: key_left  <= pressed; // left
       'h74: key_right <= pressed; // right
+      'h14: key_but_0 <= pressed; // ctrl
+      'h11: key_but_1 <= pressed; // alt
       'h16: key_start <= pressed; // 1
       'h2E: key_coin  <= pressed; // 5
-      'h14: key_fire  <= pressed; // ctrl
-      'h11: key_jump  <= pressed; // alt
     endcase
   end
 end
 
-wire right = key_right | joy[0];
-wire left  = key_left  | joy[1];
-wire down  = key_down  | joy[2];
 wire up    = key_up    | joy[3];
-wire fire  = key_fire  | joy[4];
-wire jump  = key_jump  | joy[5];
+wire down  = key_down  | joy[2];
+wire left  = key_left  | joy[1];
+wire right = key_right | joy[0];
+wire but_0 = key_but_0 | joy[4];
+wire but_1 = key_but_1 | joy[5];
 wire start = key_start | joy[6];
 wire coin  = key_coin  | joy[7];
 
@@ -340,8 +340,8 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
 
   .joy_1({up, down, right, left}),
   .joy_2({up, down, right, left}),
-  .buttons_1({2'b0, jump, fire}),
-  .buttons_2({2'b0, jump, fire}),
+  .buttons_1({2'b0, but_0, but_1}),
+  .buttons_2({2'b0, but_0, but_1}),
   .coin_1(coin),
   .coin_2(1'b0),
   .start_1(start),
