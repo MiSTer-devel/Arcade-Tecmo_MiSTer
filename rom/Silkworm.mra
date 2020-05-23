@@ -16,7 +16,7 @@
   </rom>
 
   <!-- ROM data -->
-  <rom index="0" zip="silkworm.zip" md5="none">
+  <rom index="0" zip="silkworm.zip" md5="6927d31376b55e525cb973bc4a054ea7">
     <!-- main cpu -->
     <part crc="a5277cce" name="silkworm.4" length="0xc000" />
     <part crc="a6c7bb51" name="silkworm.5" />

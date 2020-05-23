@@ -16,7 +16,7 @@
   </rom>
 
   <!-- ROM data -->
-  <rom index="0" zip="rygar.zip" md5="none">
+  <rom index="0" zip="rygar.zip" md5="ad06673302402f5523e1b5ac45166aa9">
     <!-- main cpu -->
     <part crc="062cd55d" name="5.5p" />
     <part crc="7ac5191b" name="cpu_5m.bin" />

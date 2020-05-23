@@ -16,7 +16,7 @@
   </rom>
 
   <!-- ROM data -->
-  <rom index="0" zip="gemini.zip" md5="none">
+  <rom index="0" zip="gemini.zip" md5="37cfc7fe7d99555b19ff1f8d65e1e9cb">
     <!-- main cpu -->
     <part crc="ce71e27a" name="4-5s" length="0xc000" />
     <part crc="216784a9" name="5-6s" />
