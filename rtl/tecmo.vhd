@@ -56,17 +56,12 @@ entity tecmo is
     cen_4   : buffer std_logic; -- 4MHz
     cen_384 : buffer std_logic; -- 384KHz
 
-    -- player controls
+    -- player input signals
     joy_1     : in nibble_t;
     joy_2     : in nibble_t;
     buttons_1 : in nibble_t;
     buttons_2 : in nibble_t;
-
-    -- coin/start flags
-    coin_1  : in std_logic;
-    coin_2  : in std_logic;
-    start_1 : in std_logic;
-    start_2 : in std_logic;
+    sys       : in nibble_t;
 
     -- DIP switches
     dip_allow_continue : in std_logic;
@@ -103,7 +98,6 @@ entity tecmo is
     r : out std_logic_vector(3 downto 0);
     g : out std_logic_vector(3 downto 0);
     b : out std_logic_vector(3 downto 0);
-
 
     -- audio data
     audio : out audio_t
@@ -198,17 +192,14 @@ architecture arch of tecmo is
   -- RGB data
   signal rgb : rgb_t;
 
-  function select_coin (
-    index   : natural;
-    coin_1  : std_logic;
-    coin_2  : std_logic;
-    start_1 : std_logic;
-    start_2 : std_logic
-  ) return nibble_t is
+  -- Returns the coin/start nibble
+  --
+  -- The ordering of the bits is different depending on the game.
+  function select_coin (a : nibble_t; index : natural) return nibble_t is
   begin
     case index is
-      when 0      => return coin_1 & coin_2 & start_1 & start_2; -- rygar
-      when others => return coin_2 & coin_1 & start_2 & start_1; -- gemini/silkworm
+      when 0      => return a;                         -- rygar
+      when others => return a(2) & a(3) & a(0) & a(1); -- gemini/silkworm
     end case;
   end select_coin;
 begin
@@ -467,17 +458,17 @@ begin
     end if;
   end process;
 
+  -- set game config
+  game_config <= select_game_config(to_integer(game_index));
+
   -- Set CPU clock enable
   --
   -- Different games run the CPU clock at different frequencies (i.e. 4Mhz or
   -- 6Mhz).
   cpu_cen <= cen_6 when game_config.cpu_freq = 6 else cen_4;
 
-  -- set game config
-  game_config <= select_game_config(to_integer(game_index));
-
   -- set coin/start signal
-  coin <= select_coin(to_integer(game_index), coin_1, coin_2, start_1, start_2);
+  coin <= select_coin(sys, to_integer(game_index));
 
   -- set chip select signals
   prog_rom_1_cs  <= '1' when addr_in_range(cpu_addr, game_config.mem_map.prog_rom_1)  else '0';
