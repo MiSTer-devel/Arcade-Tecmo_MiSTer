@@ -358,7 +358,7 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
   .sdram_valid(sdram_valid),
   .sdram_q(sdram_q),
 
-  .ioctl_addr(ioctl_addr),
+  .ioctl_addr(ioctl_addr[19:0]),
   .ioctl_data(ioctl_data),
   .ioctl_wr(ioctl_wr & (ioctl_index == 0)),
   .ioctl_download(ioctl_download),

@@ -45,7 +45,7 @@ package common is
   constant CPU_ADDR_WIDTH : natural := 16;
 
   -- IOCTL
-  constant IOCTL_ADDR_WIDTH : natural := 22;
+  constant IOCTL_ADDR_WIDTH : natural := 20;
 
   -- SDRAM
   constant SDRAM_ADDR_WIDTH      : natural := 13;
