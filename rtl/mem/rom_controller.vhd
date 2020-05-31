@@ -136,42 +136,42 @@ architecture arch of rom_controller is
   signal rom, next_rom, pending_rom : rom_t;
 
   -- ROM request signals
-  signal prog_rom_1_ctrl_req : std_logic;
-  signal prog_rom_2_ctrl_req : std_logic;
-  signal char_rom_ctrl_req   : std_logic;
-  signal sprite_rom_ctrl_req : std_logic;
-  signal fg_rom_ctrl_req     : std_logic;
-  signal bg_rom_ctrl_req     : std_logic;
+  signal prog_rom_1_ctrl_req  : std_logic;
+  signal prog_rom_2_ctrl_req  : std_logic;
+  signal char_rom_ctrl_req    : std_logic;
+  signal sprite_rom_ctrl_req  : std_logic;
+  signal fg_rom_ctrl_req      : std_logic;
+  signal bg_rom_ctrl_req      : std_logic;
   signal sound_rom_1_ctrl_req : std_logic;
   signal sound_rom_2_ctrl_req : std_logic;
 
   -- ROM acknowledge signals
-  signal prog_rom_1_ctrl_ack : std_logic;
-  signal prog_rom_2_ctrl_ack : std_logic;
-  signal char_rom_ctrl_ack   : std_logic;
-  signal sprite_rom_ctrl_ack : std_logic;
-  signal fg_rom_ctrl_ack     : std_logic;
-  signal bg_rom_ctrl_ack     : std_logic;
+  signal prog_rom_1_ctrl_ack  : std_logic;
+  signal prog_rom_2_ctrl_ack  : std_logic;
+  signal char_rom_ctrl_ack    : std_logic;
+  signal sprite_rom_ctrl_ack  : std_logic;
+  signal fg_rom_ctrl_ack      : std_logic;
+  signal bg_rom_ctrl_ack      : std_logic;
   signal sound_rom_1_ctrl_ack : std_logic;
   signal sound_rom_2_ctrl_ack : std_logic;
 
   -- ROM valid signals
-  signal prog_rom_1_ctrl_valid : std_logic;
-  signal prog_rom_2_ctrl_valid : std_logic;
-  signal char_rom_ctrl_valid   : std_logic;
-  signal sprite_rom_ctrl_valid : std_logic;
-  signal fg_rom_ctrl_valid     : std_logic;
-  signal bg_rom_ctrl_valid     : std_logic;
+  signal prog_rom_1_ctrl_valid  : std_logic;
+  signal prog_rom_2_ctrl_valid  : std_logic;
+  signal char_rom_ctrl_valid    : std_logic;
+  signal sprite_rom_ctrl_valid  : std_logic;
+  signal fg_rom_ctrl_valid      : std_logic;
+  signal bg_rom_ctrl_valid      : std_logic;
   signal sound_rom_1_ctrl_valid : std_logic;
   signal sound_rom_2_ctrl_valid : std_logic;
 
   -- address mux signals
-  signal prog_rom_1_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
-  signal prog_rom_2_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
-  signal char_rom_ctrl_addr   : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
-  signal sprite_rom_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
-  signal fg_rom_ctrl_addr     : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
-  signal bg_rom_ctrl_addr     : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
+  signal prog_rom_1_ctrl_addr  : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
+  signal prog_rom_2_ctrl_addr  : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
+  signal char_rom_ctrl_addr    : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
+  signal sprite_rom_ctrl_addr  : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
+  signal fg_rom_ctrl_addr      : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
+  signal bg_rom_ctrl_addr      : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
   signal sound_rom_1_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
   signal sound_rom_2_ctrl_addr : unsigned(SDRAM_CTRL_ADDR_WIDTH-1 downto 0);
 
@@ -362,7 +362,7 @@ begin
   latch_next_rom : process (clk, reset)
   begin
     if reset = '1' then
-      rom         <= NONE;
+      rom <= NONE;
       pending_rom <= NONE;
     elsif rising_edge(clk) then
       -- default to not having any ROM selected
@@ -382,33 +382,33 @@ begin
   end process;
 
   -- mux the next ROM in priority order
-  next_rom <= PROG_ROM_1 when prog_rom_1_ctrl_req = '1' else
-              PROG_ROM_2 when prog_rom_2_ctrl_req = '1' else
+  next_rom <= PROG_ROM_1  when prog_rom_1_ctrl_req  = '1' else
+              PROG_ROM_2  when prog_rom_2_ctrl_req  = '1' else
               SOUND_ROM_1 when sound_rom_1_ctrl_req = '1' else
-              CHAR_ROM   when char_rom_ctrl_req   = '1' else
-              SPRITE_ROM when sprite_rom_ctrl_req = '1' else
-              FG_ROM     when fg_rom_ctrl_req     = '1' else
-              BG_ROM     when bg_rom_ctrl_req     = '1' else
+              CHAR_ROM    when char_rom_ctrl_req    = '1' else
+              SPRITE_ROM  when sprite_rom_ctrl_req  = '1' else
+              FG_ROM      when fg_rom_ctrl_req      = '1' else
+              BG_ROM      when bg_rom_ctrl_req      = '1' else
               SOUND_ROM_2 when sound_rom_2_ctrl_req = '1' else
               NONE;
 
   -- route SDRAM acknowledge signal to the current ROM
-  prog_rom_1_ctrl_ack <= sdram_ack when rom = PROG_ROM_1 else '0';
-  prog_rom_2_ctrl_ack <= sdram_ack when rom = PROG_ROM_2 else '0';
-  char_rom_ctrl_ack   <= sdram_ack when rom = CHAR_ROM   else '0';
-  sprite_rom_ctrl_ack <= sdram_ack when rom = SPRITE_ROM else '0';
-  fg_rom_ctrl_ack     <= sdram_ack when rom = FG_ROM     else '0';
-  bg_rom_ctrl_ack     <= sdram_ack when rom = BG_ROM     else '0';
+  prog_rom_1_ctrl_ack  <= sdram_ack when rom = PROG_ROM_1  else '0';
+  prog_rom_2_ctrl_ack  <= sdram_ack when rom = PROG_ROM_2  else '0';
+  char_rom_ctrl_ack    <= sdram_ack when rom = CHAR_ROM    else '0';
+  sprite_rom_ctrl_ack  <= sdram_ack when rom = SPRITE_ROM  else '0';
+  fg_rom_ctrl_ack      <= sdram_ack when rom = FG_ROM      else '0';
+  bg_rom_ctrl_ack      <= sdram_ack when rom = BG_ROM      else '0';
   sound_rom_1_ctrl_ack <= sdram_ack when rom = SOUND_ROM_1 else '0';
   sound_rom_2_ctrl_ack <= sdram_ack when rom = SOUND_ROM_2 else '0';
 
   -- route SDRAM valid signal to the pending ROM
-  prog_rom_1_ctrl_valid <= sdram_valid when pending_rom = PROG_ROM_1 else '0';
-  prog_rom_2_ctrl_valid <= sdram_valid when pending_rom = PROG_ROM_2 else '0';
-  char_rom_ctrl_valid   <= sdram_valid when pending_rom = CHAR_ROM   else '0';
-  sprite_rom_ctrl_valid <= sdram_valid when pending_rom = SPRITE_ROM else '0';
-  fg_rom_ctrl_valid     <= sdram_valid when pending_rom = FG_ROM     else '0';
-  bg_rom_ctrl_valid     <= sdram_valid when pending_rom = BG_ROM     else '0';
+  prog_rom_1_ctrl_valid  <= sdram_valid when pending_rom = PROG_ROM_1  else '0';
+  prog_rom_2_ctrl_valid  <= sdram_valid when pending_rom = PROG_ROM_2  else '0';
+  char_rom_ctrl_valid    <= sdram_valid when pending_rom = CHAR_ROM    else '0';
+  sprite_rom_ctrl_valid  <= sdram_valid when pending_rom = SPRITE_ROM  else '0';
+  fg_rom_ctrl_valid      <= sdram_valid when pending_rom = FG_ROM      else '0';
+  bg_rom_ctrl_valid      <= sdram_valid when pending_rom = BG_ROM      else '0';
   sound_rom_1_ctrl_valid <= sdram_valid when pending_rom = SOUND_ROM_1 else '0';
   sound_rom_2_ctrl_valid <= sdram_valid when pending_rom = SOUND_ROM_2 else '0';
 
@@ -423,14 +423,14 @@ begin
               sound_rom_2_ctrl_req;
 
   -- mux SDRAM address in priority order
-  sdram_addr <= download_addr        when ioctl_download      = '1' else
-                prog_rom_1_ctrl_addr when prog_rom_1_ctrl_req = '1' else
-                prog_rom_2_ctrl_addr when prog_rom_2_ctrl_req = '1' else
+  sdram_addr <= download_addr         when ioctl_download       = '1' else
+                prog_rom_1_ctrl_addr  when prog_rom_1_ctrl_req  = '1' else
+                prog_rom_2_ctrl_addr  when prog_rom_2_ctrl_req  = '1' else
                 sound_rom_1_ctrl_addr when sound_rom_1_ctrl_req = '1' else
-                char_rom_ctrl_addr   when char_rom_ctrl_req   = '1' else
-                sprite_rom_ctrl_addr when sprite_rom_ctrl_req = '1' else
-                fg_rom_ctrl_addr     when fg_rom_ctrl_req     = '1' else
-                bg_rom_ctrl_addr     when bg_rom_ctrl_req     = '1' else
+                char_rom_ctrl_addr    when char_rom_ctrl_req    = '1' else
+                sprite_rom_ctrl_addr  when sprite_rom_ctrl_req  = '1' else
+                fg_rom_ctrl_addr      when fg_rom_ctrl_req      = '1' else
+                bg_rom_ctrl_addr      when bg_rom_ctrl_req      = '1' else
                 sound_rom_2_ctrl_addr when sound_rom_2_ctrl_req = '1' else
                 (others => '0');
 

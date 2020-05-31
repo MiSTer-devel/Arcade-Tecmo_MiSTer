@@ -10,6 +10,16 @@
 
   <buttons names="Jump,Fire,Start,Coin" default="A,B,R,L" />
 
+  <switches default="40,80">
+    <dip bits="0,1" name="Coinage" ids="2c/1cr,1c/1cr,1c/2cr,1c/3cr" values="1,0,2,3" />
+    <dip bits="4,5" name="Lives" ids="2,3,4,5" values="3,0,1,2" />
+    <dip bits="6" name="Cabinet" ids="Upright,Cocktail" values="1,0" />
+    <dip bits="8,9" name="Bonus Life" ids="50K 200K 500K,100K 300K 600K,200K 500K,100K" />
+    <dip bits="12,13" name="Difficulty" ids="Easy,Normal,Hard,Hardest" />
+    <dip bits="14" name="2P Start Anytime" ids="No,Yes" />
+    <dip bits="15" name="Allow Continue" ids="No,Yes" />
+  </switches>
+
   <!-- select game -->
   <rom index="1">
     <part>0</part>

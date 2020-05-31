@@ -10,6 +10,15 @@
 
   <buttons names="Fire 1,Fire 2,Start,Coin" default="A,B,R,L" />
 
+  <switches default="80,30">
+    <dip bits="0,1" name="Coinage" ids="2c/1cr,1c/1cr,1c/2cr,1c/3cr" values="1,0,2,3" />
+    <dip bits="4,5" name="Lives" ids="2,3,4,5" values="3,0,1,2" />
+    <dip bits="7" name="Demo Sounds" ids="No,Yes" />
+    <dip bits="8,9" name="Bonus Life" ids="50K 200K 500K,100K 300K 800K,50K 200K,100K 300K" />
+    <dip bits="13,14" name="Difficulty" ids="Easy,Normal,Hard,Hardest" />
+    <dip bits="15" name="Allow Continue" ids="No,Yes" values="1,0" />
+  </switches>
+
   <!-- select game -->
   <rom index="1">
     <part>2</part>
