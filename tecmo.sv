@@ -173,8 +173,7 @@ wire  [7:0] ioctl_index;
 
 wire [10:0] ps2_key;
 
-wire  [8:0] joystick_0, joystick_1;
-wire [15:0] joy = joystick_0 | joystick_1;
+wire  [7:0] joystick_0, joystick_1;
 
 hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 (
@@ -306,14 +305,14 @@ always @(posedge clk_sys) begin
   end
 end
 
-wire up    = key_up    | joy[3];
-wire down  = key_down  | joy[2];
-wire left  = key_left  | joy[1];
-wire right = key_right | joy[0];
-wire but_0 = key_but_0 | joy[4];
-wire but_1 = key_but_1 | joy[5];
-wire start = key_start | joy[6];
-wire coin  = key_coin  | joy[7];
+wire up    = key_up    | joystick_0[3];
+wire down  = key_down  | joystick_0[2];
+wire left  = key_left  | joystick_0[1];
+wire right = key_right | joystick_0[0];
+wire but_0 = key_but_0 | joystick_0[4];
+wire but_1 = key_but_1 | joystick_0[5];
+wire start = key_start | joystick_0[6];
+wire coin  = key_coin  | joystick_0[7];
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
@@ -339,10 +338,10 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
   .cen_6(ce_pix),
 
   .joy_1({up, down, right, left}),
-  .joy_2({up, down, right, left}),
+  .joy_2({joystick_1[3], joystick_1[2], joystick_1[0], joystick_1[1]}),
   .buttons_1({2'b0, but_0, but_1}),
-  .buttons_2({2'b0, but_0, but_1}),
-  .sys({coin, 1'b0, start, 1'b0}),
+  .buttons_2({2'b0, joystick_1[4], joystick_1[5]}),
+  .sys({coin, joystick_1[7], start, joystick_1[6]}),
 
   .dip_1(sw[0]),
   .dip_2(sw[1]),
