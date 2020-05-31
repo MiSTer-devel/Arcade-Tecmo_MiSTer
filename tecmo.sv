@@ -360,8 +360,8 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
 
   .ioctl_addr(ioctl_addr[19:0]),
   .ioctl_data(ioctl_data),
-  .ioctl_wr(ioctl_wr & (ioctl_index == 0)),
-  .ioctl_download(ioctl_download),
+  .ioctl_wr(ioctl_wr && !ioctl_index),
+  .ioctl_download(ioctl_download && !ioctl_index),
 
   .game_index(game_index),
 
