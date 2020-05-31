@@ -133,11 +133,7 @@ localparam CONF_STR = {
   "H0O2,Orientation,Vert,Horz;",
   "O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
   "-;",
-  "O89,Lives,3,4,5,2;",
-  "OA,Cabinet,Upright,Cocktail;",
-  "OBC,Bonus Life,50K 200K 500K,100K 300K 600K,200K 500K,100K;",
-  "ODE,Difficulty,Easy,Normal,Hard,Hardest;",
-  "OF,Allow Continue,Yes,No;",
+  "DIP;",
   "-;",
   "R0,Reset;",
   "J1,B0,B1,Start,Coin;",
@@ -323,12 +319,16 @@ wire coin  = key_coin  | joy[7];
 // GAME
 ////////////////////////////////////////////////////////////////////////////////
 
-wire reset = RESET | ioctl_download | status[0] | buttons[1];
+wire reset = RESET | status[0] | buttons[1];
+reg [7:0] sw[8];
 reg [3:0] game_index = 0;
 
-// set game index
 always @(posedge clk_sys) begin
-  if (ioctl_wr & (ioctl_index == 1)) game_index <= ioctl_data[3:0];
+  // set game index
+  if (ioctl_wr && (ioctl_index == 1)) game_index <= ioctl_data[3:0];
+
+  // set DIP switches
+  if (ioctl_wr && (ioctl_index == 254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_data;
 end
 
 tecmo #(.CLK_FREQ(96.0)) tecmo
@@ -344,11 +344,8 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
   .buttons_2({2'b0, but_0, but_1}),
   .sys({coin, 1'b0, start, 1'b0}),
 
-  .dip_allow_continue(~status[15]),
-  .dip_bonus_life(status[12:11]),
-  .dip_cabinet(~status[10]),
-  .dip_difficulty(status[14:13]),
-  .dip_lives(status[9:8]),
+  .dip_1(sw[0]),
+  .dip_2(sw[1]),
 
   .sdram_addr(sdram_addr),
   .sdram_data(sdram_data),
