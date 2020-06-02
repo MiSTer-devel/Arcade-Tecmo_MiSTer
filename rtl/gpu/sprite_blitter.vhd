@@ -48,8 +48,8 @@ use work.types.all;
 entity sprite_blitter is
   port (
     -- clock
-    clk   : in std_logic;
-    cen_6 : in std_logic;
+    clk : in std_logic;
+    cen : in std_logic;
 
     -- sprite descriptor
     sprite : in sprite_t;
@@ -136,7 +136,7 @@ begin
   latch_next_state : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         state <= next_state;
       end if;
     end if;
@@ -147,7 +147,7 @@ begin
   update_src_pos_counter : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if state = IDLE then
           -- set source position to first pixel
           src_pos.x <= (others => '0');
@@ -173,7 +173,7 @@ begin
   update_load_pos_counter : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if state = IDLE then
           -- set load position to first pixel
           load_pos.x <= (others => '0');
@@ -200,7 +200,7 @@ begin
   latch_tile_row : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if (state = PRELOAD or state = BLIT) and load_pos.x(2 downto 0) = 7 then
           tile_row <= rom_data;
         end if;

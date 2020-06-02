@@ -56,8 +56,8 @@ entity char_layer is
     config : in tile_config_t;
 
     -- clock signals
-    clk   : in std_logic;
-    cen_6 : in std_logic;
+    clk : in std_logic;
+    cen : in std_logic;
 
     -- char RAM
     ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
@@ -108,7 +108,7 @@ begin
   tile_data_pipeline : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         case to_integer(offset_x) is
           when 0 =>
             -- load tile
@@ -133,7 +133,7 @@ begin
   latch_tile_row : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if video.pos.x(2 downto 0) = 7 then
           tile_row <= rom_data;
         end if;

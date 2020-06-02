@@ -325,8 +325,8 @@ begin
     config => game_config.gpu_config,
 
     -- clock signals
-    clk   => clk,
-    cen_6 => cen_6,
+    clk => clk,
+    cen => cen_6,
 
     -- RAM interface
     ram_addr => cpu_addr,

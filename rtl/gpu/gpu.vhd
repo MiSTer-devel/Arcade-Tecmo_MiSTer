@@ -62,8 +62,8 @@ entity gpu is
     config : in gpu_config_t;
 
     -- clock signals
-    clk   : in std_logic;
-    cen_6 : in std_logic;
+    clk : in std_logic;
+    cen : in std_logic;
 
     -- RAM interface
     ram_addr : in unsigned(CPU_ADDR_WIDTH-1 downto 0);
@@ -141,7 +141,7 @@ begin
   video_gen : entity work.video_gen
   port map (
     clk   => clk,
-    cen   => cen_6,
+    cen   => cen,
     video => video
   );
 
@@ -273,8 +273,8 @@ begin
       config => config.char_config,
 
       -- clock signals
-      clk   => clk,
-      cen_6 => cen_6,
+      clk => clk,
+      cen => cen,
 
       -- RAM interface
       ram_addr => char_ram_gpu_addr,
@@ -304,8 +304,8 @@ begin
       config => config.fg_config,
 
       -- clock signals
-      clk   => clk,
-      cen_6 => cen_6,
+      clk => clk,
+      cen => cen,
 
       -- RAM interface
       ram_addr => fg_ram_gpu_addr,
@@ -336,8 +336,8 @@ begin
       config => config.bg_config,
 
       -- clock signals
-      clk   => clk,
-      cen_6 => cen_6,
+      clk => clk,
+      cen => cen,
 
       -- RAM interface
       ram_addr => bg_ram_gpu_addr,
@@ -368,8 +368,8 @@ begin
       config => config.sprite_config,
 
       -- clock signals
-      clk   => clk,
-      cen_6 => cen_6,
+      clk => clk,
+      cen => cen,
 
       -- RAM interface
       ram_addr => sprite_ram_gpu_addr,
@@ -390,8 +390,8 @@ begin
   palette : entity work.palette
   port map (
     -- clock signals
-    clk   => clk,
-    cen_6 => cen_6,
+    clk => clk,
+    cen => cen,
 
     -- RAM interface
     ram_addr => palette_ram_gpu_addr,

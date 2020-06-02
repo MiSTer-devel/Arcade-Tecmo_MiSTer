@@ -67,8 +67,8 @@ entity sprite_layer is
     config : in sprite_config_t;
 
     -- clock signals
-    clk   : in std_logic;
-    cen_6 : in std_logic;
+    clk : in std_logic;
+    cen : in std_logic;
 
     -- sprite RAM
     ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
@@ -139,8 +139,8 @@ begin
 
   sprite_biltter : entity work.sprite_blitter
   port map (
-    clk   => clk,
-    cen_6 => cen_6,
+    clk => clk,
+    cen => cen,
 
     sprite => sprite,
 
@@ -208,7 +208,7 @@ begin
   latch_next_state : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         state <= next_state;
       end if;
     end if;
@@ -222,7 +222,7 @@ begin
   update_sprite_counter : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if state = JUMP then
           sprite_counter <= sprite_counter + 1;
         end if;
@@ -234,7 +234,7 @@ begin
   latch_sprite : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if state = LATCH then
           sprite <= decode_sprite(config, ram_data);
         end if;
@@ -246,7 +246,7 @@ begin
   blit_sprite : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if state = LOAD then
           blitter_start <= '1';
         else
@@ -260,7 +260,7 @@ begin
   flip_frame_buffer : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if state = FLIP then
           frame_buffer_flip <= not frame_buffer_flip;
         end if;
@@ -272,7 +272,7 @@ begin
   latch_gfx_data : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         priority <= frame_buffer_dout_b(9 downto 8);
         data     <= frame_buffer_dout_b(7 downto 0);
       end if;
@@ -289,5 +289,5 @@ begin
   frame_buffer_addr_b <= video.pos.y(7 downto 0) & (video.pos.x(7 downto 0)+OFFSET);
 
   -- enable reading from the frame buffer when video output is enabled
-  frame_buffer_re_b <= cen_6 and video.enable;
+  frame_buffer_re_b <= cen and video.enable;
 end architecture arch;

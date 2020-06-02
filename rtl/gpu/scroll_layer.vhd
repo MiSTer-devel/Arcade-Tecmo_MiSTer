@@ -65,8 +65,8 @@ entity scroll_layer is
     config : in tile_config_t;
 
     -- clock signals
-    clk   : in std_logic;
-    cen_6 : in std_logic;
+    clk : in std_logic;
+    cen : in std_logic;
 
     -- scroll RAM
     ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
@@ -113,7 +113,7 @@ begin
   update_pos_counter : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if video.hsync = '1' then
           -- reset to the horizontal scroll position
           dest_pos.x <= scroll_pos.x;
@@ -138,7 +138,7 @@ begin
   tile_data_pipeline : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         case to_integer(offset_x) is
           when 8 =>
             -- load tile
@@ -163,7 +163,7 @@ begin
   latch_tile_row : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if dest_pos.x(2 downto 0) = 7 then
           tile_row <= rom_data;
         end if;

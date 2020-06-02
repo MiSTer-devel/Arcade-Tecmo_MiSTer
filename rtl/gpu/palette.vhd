@@ -45,8 +45,8 @@ use work.types.all;
 entity palette is
   port (
     -- clock signals
-    clk   : in std_logic;
-    cen_6 : in std_logic;
+    clk : in std_logic;
+    cen : in std_logic;
 
     -- palette RAM
     ram_addr : out unsigned(PALETTE_RAM_GPU_ADDR_WIDTH-1 downto 0);
@@ -75,7 +75,7 @@ begin
   latch_rgb_data : process (clk)
   begin
     if rising_edge(clk) then
-      if cen_6 = '1' then
+      if cen = '1' then
         if video.enable = '1' then
           rgb.r <= ram_data(15 downto 12);
           rgb.g <= ram_data(11 downto 8);
