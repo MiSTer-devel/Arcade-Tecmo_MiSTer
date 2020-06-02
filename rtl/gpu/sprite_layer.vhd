@@ -56,6 +56,12 @@ use work.types.all;
 -- The pixel data for the 8x8 tiles which make up each sprite is stored in the
 -- sprite tile ROM.
 entity sprite_layer is
+  generic (
+    RAM_ADDR_WIDTH : natural;
+    RAM_DATA_WIDTH : natural;
+    ROM_ADDR_WIDTH : natural;
+    ROM_DATA_WIDTH : natural
+  );
   port (
     -- configuration
     config : in sprite_config_t;
@@ -65,12 +71,12 @@ entity sprite_layer is
     cen_6 : in std_logic;
 
     -- sprite RAM
-    ram_addr : out unsigned(SPRITE_RAM_GPU_ADDR_WIDTH-1 downto 0);
-    ram_data : in std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0);
+    ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
+    ram_data : in std_logic_vector(RAM_DATA_WIDTH-1 downto 0);
 
     -- tile ROM
-    rom_addr : out unsigned(SPRITE_ROM_ADDR_WIDTH-1 downto 0);
-    rom_data : in std_logic_vector(SPRITE_ROM_DATA_WIDTH-1 downto 0);
+    rom_addr : out unsigned(ROM_ADDR_WIDTH-1 downto 0);
+    rom_data : in std_logic_vector(ROM_DATA_WIDTH-1 downto 0);
 
     -- video signals
     video : in video_t;

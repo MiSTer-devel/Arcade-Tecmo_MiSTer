@@ -45,6 +45,12 @@ use work.types.all;
 --
 -- It consists of a 32x32 grid of 8x8 tiles.
 entity char_layer is
+  generic (
+    RAM_ADDR_WIDTH : natural;
+    RAM_DATA_WIDTH : natural;
+    ROM_ADDR_WIDTH : natural;
+    ROM_DATA_WIDTH : natural
+  );
   port (
     -- configuration
     config : in tile_config_t;
@@ -54,12 +60,12 @@ entity char_layer is
     cen_6 : in std_logic;
 
     -- char RAM
-    ram_addr : out unsigned(CHAR_RAM_GPU_ADDR_WIDTH-1 downto 0);
-    ram_data : in std_logic_vector(CHAR_RAM_GPU_DATA_WIDTH-1 downto 0);
+    ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
+    ram_data : in std_logic_vector(RAM_DATA_WIDTH-1 downto 0);
 
     -- tile ROM
-    rom_addr : out unsigned(CHAR_ROM_ADDR_WIDTH-1 downto 0);
-    rom_data : in std_logic_vector(CHAR_ROM_DATA_WIDTH-1 downto 0);
+    rom_addr : out unsigned(ROM_ADDR_WIDTH-1 downto 0);
+    rom_data : in std_logic_vector(ROM_DATA_WIDTH-1 downto 0);
 
     -- video signals
     video : in video_t;

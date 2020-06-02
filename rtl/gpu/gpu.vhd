@@ -262,6 +262,12 @@ begin
   char_layer_gen : if CHAR_LAYER_ENABLE generate
     -- character layer
     char_layer : entity work.char_layer
+    generic map (
+      RAM_ADDR_WIDTH => CHAR_RAM_GPU_ADDR_WIDTH,
+      RAM_DATA_WIDTH => CHAR_RAM_GPU_DATA_WIDTH,
+      ROM_ADDR_WIDTH => CHAR_ROM_ADDR_WIDTH,
+      ROM_DATA_WIDTH => CHAR_ROM_DATA_WIDTH
+    )
     port map (
       -- configuration
       config => config.char_config,
@@ -351,6 +357,12 @@ begin
   sprite_layer_gen : if SPRITE_LAYER_ENABLE generate
     -- sprite layer
     sprite_layer : entity work.sprite_layer
+    generic map (
+      RAM_ADDR_WIDTH => SPRITE_RAM_GPU_ADDR_WIDTH,
+      RAM_DATA_WIDTH => SPRITE_RAM_GPU_DATA_WIDTH,
+      ROM_ADDR_WIDTH => SPRITE_ROM_ADDR_WIDTH,
+      ROM_DATA_WIDTH => SPRITE_ROM_DATA_WIDTH
+    )
     port map (
       -- configuration
       config => config.sprite_config,
