@@ -89,7 +89,7 @@ end sprite_layer;
 
 architecture arch of sprite_layer is
   -- the pixel offset of the sprite layer
-  constant OFFSET : natural := 2;
+  constant OFFSET : natural := 3;
 
   type state_t is (IDLE, LOAD, LATCH, BLIT, JUMP, DONE, FLIP);
 
