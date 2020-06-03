@@ -324,6 +324,9 @@ begin
     -- configuration
     config => game_config.gpu_config,
 
+    -- reset
+    reset => reset,
+
     -- clock signals
     clk => clk,
     cen => cen_6,

@@ -44,6 +44,9 @@ use work.types.all;
 -- actual RGB value that can be rendered on the screen.
 entity palette is
   port (
+    -- reset
+    reset : in std_logic;
+
     -- clock signals
     clk : in std_logic;
     cen : in std_logic;
@@ -70,21 +73,22 @@ end palette;
 architecture arch of palette is
   -- current layer
   signal layer : layer_t;
+
+  -- pixel register
+  signal pixel_reg : rgb_t;
 begin
   -- latch RGB data from the palette RAM
-  latch_rgb_data : process (clk)
+  latch_rgb_data : process (clk, reset)
   begin
-    if rising_edge(clk) then
+    if reset = '1' then
+      pixel_reg.r <= (others => '0');
+      pixel_reg.g <= (others => '0');
+      pixel_reg.b <= (others => '0');
+    elsif rising_edge(clk) then
       if cen = '1' then
-        if video.enable = '1' then
-          rgb.r <= ram_data(15 downto 12);
-          rgb.g <= ram_data(11 downto 8);
-          rgb.b <= ram_data(3 downto 0);
-        else
-          rgb.r <= (others => '0');
-          rgb.g <= (others => '0');
-          rgb.b <= (others => '0');
-        end if;
+        pixel_reg.r <= ram_data(15 downto 12);
+        pixel_reg.g <= ram_data(11 downto 8);
+        pixel_reg.b <= ram_data(3 downto 0);
       end if;
     end if;
   end process;
@@ -99,4 +103,9 @@ begin
                 "10" & unsigned(fg_data)     when FG_LAYER,
                 "11" & unsigned(bg_data)     when BG_LAYER,
                 "0100000000"                 when FILL_LAYER;
+
+  -- set RGB data
+  rgb.r <= pixel_reg.r when video.enable = '1' else (others => '0');
+  rgb.g <= pixel_reg.g when video.enable = '1' else (others => '0');
+  rgb.b <= pixel_reg.b when video.enable = '1' else (others => '0');
 end arch;
