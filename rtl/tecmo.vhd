@@ -334,6 +334,9 @@ begin
     -- configuration
     config => game_config.gpu_config,
 
+    -- flip screen
+    flip => '1',
+
     -- RAM interface
     ram_addr => cpu_addr,
     ram_din  => cpu_dout,

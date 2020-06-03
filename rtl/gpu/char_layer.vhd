@@ -59,6 +59,9 @@ entity char_layer is
     -- configuration
     config : in tile_config_t;
 
+    -- flip screen
+    flip : in std_logic;
+
     -- char RAM
     ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
     ram_data : in std_logic_vector(RAM_DATA_WIDTH-1 downto 0);
@@ -82,11 +85,17 @@ architecture arch of char_layer is
   signal pixel    : pixel_t;
   signal tile_row : row_t;
 
+  -- direction signal
+  signal dir : integer;
+
+  -- logical position
+  signal logical_pos : pos_t;
+
   -- aliases to extract the components of the horizontal and vertical position
-  alias col      : unsigned(4 downto 0) is video.pos.x(7 downto 3);
-  alias row      : unsigned(4 downto 0) is video.pos.y(7 downto 3);
-  alias offset_x : unsigned(2 downto 0) is video.pos.x(2 downto 0);
-  alias offset_y : unsigned(2 downto 0) is video.pos.y(2 downto 0);
+  alias col      : unsigned(4 downto 0) is logical_pos.x(7 downto 3);
+  alias row      : unsigned(4 downto 0) is logical_pos.y(7 downto 3);
+  alias offset_x : unsigned(2 downto 0) is logical_pos.x(2 downto 0);
+  alias offset_y : unsigned(2 downto 0) is logical_pos.y(2 downto 0);
 begin
   -- Load tile data from the character RAM.
   --
@@ -103,17 +112,17 @@ begin
   begin
     if rising_edge(clk) then
       if cen = '1' then
-        case to_integer(offset_x) is
+        case to_integer(video.pos.x(2 downto 0)) is
           when 0 =>
-            -- load the next tile
-            ram_addr <= row & (col+1);
+            -- load next tile
+            ram_addr <= row & (col+dir);
 
           when 1 =>
             -- latch tile
             tile <= decode_tile(config, ram_data);
 
           when 6 =>
-            -- latch the row data
+            -- latch row data
             tile_row <= rom_data;
 
             -- latch tile color
@@ -125,13 +134,24 @@ begin
     end if;
   end process;
 
-  -- Set the tile ROM address.
+  -- direction of next pixel (i.e. positive for normal, negative for flipped)
+  dir <= -1 when flip = '1' else 1;
+
+  -- Set the logical postion
+  --
+  -- The video position is inverted when the screen is flipped.
+  logical_pos.x <= ('0' & not video.pos.x(7 downto 0)) when flip = '1' else
+                   ('0' & video.pos.x(7 downto 0));
+  logical_pos.y <= ('0' & not video.pos.y(7 downto 0)) when flip = '1' else
+                   ('0' & video.pos.y(7 downto 0));
+
+  -- Set the tile ROM address
   --
   -- This address points to a row of an 8x8 tile.
   rom_addr <= tile.code(9 downto 0) & offset_y(2 downto 0);
 
   -- select the next pixel from the tile row data
-  pixel <= select_pixel(tile_row, offset_x+1);
+  pixel <= select_pixel(tile_row, offset_x+dir);
 
   -- set graphics data
   data <= color & pixel;

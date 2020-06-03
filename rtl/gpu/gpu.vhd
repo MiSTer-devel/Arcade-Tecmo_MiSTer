@@ -68,6 +68,9 @@ entity gpu is
     -- configuration
     config : in gpu_config_t;
 
+    -- flip screen
+    flip : in std_logic;
+
     -- RAM interface
     ram_addr : in unsigned(CPU_ADDR_WIDTH-1 downto 0);
     ram_din  : in byte_t;
@@ -278,6 +281,9 @@ begin
 
       -- configuration
       config => config.char_config,
+
+      -- flip screen
+      flip => flip,
 
       -- RAM interface
       ram_addr => char_ram_gpu_addr,
