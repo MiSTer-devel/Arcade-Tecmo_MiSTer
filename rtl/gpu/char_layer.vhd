@@ -111,14 +111,17 @@ begin
       if cen = '1' then
         case to_integer(offset_x) is
           when 0 =>
-            -- load tile
+            -- load the next tile
             ram_addr <= row & (col+1);
 
           when 1 =>
             -- latch tile
             tile <= decode_tile(config, ram_data);
 
-          when 7 =>
+          when 6 =>
+            -- latch the row data
+            tile_row <= rom_data;
+
             -- latch tile color
             color <= tile.color;
 
@@ -128,26 +131,13 @@ begin
     end if;
   end process;
 
-  -- latch the next row from the tile ROM when rendering the last pixel in
-  -- every row
-  latch_tile_row : process (clk)
-  begin
-    if rising_edge(clk) then
-      if cen = '1' then
-        if video.pos.x(2 downto 0) = 7 then
-          tile_row <= rom_data;
-        end if;
-      end if;
-    end if;
-  end process;
-
   -- Set the tile ROM address.
   --
   -- This address points to a row of an 8x8 tile.
   rom_addr <= tile.code(9 downto 0) & offset_y(2 downto 0);
 
-  -- select the current pixel from the tile row data
-  pixel <= select_pixel(tile_row, video.pos.x(2 downto 0));
+  -- select the next pixel from the tile row data
+  pixel <= select_pixel(tile_row, offset_x+1);
 
   -- set graphics data
   data <= color & pixel;

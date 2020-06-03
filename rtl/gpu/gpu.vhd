@@ -61,6 +61,9 @@ entity gpu is
     -- configuration
     config : in gpu_config_t;
 
+    -- reset
+    reset : in std_logic;
+
     -- clock signals
     clk : in std_logic;
     cen : in std_logic;
@@ -389,6 +392,9 @@ begin
   -- colour palette
   palette : entity work.palette
   port map (
+    -- reset
+    reset => reset,
+
     -- clock signals
     clk => clk,
     cen => cen,

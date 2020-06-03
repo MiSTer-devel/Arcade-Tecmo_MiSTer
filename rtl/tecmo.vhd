@@ -44,7 +44,10 @@ use work.types.all;
 entity tecmo is
   generic (
     -- clock frequency (in MHz)
-    CLK_FREQ : real
+    CLK_FREQ : real;
+
+    -- enabling video debugging will surround the screen with a border
+    DEBUG_VIDEO : boolean := true
   );
   port (
     -- reset
@@ -324,6 +327,9 @@ begin
     -- configuration
     config => game_config.gpu_config,
 
+    -- reset
+    reset => reset,
+
     -- clock signals
     clk => clk,
     cen => cen_6,
@@ -514,7 +520,12 @@ begin
   vblank <= video.vblank;
 
   -- set RGB signals
-  r <= rgb.r;
+  r <= "1111" when DEBUG_VIDEO and video.enable = '1' and (
+    (video.pos.x(7 downto 0) = 0) or
+    (video.pos.x(7 downto 0) = 255) or
+    (video.pos.y(7 downto 0) = 16) or
+    (video.pos.y(7 downto 0) = 239)
+  ) else rgb.r;
   g <= rgb.g;
   b <= rgb.b;
 end architecture arch;
