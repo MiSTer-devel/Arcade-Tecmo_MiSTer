@@ -88,12 +88,6 @@ entity scroll_layer is
 end scroll_layer;
 
 architecture arch of scroll_layer is
-  -- represents the position of a pixel in a 16x16 tile
-  type tile_pos_t is record
-    x : unsigned(3 downto 0);
-    y : unsigned(3 downto 0);
-  end record tile_pos_t;
-
   -- tile signals
   signal tile     : tile_t;
   signal color    : color_t;

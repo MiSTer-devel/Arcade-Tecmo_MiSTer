@@ -76,12 +76,6 @@ entity char_layer is
 end char_layer;
 
 architecture arch of char_layer is
-  -- represents the position of a pixel in a 8x8 tile
-  type tile_pos_t is record
-    x : unsigned(2 downto 0);
-    y : unsigned(2 downto 0);
-  end record tile_pos_t;
-
   -- tile signals
   signal tile     : tile_t;
   signal color    : color_t;

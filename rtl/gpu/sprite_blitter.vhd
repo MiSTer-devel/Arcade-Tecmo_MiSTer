@@ -47,7 +47,7 @@ use work.types.all;
 -- the ready signal is again asserted by the blitter.
 entity sprite_blitter is
   port (
-    -- clock
+    -- clock signals
     clk : in std_logic;
     cen : in std_logic;
 
