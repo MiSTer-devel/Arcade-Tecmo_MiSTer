@@ -47,7 +47,7 @@ entity tecmo is
     CLK_FREQ : real;
 
     -- enabling video debugging will surround the screen with a border
-    DEBUG_VIDEO : boolean := true
+    DEBUG_VIDEO : boolean := false
   );
   port (
     -- reset
