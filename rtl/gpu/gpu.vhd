@@ -58,15 +58,15 @@ entity gpu is
     SPRITE_LAYER_ENABLE : boolean := true
   );
   port (
-    -- configuration
-    config : in gpu_config_t;
-
     -- reset
     reset : in std_logic;
 
     -- clock signals
     clk : in std_logic;
     cen : in std_logic;
+
+    -- configuration
+    config : in gpu_config_t;
 
     -- RAM interface
     ram_addr : in unsigned(CPU_ADDR_WIDTH-1 downto 0);
@@ -272,12 +272,12 @@ begin
       ROM_DATA_WIDTH => CHAR_ROM_DATA_WIDTH
     )
     port map (
-      -- configuration
-      config => config.char_config,
-
       -- clock signals
       clk => clk,
       cen => cen,
+
+      -- configuration
+      config => config.char_config,
 
       -- RAM interface
       ram_addr => char_ram_gpu_addr,
@@ -303,12 +303,12 @@ begin
       ROM_DATA_WIDTH => FG_ROM_DATA_WIDTH
     )
     port map (
-      -- configuration
-      config => config.fg_config,
-
       -- clock signals
       clk => clk,
       cen => cen,
+
+      -- configuration
+      config => config.fg_config,
 
       -- RAM interface
       ram_addr => fg_ram_gpu_addr,
@@ -335,12 +335,12 @@ begin
       ROM_DATA_WIDTH => BG_ROM_DATA_WIDTH
     )
     port map (
-      -- configuration
-      config => config.bg_config,
-
       -- clock signals
       clk => clk,
       cen => cen,
+
+      -- configuration
+      config => config.bg_config,
 
       -- RAM interface
       ram_addr => bg_ram_gpu_addr,
@@ -367,12 +367,12 @@ begin
       ROM_DATA_WIDTH => SPRITE_ROM_DATA_WIDTH
     )
     port map (
-      -- configuration
-      config => config.sprite_config,
-
       -- clock signals
       clk => clk,
       cen => cen,
+
+      -- configuration
+      config => config.sprite_config,
 
       -- RAM interface
       ram_addr => sprite_ram_gpu_addr,

@@ -324,15 +324,15 @@ begin
   -- graphics subsystem
   gpu : entity work.gpu
   port map (
-    -- configuration
-    config => game_config.gpu_config,
-
     -- reset
     reset => reset,
 
     -- clock signals
     clk => clk,
     cen => cen_6,
+
+    -- configuration
+    config => game_config.gpu_config,
 
     -- RAM interface
     ram_addr => cpu_addr,
@@ -370,9 +370,6 @@ begin
   snd : entity work.snd
   generic map (CLK_FREQ => CLK_FREQ)
   port map (
-    -- configuration
-    snd_map => game_config.snd_map,
-
     -- reset
     reset => reset,
 
@@ -380,6 +377,9 @@ begin
     clk     => clk,
     cen_4   => cen_4,
     cen_384 => cen_384,
+
+    -- configuration
+    snd_map => game_config.snd_map,
 
     -- CPU interface
     req  => sound_cs and not cpu_wr_n,

@@ -50,9 +50,6 @@ entity snd is
     CLK_FREQ : real
   );
   port (
-    -- memory map
-    snd_map : in snd_map_t;
-
     -- reset
     reset : in std_logic;
 
@@ -60,6 +57,9 @@ entity snd is
     clk     : in std_logic;
     cen_4   : in std_logic;
     cen_384 : in std_logic;
+
+    -- memory map
+    snd_map : in snd_map_t;
 
     -- CPU interface
     req  : in std_logic;
