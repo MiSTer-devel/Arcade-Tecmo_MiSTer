@@ -316,6 +316,9 @@ begin
       -- configuration
       config => config.fg_config,
 
+      -- flip screen
+      flip => flip,
+
       -- RAM interface
       ram_addr => fg_ram_gpu_addr,
       ram_data => fg_ram_gpu_dout,
@@ -347,6 +350,9 @@ begin
 
       -- configuration
       config => config.bg_config,
+
+      -- flip screen
+      flip => flip,
 
       -- RAM interface
       ram_addr => bg_ram_gpu_addr,

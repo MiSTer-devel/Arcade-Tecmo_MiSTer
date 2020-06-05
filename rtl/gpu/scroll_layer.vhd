@@ -61,12 +61,15 @@ entity scroll_layer is
     ROM_DATA_WIDTH : natural
   );
   port (
-    -- configuration
-    config : in tile_config_t;
-
     -- clock signals
     clk : in std_logic;
     cen : in std_logic;
+
+    -- configuration
+    config : in tile_config_t;
+
+    -- flip screen
+    flip : in std_logic;
 
     -- scroll RAM
     ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
