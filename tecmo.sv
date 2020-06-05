@@ -129,9 +129,10 @@ assign SDRAM_CLK = clk_sdram;
 `include "build_id.v"
 localparam CONF_STR = {
   "A.Tecmo;;",
-  "H0O1,Aspect Ratio,Original,Wide;",
-  "H0O2,Orientation,Vert,Horz;",
-  "O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
+  "O1,Aspect Ratio,Original,Wide;",
+  "O2,Orientation,Vert,Horz;",
+  "O3,Flip Screen,Off,On;",
+  "O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
   "-;",
   "DIP;",
   "-;",
@@ -229,7 +230,7 @@ arcade_video #(256, 224, 12) arcade_video
   // rotate/aspect
   .no_rotate(no_rotate),
   .rotate_ccw(0),
-  .fx(status[5:3])
+  .fx(status[6:4])
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -336,6 +337,8 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
 
   .clk(clk_sys),
   .cen_6(ce_pix),
+
+  .flip(status[3]),
 
   .joy_1({up, down, right, left}),
   .joy_2({joystick_1[3], joystick_1[2], joystick_1[0], joystick_1[1]}),

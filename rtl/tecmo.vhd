@@ -59,6 +59,9 @@ entity tecmo is
     cen_4   : buffer std_logic; -- 4MHz
     cen_384 : buffer std_logic; -- 384KHz
 
+    -- flip screen
+    flip : in std_logic;
+
     -- player input signals
     joy_1     : in nibble_t;
     joy_2     : in nibble_t;
@@ -335,7 +338,7 @@ begin
     config => game_config.gpu_config,
 
     -- flip screen
-    flip => '1',
+    flip => flip,
 
     -- RAM interface
     ram_addr => cpu_addr,
