@@ -37,16 +37,15 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
--- The frame buffer is a memory device used for caching graphics data. It is
--- used by the sprite renderer to ensure glitch-free graphics.
+-- The line buffer is a memory device used for caching pixel data.
 --
 -- Internally, it contains two memory pages which are accessed alternately for
 -- reading and writing, so that while one page is being written to, the other
 -- is being read from.
 --
--- The frame buffer automatically clears pixels during read operations, so that
+-- The line buffer automatically clears pixels during read operations, so that
 -- the page is clean when it is flipped.
-entity frame_buffer is
+entity line_buffer is
   generic (
     ADDR_WIDTH : natural := 8;
     DATA_WIDTH : natural := 8
@@ -73,9 +72,9 @@ entity frame_buffer is
     dout_b : out std_logic_vector(DATA_WIDTH-1 downto 0);
     re_b   : in std_logic := '1'
   );
-end frame_buffer;
+end line_buffer;
 
-architecture arch of frame_buffer is
+architecture arch of line_buffer is
   type page_t is record
     addr : unsigned(ADDR_WIDTH-1 downto 0);
     din  : std_logic_vector(DATA_WIDTH-1 downto 0);
@@ -124,11 +123,11 @@ begin
   page_1.re <= re_b;
   page_2.re <= re_b;
 
-  page_1.we <= we_a when swap = '1' else re_b;
-  page_2.we <= we_a when swap = '0' else re_b;
+  page_1.we <= we_a and swap;
+  page_2.we <= we_a and not swap;
 
-  page_1.din <= din_a when we_a = '1' and swap = '1' else (others => '0');
-  page_2.din <= din_a when we_a = '1' and swap = '0' else (others => '0');
+  page_1.din <= din_a;
+  page_2.din <= din_a;
 
   -- set data
   dout_b <= page_1.dout when re_b = '1' and swap = '0' else

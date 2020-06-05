@@ -11,6 +11,7 @@ set_global_assignment -name VHDL_FILE rtl/config.vhd
 set_global_assignment -name VHDL_FILE rtl/gpu/char_layer.vhd
 set_global_assignment -name VHDL_FILE rtl/gpu/frame_buffer.vhd
 set_global_assignment -name VHDL_FILE rtl/gpu/gpu.vhd
+set_global_assignment -name VHDL_FILE rtl/gpu/line_buffer.vhd
 set_global_assignment -name VHDL_FILE rtl/gpu/palette.vhd
 set_global_assignment -name VHDL_FILE rtl/gpu/scroll_layer.vhd
 set_global_assignment -name VHDL_FILE rtl/gpu/sprite_blitter.vhd

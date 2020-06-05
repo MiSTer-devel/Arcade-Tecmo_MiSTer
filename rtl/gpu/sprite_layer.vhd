@@ -44,7 +44,7 @@ use work.types.all;
 -- moving graphical elements you see on the screen.
 --
 -- They can be placed anywhere on the screen with per-pixel precision, can be
--- flipped about their horizontal and/or vertical axes, and can even overlap
+-- swapped about their horizontal and/or vertical axes, and can even overlap
 -- each other.
 --
 -- There are four different sprite sizes – 8x8, 16x16, 32x32, and 64x64 – which
@@ -63,12 +63,15 @@ entity sprite_layer is
     ROM_DATA_WIDTH : natural
   );
   port (
-    -- configuration
-    config : in sprite_config_t;
-
     -- clock signals
     clk : in std_logic;
     cen : in std_logic;
+
+    -- configuration
+    config : in sprite_config_t;
+
+    -- flip screen
+    flip : in std_logic;
 
     -- sprite RAM
     ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
@@ -91,13 +94,13 @@ architecture arch of sprite_layer is
   -- the pixel offset of the sprite layer
   constant OFFSET : natural := 3;
 
-  type state_t is (IDLE, LOAD, LATCH, BLIT, JUMP, DONE, FLIP);
+  type state_t is (IDLE, LOAD, LATCH, BLIT, JUMP, DONE, SWAP);
 
   -- state signals
   signal state, next_state : state_t;
 
   -- frame buffer
-  signal frame_buffer_flip   : std_logic;
+  signal frame_buffer_swap   : std_logic;
   signal frame_buffer_addr_a : unsigned(FRAME_BUFFER_ADDR_WIDTH-1 downto 0);
   signal frame_buffer_din_a  : std_logic_vector(FRAME_BUFFER_DATA_WIDTH-1 downto 0);
   signal frame_buffer_we_a   : std_logic;
@@ -110,6 +113,9 @@ architecture arch of sprite_layer is
 
   -- sprite descriptor
   signal sprite : sprite_t;
+
+  -- logical position
+  signal logical_pos : pos_t;
 
   -- control signals
   signal frame_done    : std_logic;
@@ -124,7 +130,7 @@ begin
   port map (
     clk  => clk,
 
-    flip => frame_buffer_flip,
+    swap => frame_buffer_swap,
 
     -- port A (write)
     addr_a => frame_buffer_addr_a,
@@ -195,11 +201,11 @@ begin
       -- wait for the end of the frame
       when DONE =>
         if video.vblank = '1' then
-          next_state <= FLIP;
+          next_state <= SWAP;
         end if;
 
-      -- flip the frame buffer
-      when FLIP =>
+      -- swap the frame buffer
+      when SWAP =>
         next_state <= IDLE;
     end case;
   end process;
@@ -256,13 +262,13 @@ begin
     end if;
   end process;
 
-  -- flip the frame buffer page
-  flip_frame_buffer : process (clk)
+  -- swap the frame buffer page
+  swap_frame_buffer : process (clk)
   begin
     if rising_edge(clk) then
       if cen = '1' then
-        if state = FLIP then
-          frame_buffer_flip <= not frame_buffer_flip;
+        if state = SWAP then
+          frame_buffer_swap <= not frame_buffer_swap;
         end if;
       end if;
     end if;
@@ -279,6 +285,14 @@ begin
     end if;
   end process;
 
+  -- Set the logical postion
+  --
+  -- The video position is inverted when the screen is flipped.
+  logical_pos.x <= ('0' & not video.pos.x(7 downto 0))-OFFSET when flip = '1' else
+                   ('0' & video.pos.x(7 downto 0))+OFFSET;
+  logical_pos.y <= ('0' & not video.pos.y(7 downto 0)) when flip = '1' else
+                   ('0' & video.pos.y(7 downto 0));
+
   -- set sprite RAM address
   ram_addr <= to_unsigned(sprite_counter, ram_addr'length);
 
@@ -286,7 +300,7 @@ begin
   frame_done <= '1' when sprite_counter = sprite_counter'high else '0';
 
   -- load graphics data from the frame buffer
-  frame_buffer_addr_b <= video.pos.y(7 downto 0) & (video.pos.x(7 downto 0)+OFFSET);
+  frame_buffer_addr_b <= logical_pos.y(7 downto 0) & logical_pos.x(7 downto 0);
 
   -- enable reading from the frame buffer when video output is enabled
   frame_buffer_re_b <= cen and video.enable;
