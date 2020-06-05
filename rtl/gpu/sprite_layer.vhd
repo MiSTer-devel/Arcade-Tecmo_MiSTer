@@ -63,12 +63,15 @@ entity sprite_layer is
     ROM_DATA_WIDTH : natural
   );
   port (
-    -- configuration
-    config : in sprite_config_t;
-
     -- clock signals
     clk : in std_logic;
     cen : in std_logic;
+
+    -- configuration
+    config : in sprite_config_t;
+
+    -- flip screen
+    flip : in std_logic;
 
     -- sprite RAM
     ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
@@ -110,6 +113,9 @@ architecture arch of sprite_layer is
 
   -- sprite descriptor
   signal sprite : sprite_t;
+
+  -- logical position
+  signal logical_pos : pos_t;
 
   -- control signals
   signal frame_done    : std_logic;
@@ -279,6 +285,14 @@ begin
     end if;
   end process;
 
+  -- Set the logical postion
+  --
+  -- The video position is inverted when the screen is flipped.
+  logical_pos.x <= ('0' & not video.pos.x(7 downto 0))-OFFSET when flip = '1' else
+                   ('0' & video.pos.x(7 downto 0))+OFFSET;
+  logical_pos.y <= ('0' & not video.pos.y(7 downto 0)) when flip = '1' else
+                   ('0' & video.pos.y(7 downto 0));
+
   -- set sprite RAM address
   ram_addr <= to_unsigned(sprite_counter, ram_addr'length);
 
@@ -286,7 +300,7 @@ begin
   frame_done <= '1' when sprite_counter = sprite_counter'high else '0';
 
   -- load graphics data from the frame buffer
-  frame_buffer_addr_b <= video.pos.y(7 downto 0) & (video.pos.x(7 downto 0)+OFFSET);
+  frame_buffer_addr_b <= logical_pos.y(7 downto 0) & logical_pos.x(7 downto 0);
 
   -- enable reading from the frame buffer when video output is enabled
   frame_buffer_re_b <= cen and video.enable;

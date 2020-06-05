@@ -380,6 +380,9 @@ begin
       -- configuration
       config => config.sprite_config,
 
+      -- flip screen
+      flip => flip,
+
       -- RAM interface
       ram_addr => sprite_ram_gpu_addr,
       ram_data => sprite_ram_gpu_dout,
