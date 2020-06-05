@@ -58,10 +58,10 @@ entity frame_buffer is
     -- chip select
     cs : in std_logic := '1';
 
-    -- When the flip signal is asserted, the memory pages are swapped. The page
+    -- When the swap signal is asserted, the memory pages are swapped. The page
     -- that was previously being written to will be read from, and the page
     -- that was being read from will be written to.
-    flip : in std_logic := '0';
+    swap : in std_logic := '0';
 
     -- port A (write)
     addr_a : in unsigned(ADDR_WIDTH-1 downto 0);
@@ -118,20 +118,20 @@ begin
     re_b   => page_2.re
   );
 
-  page_1.addr <= addr_b when flip = '0' else addr_a;
-  page_2.addr <= addr_b when flip = '1' else addr_a;
+  page_1.addr <= addr_b when swap = '0' else addr_a;
+  page_2.addr <= addr_b when swap = '1' else addr_a;
 
   page_1.re <= re_b;
   page_2.re <= re_b;
 
-  page_1.we <= we_a when flip = '1' else re_b;
-  page_2.we <= we_a when flip = '0' else re_b;
+  page_1.we <= we_a when swap = '1' else re_b;
+  page_2.we <= we_a when swap = '0' else re_b;
 
-  page_1.din <= din_a when we_a = '1' and flip = '1' else (others => '0');
-  page_2.din <= din_a when we_a = '1' and flip = '0' else (others => '0');
+  page_1.din <= din_a when we_a = '1' and swap = '1' else (others => '0');
+  page_2.din <= din_a when we_a = '1' and swap = '0' else (others => '0');
 
   -- set data
-  dout_b <= page_1.dout when re_b = '1' and flip = '0' else
-            page_2.dout when re_b = '1' and flip = '1' else
+  dout_b <= page_1.dout when re_b = '1' and swap = '0' else
+            page_2.dout when re_b = '1' and swap = '1' else
             (others => '0');
 end architecture arch;
