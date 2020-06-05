@@ -91,14 +91,27 @@ entity scroll_layer is
 end scroll_layer;
 
 architecture arch of scroll_layer is
+  constant LINE_BUFFER_ADDR_WIDTH : natural := 8;
+  constant LINE_BUFFER_DATA_WIDTH : natural := 8;
+
   -- tile signals
   signal tile     : tile_t;
   signal color    : color_t;
   signal pixel    : pixel_t;
   signal tile_row : row_t;
 
+  -- line buffer
+  signal line_buffer_swap   : std_logic;
+  signal line_buffer_addr_a : unsigned(LINE_BUFFER_ADDR_WIDTH-1 downto 0);
+  signal line_buffer_din_a  : std_logic_vector(LINE_BUFFER_DATA_WIDTH-1 downto 0);
+  signal line_buffer_we_a   : std_logic;
+  signal line_buffer_addr_b : unsigned(LINE_BUFFER_ADDR_WIDTH-1 downto 0);
+  signal line_buffer_dout_b : std_logic_vector(LINE_BUFFER_DATA_WIDTH-1 downto 0);
+
   -- destination position
   signal dest_pos : pos_t;
+
+  signal flip_y : unsigned(7 downto 0);
 
   -- aliases to extract the components of the horizontal and vertical position
   alias col      : unsigned(4 downto 0) is dest_pos.x(8 downto 4);
@@ -106,16 +119,35 @@ architecture arch of scroll_layer is
   alias offset_x : unsigned(3 downto 0) is dest_pos.x(3 downto 0);
   alias offset_y : unsigned(3 downto 0) is dest_pos.y(3 downto 0);
 begin
+  line_buffer : entity work.line_buffer
+  generic map (
+    ADDR_WIDTH => LINE_BUFFER_ADDR_WIDTH,
+    DATA_WIDTH => LINE_BUFFER_DATA_WIDTH
+  )
+  port map (
+    clk   => clk,
+
+    swap => line_buffer_swap,
+
+    -- port A (write)
+    addr_a => line_buffer_addr_a,
+    din_a  => line_buffer_din_a,
+    we_a   => line_buffer_we_a,
+
+    -- port B (read)
+    addr_b => line_buffer_addr_b,
+    dout_b => line_buffer_dout_b
+  );
+
   -- update position counter
   update_pos_counter : process (clk)
   begin
     if rising_edge(clk) then
       if cen = '1' then
         if video.hsync = '1' then
-          -- reset to the horizontal scroll position
           dest_pos.x <= scroll_pos.x;
         else
-          dest_pos.x <= dest_pos.x + 1;
+          dest_pos.x <= dest_pos.x+1;
         end if;
       end if;
     end if;
@@ -137,20 +169,20 @@ begin
     if rising_edge(clk) then
       if cen = '1' then
         case to_integer(offset_x) is
-          when 6 =>
-            -- latch the row data
+          when 7 =>
+            -- latch row data
             tile_row <= rom_data;
 
           when 8 =>
-            -- load tile
+            -- load next tile
             ram_addr <= row & (col+1);
 
           when 9 =>
             -- latch tile
             tile <= decode_tile(config, ram_data);
 
-          when 14 =>
-            -- latch the row data
+          when 15 =>
+            -- latch row data
             tile_row <= rom_data;
 
             -- latch tile color
@@ -162,17 +194,30 @@ begin
     end if;
   end process;
 
-  -- set vertical position
-  dest_pos.y(7 downto 0) <= video.pos.y(7 downto 0) + scroll_pos.y(7 downto 0);
+  -- set flipped vertical position one line ahead/behind
+  flip_y <= (not video.pos.y(7 downto 0))-1 when flip = '1' else
+            video.pos.y(7 downto 0)+1;
 
-  -- Set the tile ROM address.
-  --
-  -- This address points to a row of an 8x8 tile.
+  -- set vertical position
+  dest_pos.y <= resize(scroll_pos.y+flip_y, dest_pos.y'length);
+
+  -- set tile ROM address
   rom_addr <= tile.code & offset_y(3) & (not offset_x(3)) & offset_y(2 downto 0);
 
-  -- select the current pixel from the tile row data
-  pixel <= select_pixel(tile_row, offset_x(2 downto 0)+1);
+  -- select pixel from the tile row data
+  pixel <= select_pixel(tile_row, offset_x(2 downto 0));
+
+  -- swap line buffer on alternating rows
+  line_buffer_swap <= video.pos.y(0);
+
+  -- write line buffer
+  line_buffer_addr_a <= not video.pos.x(7 downto 0) when flip = '1' else video.pos.x(7 downto 0);
+  line_buffer_din_a  <= color & pixel;
+  line_buffer_we_a   <= not video.hblank;
+
+  -- read line buffer one pixel ahead
+  line_buffer_addr_b <= video.pos.x(7 downto 0)+1;
 
   -- set graphics data
-  data <= color & pixel;
+  data <= line_buffer_dout_b;
 end architecture arch;
