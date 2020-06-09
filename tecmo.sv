@@ -283,10 +283,18 @@ reg key_left  = 0;
 reg key_right = 0;
 reg key_down  = 0;
 reg key_up    = 0;
-reg key_but_0 = 0;
-reg key_but_1 = 0;
-reg key_start = 0;
-reg key_coin  = 0;
+reg key_ctrl  = 0;
+reg key_alt   = 0;
+reg key_1     = 0;
+reg key_2     = 0;
+reg key_5     = 0;
+reg key_6     = 0;
+reg key_a     = 0;
+reg key_s     = 0;
+reg key_r     = 0;
+reg key_f     = 0;
+reg key_d     = 0;
+reg key_g     = 0;
 
 always @(posedge clk_sys) begin
   reg old_state;
@@ -294,26 +302,42 @@ always @(posedge clk_sys) begin
 
   if (old_state != ps2_key[10]) begin
     case (code)
-      'h75: key_up    <= pressed; // up
-      'h72: key_down  <= pressed; // down
-      'h6B: key_left  <= pressed; // left
-      'h74: key_right <= pressed; // right
-      'h14: key_but_0 <= pressed; // ctrl
-      'h11: key_but_1 <= pressed; // alt
-      'h16: key_start <= pressed; // 1
-      'h2E: key_coin  <= pressed; // 5
+      'h75: key_up    <= pressed;
+      'h72: key_down  <= pressed;
+      'h6B: key_left  <= pressed;
+      'h74: key_right <= pressed;
+      'h14: key_ctrl  <= pressed;
+      'h11: key_alt   <= pressed;
+      'h16: key_1     <= pressed;
+      'h1E: key_2     <= pressed;
+      'h2E: key_5     <= pressed;
+      'h36: key_6     <= pressed;
+      'h1C: key_a     <= pressed;
+      'h1B: key_s     <= pressed;
+      'h2D: key_r     <= pressed;
+      'h2B: key_f     <= pressed;
+      'h23: key_d     <= pressed;
+      'h34: key_g     <= pressed;
     endcase
   end
 end
 
-wire up    = key_up    | joystick_0[3];
-wire down  = key_down  | joystick_0[2];
-wire left  = key_left  | joystick_0[1];
-wire right = key_right | joystick_0[0];
-wire but_0 = key_but_0 | joystick_0[4];
-wire but_1 = key_but_1 | joystick_0[5];
-wire start = key_start | joystick_0[6];
-wire coin  = key_coin  | joystick_0[7];
+wire player_1_up       = key_up    | joystick_0[3];
+wire player_1_down     = key_down  | joystick_0[2];
+wire player_1_left     = key_left  | joystick_0[1];
+wire player_1_right    = key_right | joystick_0[0];
+wire player_1_button_1 = key_ctrl  | joystick_0[4];
+wire player_1_button_2 = key_alt   | joystick_0[5];
+wire player_1_start    = key_1     | joystick_0[6];
+wire player_1_coin     = key_5     | joystick_0[7];
+wire player_2_up       = key_r     | joystick_1[3];
+wire player_2_down     = key_f     | joystick_1[2];
+wire player_2_left     = key_d     | joystick_1[1];
+wire player_2_right    = key_g     | joystick_1[0];
+wire player_2_button_1 = key_a     | joystick_1[4];
+wire player_2_button_2 = key_s     | joystick_1[5];
+wire player_2_start    = key_2     | joystick_1[6];
+wire player_2_coin     = key_6     | joystick_1[7];
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
@@ -340,11 +364,11 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
 
   .flip(status[3]),
 
-  .joy_1({up, down, right, left}),
-  .joy_2({joystick_1[3], joystick_1[2], joystick_1[0], joystick_1[1]}),
-  .buttons_1({2'b0, but_0, but_1}),
-  .buttons_2({2'b0, joystick_1[4], joystick_1[5]}),
-  .sys({coin, joystick_1[7], start, joystick_1[6]}),
+  .joy_1({player_1_up, player_1_down, player_1_right, player_1_left}),
+  .joy_2({player_2_up, player_2_down, player_2_right, player_2_left}),
+  .buttons_1({2'b0, player_1_button_1, player_1_button_2}),
+  .buttons_2({2'b0, player_2_button_1, player_2_button_2}),
+  .sys({player_1_coin, player_2_coin, player_1_start, player_2_start}),
 
   .dip_1(sw[0]),
   .dip_2(sw[1]),
