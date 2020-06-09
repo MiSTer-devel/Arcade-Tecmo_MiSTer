@@ -91,16 +91,13 @@ entity scroll_layer is
 end scroll_layer;
 
 architecture arch of scroll_layer is
-  constant LINE_BUFFER_ADDR_WIDTH : natural := 8;
-  constant LINE_BUFFER_DATA_WIDTH : natural := 8;
-
   -- tile signals
   signal tile     : tile_t;
   signal color    : color_t;
   signal pixel    : pixel_t;
   signal tile_row : row_t;
 
-  -- line buffer
+  -- line buffer signals
   signal line_buffer_swap   : std_logic;
   signal line_buffer_addr_a : unsigned(LINE_BUFFER_ADDR_WIDTH-1 downto 0);
   signal line_buffer_din_a  : std_logic_vector(LINE_BUFFER_DATA_WIDTH-1 downto 0);
@@ -108,10 +105,11 @@ architecture arch of scroll_layer is
   signal line_buffer_addr_b : unsigned(LINE_BUFFER_ADDR_WIDTH-1 downto 0);
   signal line_buffer_dout_b : std_logic_vector(LINE_BUFFER_DATA_WIDTH-1 downto 0);
 
+  -- flipped vertical position
+  signal flip_y : unsigned(7 downto 0);
+
   -- destination position
   signal dest_pos : pos_t;
-
-  signal flip_y : unsigned(7 downto 0);
 
   -- aliases to extract the components of the horizontal and vertical position
   alias col      : unsigned(4 downto 0) is dest_pos.x(8 downto 4);
@@ -119,6 +117,11 @@ architecture arch of scroll_layer is
   alias offset_x : unsigned(3 downto 0) is dest_pos.x(3 downto 0);
   alias offset_y : unsigned(3 downto 0) is dest_pos.y(3 downto 0);
 begin
+  -- A line buffer is used to cache pixel data for the next scanline.
+  --
+  -- It is not present in the original arcade hardware, but it hugely
+  -- simplifies screen flipping because you only have to reverse the line
+  -- buffer, instead of having to decode tiles in reverse.
   line_buffer : entity work.line_buffer
   generic map (
     ADDR_WIDTH => LINE_BUFFER_ADDR_WIDTH,
@@ -194,11 +197,11 @@ begin
     end if;
   end process;
 
-  -- set flipped vertical position one line ahead/behind
+  -- set flipped vertical position to be one scanline ahead/behind
   flip_y <= (not video.pos.y(7 downto 0))-1 when flip = '1' else
             video.pos.y(7 downto 0)+1;
 
-  -- set vertical position
+  -- set destination position
   dest_pos.y <= resize(scroll_pos.y+flip_y, dest_pos.y'length);
 
   -- set tile ROM address
