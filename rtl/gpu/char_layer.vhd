@@ -85,18 +85,51 @@ architecture arch of char_layer is
   signal pixel    : pixel_t;
   signal tile_row : row_t;
 
-  -- direction signal
-  signal dir : integer;
+  -- line buffer signals
+  signal line_buffer_swap   : std_logic;
+  signal line_buffer_addr_a : unsigned(LINE_BUFFER_ADDR_WIDTH-1 downto 0);
+  signal line_buffer_din_a  : std_logic_vector(LINE_BUFFER_DATA_WIDTH-1 downto 0);
+  signal line_buffer_we_a   : std_logic;
+  signal line_buffer_addr_b : unsigned(LINE_BUFFER_ADDR_WIDTH-1 downto 0);
+  signal line_buffer_dout_b : std_logic_vector(LINE_BUFFER_DATA_WIDTH-1 downto 0);
 
-  -- logical position
-  signal logical_pos : pos_t;
+  -- flipped vertical position
+  signal flip_y : unsigned(7 downto 0);
+
+  -- destination position
+  signal dest_pos : pos_t;
 
   -- aliases to extract the components of the horizontal and vertical position
-  alias col      : unsigned(4 downto 0) is logical_pos.x(7 downto 3);
-  alias row      : unsigned(4 downto 0) is logical_pos.y(7 downto 3);
-  alias offset_x : unsigned(2 downto 0) is logical_pos.x(2 downto 0);
-  alias offset_y : unsigned(2 downto 0) is logical_pos.y(2 downto 0);
+  alias col      : unsigned(4 downto 0) is dest_pos.x(7 downto 3);
+  alias row      : unsigned(4 downto 0) is dest_pos.y(7 downto 3);
+  alias offset_x : unsigned(2 downto 0) is dest_pos.x(2 downto 0);
+  alias offset_y : unsigned(2 downto 0) is dest_pos.y(2 downto 0);
 begin
+  -- A line buffer is used to cache pixel data for the next scanline.
+  --
+  -- It is not present in the original arcade hardware, but it hugely
+  -- simplifies screen flipping because you only have to reverse the line
+  -- buffer, instead of having to decode tiles in reverse.
+  line_buffer : entity work.line_buffer
+  generic map (
+    ADDR_WIDTH => LINE_BUFFER_ADDR_WIDTH,
+    DATA_WIDTH => LINE_BUFFER_DATA_WIDTH
+  )
+  port map (
+    clk   => clk,
+
+    swap => line_buffer_swap,
+
+    -- port A (write)
+    addr_a => line_buffer_addr_a,
+    din_a  => line_buffer_din_a,
+    we_a   => line_buffer_we_a,
+
+    -- port B (read)
+    addr_b => line_buffer_addr_b,
+    dout_b => line_buffer_dout_b
+  );
+
   -- Load tile data from the character RAM.
   --
   -- While the current tile is being rendered, we need to fetch data for the
@@ -112,16 +145,16 @@ begin
   begin
     if rising_edge(clk) then
       if cen = '1' then
-        case to_integer(video.pos.x(2 downto 0)) is
+        case to_integer(offset_x) is
           when 0 =>
             -- load next tile
-            ram_addr <= row & (col+dir);
+            ram_addr <= row & (col+1);
 
           when 1 =>
             -- latch tile
             tile <= decode_tile(config, ram_data);
 
-          when 6 =>
+          when 7 =>
             -- latch row data
             tile_row <= rom_data;
 
@@ -134,25 +167,31 @@ begin
     end if;
   end process;
 
-  -- direction of next pixel (i.e. positive for normal, negative for flipped)
-  dir <= -1 when flip = '1' else 1;
+  -- set flipped vertical position to be one scanline ahead/behind
+  flip_y <= (not video.pos.y(7 downto 0))-1 when flip = '1' else
+            video.pos.y(7 downto 0)+1;
 
-  -- Set the logical postion
-  --
-  -- The video position is inverted when the screen is flipped.
-  logical_pos.x <= ('0' & not video.pos.x(7 downto 0)) when flip = '1' else
-                   ('0' & video.pos.x(7 downto 0));
-  logical_pos.y <= ('0' & not video.pos.y(7 downto 0)) when flip = '1' else
-                   ('0' & video.pos.y(7 downto 0));
+  -- set destination position
+  dest_pos.x <= resize(video.pos.x, dest_pos.x'length);
+  dest_pos.y <= resize(flip_y, dest_pos.y'length);
 
-  -- Set the tile ROM address
-  --
-  -- This address points to a row of an 8x8 tile.
+  -- set the tile ROM address
   rom_addr <= tile.code(9 downto 0) & offset_y(2 downto 0);
 
   -- select the next pixel from the tile row data
-  pixel <= select_pixel(tile_row, offset_x+dir);
+  pixel <= select_pixel(tile_row, offset_x);
+
+  -- swap line buffer on alternating rows
+  line_buffer_swap <= video.pos.y(0);
+
+  -- write line buffer
+  line_buffer_addr_a <= not video.pos.x(7 downto 0) when flip = '1' else video.pos.x(7 downto 0);
+  line_buffer_din_a  <= color & pixel;
+  line_buffer_we_a   <= not video.hblank;
+
+  -- read line buffer one pixel ahead
+  line_buffer_addr_b <= video.pos.x(7 downto 0)+1;
 
   -- set graphics data
-  data <= color & pixel;
+  data <= line_buffer_dout_b;
 end architecture arch;
