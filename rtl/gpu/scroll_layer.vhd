@@ -197,6 +197,16 @@ begin
     end if;
   end process;
 
+  -- latch graphics data from the line buffer
+  latch_gfx_data : process (clk)
+  begin
+    if rising_edge(clk) then
+      if cen = '1' then
+        data <= line_buffer_dout_b;
+      end if;
+    end if;
+  end process;
+
   -- set flipped vertical position to be one scanline ahead/behind
   flip_y <= (not video.pos.y(7 downto 0))-1 when flip = '1' else
             video.pos.y(7 downto 0)+1;
@@ -218,9 +228,6 @@ begin
   line_buffer_din_a  <= color & pixel;
   line_buffer_we_a   <= not video.hblank;
 
-  -- read line buffer one pixel ahead
-  line_buffer_addr_b <= video.pos.x(7 downto 0)+1;
-
-  -- set graphics data
-  data <= line_buffer_dout_b;
+  -- read line buffer two pixels ahead
+  line_buffer_addr_b <= video.pos.x(7 downto 0)+2;
 end architecture arch;
