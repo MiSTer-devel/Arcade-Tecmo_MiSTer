@@ -121,8 +121,8 @@ assign AUDIO_R = AUDIO_L;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
 
-assign HDMI_ARX = status[1] ? 8'd16 : status[2] ? 8'd4 : 8'd3;
-assign HDMI_ARY = status[1] ? 8'd9  : status[2] ? 8'd3 : 8'd4;
+assign HDMI_ARX = status[1] ? 8'd16 : status[2] ? 8'd3 : 8'd4;
+assign HDMI_ARY = status[1] ? 8'd9  : status[2] ? 8'd4 : 8'd3;
 
 assign SDRAM_CLK = clk_sdram;
 
@@ -130,7 +130,7 @@ assign SDRAM_CLK = clk_sdram;
 localparam CONF_STR = {
   "A.Tecmo;;",
   "O1,Aspect Ratio,Original,Wide;",
-  "O2,Orientation,Vert,Horz;",
+  "O2,Orientation,Horz,Vert;",
   "O3,Flip Screen,Off,On;",
   "O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
   "-;",
