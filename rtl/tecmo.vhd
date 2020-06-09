@@ -151,6 +151,7 @@ architecture arch of tecmo is
   signal coin_cs        : std_logic;
   signal dip_sw_1_cs    : std_logic;
   signal dip_sw_2_cs    : std_logic;
+  signal flip_cs        : std_logic;
   signal bank_cs        : std_logic;
   signal sound_cs       : std_logic;
 
@@ -184,6 +185,7 @@ architecture arch of tecmo is
   -- registers
   signal fg_scroll_pos_reg : pos_t := (x => (others => '0'), y => (others => '0'));
   signal bg_scroll_pos_reg : pos_t := (x => (others => '0'), y => (others => '0'));
+  signal flip_reg          : std_logic;
   signal bank_reg          : unsigned(BANK_REG_WIDTH-1 downto 0);
 
   -- video signals
@@ -338,7 +340,7 @@ begin
     config => game_config.gpu_config,
 
     -- flip screen
-    flip => flip,
+    flip => flip_reg xor flip,
 
     -- RAM interface
     ram_addr => cpu_addr,
@@ -423,6 +425,20 @@ begin
     end if;
   end process;
 
+  -- Set flip register
+  --
+  -- The flip register selects whether the screen is flipped. It is set by the
+  -- CPU when player two is active and cocktail orientation is enabled (i.e.
+  -- the second player is sitting on the other side of the table).
+  set_flip_register : process (clk)
+  begin
+    if rising_edge(clk) then
+      if flip_cs = '1' and cpu_wr_n = '0' then
+        flip_reg <= cpu_dout(0);
+      end if;
+    end if;
+  end process;
+
   -- The bank register selects the current bank for program ROM #2.
   set_bank_register : process (clk)
   begin
@@ -491,6 +507,7 @@ begin
   fg_scroll_cs   <= '1' when addr_in_range(cpu_addr, game_config.mem_map.fg_scroll)   else '0';
   bg_scroll_cs   <= '1' when addr_in_range(cpu_addr, game_config.mem_map.bg_scroll)   else '0';
   sound_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.sound)       else '0';
+  flip_cs        <= '1' when addr_in_range(cpu_addr, game_config.mem_map.flip)        else '0';
   bank_cs        <= '1' when addr_in_range(cpu_addr, game_config.mem_map.bank)        else '0';
   joy_1_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.joy_1)       else '0';
   joy_2_cs       <= '1' when addr_in_range(cpu_addr, game_config.mem_map.joy_2)       else '0';

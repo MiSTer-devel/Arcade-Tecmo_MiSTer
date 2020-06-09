@@ -127,6 +127,7 @@ package types is
     fg_scroll   : addr_range_t; -- foreground scroll register
     bg_scroll   : addr_range_t; -- background scroll register
     sound       : addr_range_t; -- sound
+    flip        : addr_range_t; -- flip screen
     bank        : addr_range_t; -- bank register
     joy_1       : addr_range_t; -- joystick 1
     buttons_1   : addr_range_t; -- buttons 1
