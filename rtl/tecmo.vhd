@@ -117,9 +117,6 @@ architecture arch of tecmo is
   -- the current game configuration
   signal game_config : game_config_t;
 
-  -- coin/start states
-  signal coin : nibble_t;
-
   -- CPU signals
   signal cpu_cen     : std_logic;
   signal cpu_addr    : unsigned(CPU_ADDR_WIDTH-1 downto 0);
@@ -197,16 +194,27 @@ architecture arch of tecmo is
   -- RGB data
   signal rgb : rgb_t;
 
-  -- Returns the coin/start nibble
+  -- Returns the sys (coin/start) nibble
   --
   -- The ordering of the bits is different depending on the game.
-  function select_coin (a : nibble_t; index : natural) return nibble_t is
+  function reorder_sys (a : nibble_t; index : natural) return nibble_t is
   begin
     case index is
       when 0      => return a;                         -- rygar
       when others => return a(2) & a(3) & a(0) & a(1); -- gemini/silkworm
     end case;
-  end select_coin;
+  end reorder_sys;
+
+  -- Returns the buttons nibble
+  --
+  -- The ordering of the bits is different depending on the game.
+  function reorder_buttons (a : nibble_t; index : natural) return nibble_t is
+  begin
+    case index is
+      when 0      => return a;                         -- rygar
+      when others => return a(3) & a(2) & a(0) & a(1); -- gemini/silkworm
+    end case;
+  end reorder_buttons;
 begin
   -- generate a 6MHz clock enable signal
   clock_divider_6 : entity work.clock_divider
@@ -492,9 +500,6 @@ begin
   -- 6Mhz).
   cpu_cen <= cen_6 when game_config.cpu_freq = 6 else cen_4;
 
-  -- set coin/start signal
-  coin <= select_coin(sys, to_integer(game_index));
-
   -- set chip select signals
   prog_rom_1_cs  <= '1' when addr_in_range(cpu_addr, game_config.mem_map.prog_rom_1)  else '0';
   prog_rom_2_cs  <= '1' when addr_in_range(cpu_addr, game_config.mem_map.prog_rom_2)  else '0';
@@ -518,15 +523,15 @@ begin
   dip_sw_2_cs    <= '1' when addr_in_range(cpu_addr, game_config.mem_map.dip_sw_2)    else '0';
 
   -- mux joysticks, buttons, and DIP switches
-  io_dout <= joy_1             when joy_1_cs     = '1' and cpu_rd_n = '0'                       else
-             joy_2             when joy_2_cs     = '1' and cpu_rd_n = '0'                       else
-             buttons_1         when buttons_1_cs = '1' and cpu_rd_n = '0'                       else
-             buttons_2         when buttons_2_cs = '1' and cpu_rd_n = '0'                       else
-             coin              when coin_cs      = '1' and cpu_rd_n = '0'                       else
-             dip_1(3 downto 0) when dip_sw_1_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             dip_1(7 downto 4) when dip_sw_1_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
-             dip_2(3 downto 0) when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
-             dip_2(7 downto 4) when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
+  io_dout <= joy_1                                              when joy_1_cs     = '1' and cpu_rd_n = '0'                       else
+             joy_2                                              when joy_2_cs     = '1' and cpu_rd_n = '0'                       else
+             reorder_buttons(buttons_1, to_integer(game_index)) when buttons_1_cs = '1' and cpu_rd_n = '0'                       else
+             reorder_buttons(buttons_2, to_integer(game_index)) when buttons_2_cs = '1' and cpu_rd_n = '0'                       else
+             reorder_sys(sys, to_integer(game_index))           when coin_cs      = '1' and cpu_rd_n = '0'                       else
+             dip_1(3 downto 0)                                  when dip_sw_1_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
+             dip_1(7 downto 4)                                  when dip_sw_1_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
+             dip_2(3 downto 0)                                  when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '0' else
+             dip_2(7 downto 4)                                  when dip_sw_2_cs  = '1' and cpu_rd_n = '0' and cpu_addr(0) = '1' else
              (others => '0');
 
   -- mux CPU data input
