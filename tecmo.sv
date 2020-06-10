@@ -174,7 +174,7 @@ wire  [7:0] ioctl_index;
 
 wire [10:0] ps2_key;
 
-wire  [7:0] joystick_0, joystick_1;
+wire  [8:0] joystick_0, joystick_1;
 
 hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 (
@@ -285,12 +285,14 @@ reg key_down  = 0;
 reg key_up    = 0;
 reg key_ctrl  = 0;
 reg key_alt   = 0;
+reg key_space = 0;
 reg key_1     = 0;
 reg key_2     = 0;
 reg key_5     = 0;
 reg key_6     = 0;
 reg key_a     = 0;
 reg key_s     = 0;
+reg key_q     = 0;
 reg key_r     = 0;
 reg key_f     = 0;
 reg key_d     = 0;
@@ -308,12 +310,14 @@ always @(posedge clk_sys) begin
       'h74: key_right <= pressed;
       'h14: key_ctrl  <= pressed;
       'h11: key_alt   <= pressed;
+      'h29: key_space <= pressed;
       'h16: key_1     <= pressed;
       'h1E: key_2     <= pressed;
       'h2E: key_5     <= pressed;
       'h36: key_6     <= pressed;
       'h1C: key_a     <= pressed;
       'h1B: key_s     <= pressed;
+      'h15: key_q     <= pressed;
       'h2D: key_r     <= pressed;
       'h2B: key_f     <= pressed;
       'h23: key_d     <= pressed;
@@ -328,16 +332,18 @@ wire player_1_left     = key_left  | joystick_0[1];
 wire player_1_right    = key_right | joystick_0[0];
 wire player_1_button_1 = key_ctrl  | joystick_0[4];
 wire player_1_button_2 = key_alt   | joystick_0[5];
-wire player_1_start    = key_1     | joystick_0[6];
-wire player_1_coin     = key_5     | joystick_0[7];
+wire player_1_button_3 = key_space | joystick_0[6];
+wire player_1_start    = key_1     | joystick_0[7];
+wire player_1_coin     = key_5     | joystick_0[8];
 wire player_2_up       = key_r     | joystick_1[3];
 wire player_2_down     = key_f     | joystick_1[2];
 wire player_2_left     = key_d     | joystick_1[1];
 wire player_2_right    = key_g     | joystick_1[0];
 wire player_2_button_1 = key_a     | joystick_1[4];
 wire player_2_button_2 = key_s     | joystick_1[5];
-wire player_2_start    = key_2     | joystick_1[6];
-wire player_2_coin     = key_6     | joystick_1[7];
+wire player_2_button_3 = key_q     | joystick_1[6];
+wire player_2_start    = key_2     | joystick_1[7];
+wire player_2_coin     = key_6     | joystick_1[8];
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
@@ -366,8 +372,8 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
 
   .joy_1({player_1_up, player_1_down, player_1_right, player_1_left}),
   .joy_2({player_2_up, player_2_down, player_2_right, player_2_left}),
-  .buttons_1({2'b0, player_1_button_1, player_1_button_2}),
-  .buttons_2({2'b0, player_2_button_1, player_2_button_2}),
+  .buttons_1({2'b0, player_1_button_3, player_1_button_2, player_1_button_1}),
+  .buttons_2({2'b0, player_2_button_3, player_2_button_2, player_2_button_1}),
   .sys({player_1_coin, player_2_coin, player_1_start, player_2_start}),
 
   .dip_1(sw[0]),
