@@ -44,10 +44,7 @@ use work.types.all;
 entity tecmo is
   generic (
     -- clock frequency (in MHz)
-    CLK_FREQ : real;
-
-    -- enabling video debugging will surround the screen with a border
-    DEBUG_VIDEO : boolean := false
+    CLK_FREQ : real
   );
   port (
     -- reset
@@ -58,6 +55,9 @@ entity tecmo is
     cen_6   : buffer std_logic; -- 6MHz
     cen_4   : buffer std_logic; -- 4MHz
     cen_384 : buffer std_logic; -- 384KHz
+
+    -- debug mode
+    debug : in std_logic;
 
     -- flip screen
     flip : in std_logic;
@@ -548,7 +548,7 @@ begin
   vblank <= video.vblank;
 
   -- set RGB signals
-  r <= "1111" when DEBUG_VIDEO and video.enable = '1' and (
+  r <= "1111" when debug = '1' and video.enable = '1' and (
     (video.pos.x(7 downto 0) = 0) or
     (video.pos.x(7 downto 0) = 255) or
     (video.pos.y(7 downto 0) = 16) or

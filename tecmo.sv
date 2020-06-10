@@ -133,6 +133,7 @@ localparam CONF_STR = {
   "O2,Orientation,Horz,Vert;",
   "O3,Flip Screen,Off,On;",
   "O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
+  "O7,Debug,Off,On;",
   "-;",
   "DIP;",
   "-;",
@@ -368,6 +369,7 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
   .clk(clk_sys),
   .cen_6(ce_pix),
 
+  .debug(status[7]),
   .flip(status[3]),
 
   .joy_1({player_1_up, player_1_down, player_1_right, player_1_left}),
