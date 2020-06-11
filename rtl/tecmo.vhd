@@ -191,6 +191,7 @@ architecture arch of tecmo is
   signal video : video_t;
 
   -- control signals
+  signal gpu_busy       : std_logic;
   signal vblank_falling : std_logic;
   signal pause_rising   : std_logic;
 
@@ -332,7 +333,7 @@ begin
     RESET_n     => not reset,
     CLK         => clk,
     CEN         => cpu_cen,
-    WAIT_n      => not pause_reg,
+    WAIT_n      => not (gpu_busy or pause_reg),
     INT_n       => cpu_int_n,
     M1_n        => cpu_m1_n,
     MREQ_n      => cpu_mreq_n,
@@ -362,6 +363,9 @@ begin
 
     -- flip screen
     flip => flip_reg xor flip,
+
+    -- wait
+    busy => gpu_busy,
 
     -- RAM interface
     ram_addr => cpu_addr,

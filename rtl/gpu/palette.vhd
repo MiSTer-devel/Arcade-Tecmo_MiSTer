@@ -51,6 +51,9 @@ entity palette is
     clk : in std_logic;
     cen : in std_logic;
 
+    -- control signals
+    busy : out std_logic;
+
     -- palette RAM
     ram_addr : out unsigned(PALETTE_RAM_GPU_ADDR_WIDTH-1 downto 0);
     ram_data : in std_logic_vector(PALETTE_RAM_GPU_DATA_WIDTH-1 downto 0);
@@ -108,4 +111,7 @@ begin
   rgb.r <= pixel_reg.r when video.enable = '1' else (others => '0');
   rgb.g <= pixel_reg.g when video.enable = '1' else (others => '0');
   rgb.b <= pixel_reg.b when video.enable = '1' else (others => '0');
+
+  -- set busy signal
+  busy <= video.enable;
 end arch;

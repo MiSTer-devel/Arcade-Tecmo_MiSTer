@@ -68,7 +68,8 @@ entity scroll_layer is
     -- configuration
     config : in tile_config_t;
 
-    -- flip screen
+    -- control signals
+    busy : out std_logic;
     flip : in std_logic;
 
     -- scroll RAM
@@ -230,4 +231,7 @@ begin
 
   -- read line buffer two pixels ahead
   line_buffer_addr_b <= video.pos.x(7 downto 0)+2;
+
+  -- set busy signal
+  busy <= '0';
 end architecture arch;

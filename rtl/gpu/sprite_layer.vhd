@@ -70,7 +70,8 @@ entity sprite_layer is
     -- configuration
     config : in sprite_config_t;
 
-    -- flip screen
+    -- control signals
+    busy : out std_logic;
     flip : in std_logic;
 
     -- sprite RAM
@@ -304,4 +305,7 @@ begin
 
   -- enable reading from the frame buffer when video output is enabled
   frame_buffer_re_b <= cen and video.enable;
+
+  -- set busy signal
+  busy <= '0';
 end architecture arch;

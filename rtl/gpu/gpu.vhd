@@ -68,7 +68,8 @@ entity gpu is
     -- configuration
     config : in gpu_config_t;
 
-    -- flip screen
+    -- control signals
+    busy : out std_logic;
     flip : in std_logic;
 
     -- RAM interface
@@ -139,6 +140,13 @@ architecture arch of gpu is
   signal fg_data     : byte_t := (others => '0');
   signal bg_data     : byte_t := (others => '0');
   signal sprite_data : byte_t := (others => '0');
+
+  -- busy signals
+  signal char_busy    : std_logic;
+  signal fg_busy      : std_logic;
+  signal bg_busy      : std_logic;
+  signal sprite_busy  : std_logic;
+  signal palette_busy : std_logic;
 
   -- sprite priority data
   signal sprite_priority : priority_t;
@@ -282,7 +290,8 @@ begin
       -- configuration
       config => config.char_config,
 
-      -- flip screen
+      -- control signals
+      busy => char_busy,
       flip => flip,
 
       -- RAM interface
@@ -316,7 +325,8 @@ begin
       -- configuration
       config => config.fg_config,
 
-      -- flip screen
+      -- control signals
+      busy => fg_busy,
       flip => flip,
 
       -- RAM interface
@@ -351,7 +361,8 @@ begin
       -- configuration
       config => config.bg_config,
 
-      -- flip screen
+      -- control signals
+      busy => bg_busy,
       flip => flip,
 
       -- RAM interface
@@ -386,7 +397,8 @@ begin
       -- configuration
       config => config.sprite_config,
 
-      -- flip screen
+      -- control signals
+      busy => sprite_busy,
       flip => flip,
 
       -- RAM interface
@@ -413,6 +425,9 @@ begin
     -- clock signals
     clk => clk,
     cen => cen,
+
+    -- control signals
+    busy => palette_busy,
 
     -- RAM interface
     ram_addr => palette_ram_gpu_addr,
@@ -450,4 +465,14 @@ begin
               fg_ram_cpu_dout or
               bg_ram_cpu_dout or
               palette_ram_cpu_dout;
+
+  -- Set busy signal
+  --
+  -- The busy signal is asserted when the GPU needs to prevent the CPU from
+  -- writing to shared memory.
+  busy <= (char_ram_cs and char_busy) or
+          (fg_ram_cs and fg_busy) or
+          (bg_ram_cs and bg_busy) or
+          (sprite_ram_cs and sprite_busy) or
+          (palette_ram_cs and palette_busy);
 end architecture arch;
