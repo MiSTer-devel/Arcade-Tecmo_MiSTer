@@ -52,7 +52,7 @@ entity fm is
     irq_n : out std_logic;
 
     cs   : in std_logic;
-    addr : in std_logic_vector(1 downto 0);
+    a0   : in std_logic;
     dout : out std_logic_vector(7 downto 0);
     din  : in std_logic_vector(7 downto 0);
     we   : in std_logic;
@@ -62,51 +62,43 @@ entity fm is
 end entity fm;
 
 architecture arch of fm is
-  signal opl3_dout : std_logic_vector(7 downto 0);
+  signal opl_dout : std_logic_vector(7 downto 0);
+  signal opl_kon : std_logic_vector(8 downto 0);
 
-  component opl3 is
+  component opl2 is
     generic (
-      OPLCLK : natural
+      CLK_FREQ : real
     );
     port (
-      clk     : in std_logic;
-      clk_opl : in std_logic;
-      rst_n   : in std_logic;
-      irq_n   : out std_logic;
+      rst   : in std_logic;
+      clk   : in std_logic;
+      irq_n : out std_logic;
 
-      period_80us : in std_logic_vector(12 downto 0);
-
-      addr : in std_logic_vector(1 downto 0);
+      a0   : in std_logic;
       dout : out std_logic_vector(7 downto 0);
       din  : in std_logic_vector(7 downto 0);
       we   : in std_logic;
 
-      sample_l : out signed(15 downto 0);
-      sample_r : out signed(15 downto 0)
+      sample : out signed(15 downto 0)
     );
-  end component opl3;
+  end component opl2;
 begin
-  opl3_inst : component opl3
-  generic map (OPLCLK => natural(CLK_FREQ*1000000.0))
+  opl2_inst : component opl2
+  generic map (
+    CLK_FREQ => CLK_FREQ
+  )
   port map (
-    rst_n => not reset,
-
-    clk     => clk,
-    clk_opl => clk,
-
+    rst   => reset,
+    clk   => clk,
     irq_n => irq_n,
 
-    -- calculate an 80us period in clock cycles
-    period_80us => std_logic_vector(to_unsigned(natural(80.0/(1.0/CLK_FREQ)), 13)),
-
-    addr => addr,
+    a0   => a0,
     din  => din,
-    dout => opl3_dout,
+    dout => opl_dout,
     we   => cs and we,
 
-    sample_l => sample,
-    sample_r => open
+    sample => sample
   );
 
-  dout <= opl3_dout when cs = '1' else (others => '0');
+  dout <= opl_dout when cs = '1' else (others => '0');
 end architecture arch;

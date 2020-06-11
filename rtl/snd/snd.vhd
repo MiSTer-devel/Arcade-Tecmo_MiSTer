@@ -161,7 +161,7 @@ begin
     clk    => clk,
     irq_n  => cpu_int_n,
     cs     => fm_cs,
-    addr   => ('0' & cpu_addr(0)),
+    a0     => cpu_addr(0),
     din    => cpu_dout,
     dout   => fm_data,
     we     => not cpu_wr_n,
