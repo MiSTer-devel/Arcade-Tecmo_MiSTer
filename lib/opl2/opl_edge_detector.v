@@ -35,58 +35,36 @@
 
 `timescale 1ns / 1ps
 
-`include "opl.vh"
-
-module ksl_add_rom # (
-  parameter integer KSL_ADD_WIDTH = 8 // do not override
+module opl_edge_detector #(
+  parameter EDGE_LEVEL = 1,         // 1 = positive edge, 0 = negative edge
+  parameter CLK_DLY = 0,            // 0 = no clock delay, 1 = 1 clock delay
+  parameter INITIAL_INPUT_LEVEL = 0
 ) (
-  input wire rst,
   input wire clk,
-  input wire [`REG_FNUM_WIDTH-1:0] fnum,
-  input wire [`REG_BLOCK_WIDTH-1:0] block,
-  input wire [`REG_KSL_WIDTH-1:0] ksl,
-  output reg [KSL_ADD_WIDTH-1:0] ksl_add
+  input wire clk_en,
+  input wire in,
+  output reg edge_detected
 );
-  reg [6:0] rom_out = 0;
-  wire signed [KSL_ADD_WIDTH-1:0] tmp0;
-  wire signed [KSL_ADD_WIDTH-1:0] tmp1;
-  wire [`REG_FNUM_WIDTH-6-1:0] fnum_shifted;
-
-  assign fnum_shifted = fnum >> 6;
+  reg in_r0 = INITIAL_INPUT_LEVEL;
+  reg in_r1 = INITIAL_INPUT_LEVEL;
 
   always @(posedge clk)
-    if (rst)
-      rom_out <= 0;
-    else case (fnum_shifted)
-      0:  rom_out <= 0;
-      1:  rom_out <= 32;
-      2:  rom_out <= 40;
-      3:  rom_out <= 45;
-      4:  rom_out <= 48;
-      5:  rom_out <= 51;
-      6:  rom_out <= 53;
-      7:  rom_out <= 55;
-      8:  rom_out <= 56;
-      9:  rom_out <= 58;
-      10: rom_out <= 59;
-      11: rom_out <= 60;
-      12: rom_out <= 61;
-      13: rom_out <= 62;
-      14: rom_out <= 63;
-      15: rom_out <= 64;
-    endcase
+   if (!CLK_DLY)
+      in_r0 <= in;
+    else if (clk_en) begin
+      in_r0 <= in;
+      in_r1 <= in_r0;
+    end
 
-  assign tmp0 = block - 8;
-  assign tmp1 = rom_out + (tmp0 << 3);
-
-  always @(posedge clk)
-    if (rst)
-      ksl_add <= 0;
+  always @ *
+    if (EDGE_LEVEL)
+      if (!CLK_DLY)
+        edge_detected = in && !in_r0;
+      else
+        edge_detected = in_r0 && !in_r1;
     else
-      case (ksl)
-      0: ksl_add <= 0;
-      1: ksl_add <= tmp1 <= 0 ? 0 : tmp1 << 1;
-      2: ksl_add <= tmp1 <= 0 ? 0 : tmp1;
-      3: ksl_add <= tmp1 <= 0 ? 0 : tmp1 << 2;
-      endcase
+      if (!CLK_DLY)
+        edge_detected = !in && in_r0;
+      else
+        edge_detected = !in_r0 && in_r1;
 endmodule
