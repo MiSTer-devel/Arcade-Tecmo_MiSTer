@@ -37,9 +37,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
--- Frequency-modulation (FM) sounds are handled by the YM3526 (OPL2) chip.
---
--- We are using an implementation of the YM3526 by Aleksander Osman.
+-- FM sound is handled by the YM3812 (OPL2)
 entity fm is
   generic (
     -- clock frequency (in MHz)
@@ -49,64 +47,54 @@ entity fm is
     reset : in std_logic;
     clk   : in std_logic;
 
-    irq_n : out std_logic;
-
-    cs   : in std_logic;
-    addr : in std_logic_vector(1 downto 0);
-    dout : out std_logic_vector(7 downto 0);
     din  : in std_logic_vector(7 downto 0);
-    we   : in std_logic;
+    dout : out std_logic_vector(7 downto 0);
+
+    cs : in std_logic;
+    we : in std_logic;
+    a0 : in std_logic;
+
+    irq_n : out std_logic;
 
     sample : out signed(15 downto 0)
   );
 end entity fm;
 
 architecture arch of fm is
-  signal opl3_dout : std_logic_vector(7 downto 0);
-
-  component opl3 is
-    generic (
-      OPLCLK : natural
-    );
+  component opl2 is
+    generic (CLK_FREQ : real);
     port (
-      clk     : in std_logic;
-      clk_opl : in std_logic;
-      rst_n   : in std_logic;
-      irq_n   : out std_logic;
+      rst : in std_logic;
+      clk : in std_logic;
 
-      period_80us : in std_logic_vector(12 downto 0);
-
-      addr : in std_logic_vector(1 downto 0);
       dout : out std_logic_vector(7 downto 0);
       din  : in std_logic_vector(7 downto 0);
-      we   : in std_logic;
 
-      sample_l : out signed(15 downto 0);
-      sample_r : out signed(15 downto 0)
+      cs_n : in std_logic;
+      wr_n : in std_logic;
+      a0   : in std_logic;
+
+      irq_n : out std_logic;
+
+      sample : out signed(15 downto 0)
     );
-  end component opl3;
+  end component opl2;
 begin
-  opl3_inst : component opl3
-  generic map (OPLCLK => natural(CLK_FREQ*1000000.0))
+  opl2_inst : component opl2
+  generic map (CLK_FREQ => CLK_FREQ)
   port map (
-    rst_n => not reset,
+    rst => reset,
+    clk => clk,
 
-    clk     => clk,
-    clk_opl => clk,
+    din  => din,
+    dout => dout,
+
+    cs_n => not cs,
+    wr_n => not we,
+    a0   => a0,
 
     irq_n => irq_n,
 
-    -- calculate an 80us period in clock cycles
-    period_80us => std_logic_vector(to_unsigned(natural(80.0/(1.0/CLK_FREQ)), 13)),
-
-    addr => addr,
-    din  => din,
-    dout => opl3_dout,
-    we   => cs and we,
-
-    sample_l => sample,
-    sample_r => open
+    sample => sample
   );
-
-  dout <= opl3_dout when cs = '1' else (others => '0');
 end architecture arch;
