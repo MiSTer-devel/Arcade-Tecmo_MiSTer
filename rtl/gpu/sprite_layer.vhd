@@ -72,7 +72,7 @@ entity sprite_layer is
     config : in sprite_config_t;
 
     -- control signals
-    busy : out std_logic;
+    busy : buffer std_logic;
     flip : in std_logic;
 
     -- sprite RAM
@@ -106,6 +106,8 @@ architecture arch of sprite_layer is
 
   signal ram_addr_b : unsigned(SPRITE_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
   signal ram_dout_b : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0);
+
+  signal ram_cs_rising : std_logic;
 
   -- frame buffer
   signal frame_buffer_swap   : std_logic;
@@ -141,7 +143,7 @@ begin
     -- CPU interface
     clk_a  => clk,
     cs_a   => ram_cs,
-    we_a   => ram_we,
+    we_a   => ram_we and not busy,
     addr_a => ram_addr,
     din_a  => ram_din,
     dout_a => ram_dout,
@@ -192,6 +194,15 @@ begin
     frame_buffer_addr => frame_buffer_addr_a,
     frame_buffer_data => frame_buffer_din_a,
     frame_buffer_we   => frame_buffer_we_a
+  );
+
+  -- detect rising edges of the RAM_CS signal
+  ram_cs_edge_detector : entity work.edge_detector
+  generic map (RISING => true)
+  port map (
+    clk  => clk,
+    data => video.enable,
+    q    => ram_cs_rising
   );
 
   -- state machine
@@ -315,6 +326,21 @@ begin
     end if;
   end process;
 
+  -- The busy signal is asserted when the CPU tries to access the VRAM. It is
+  -- deasserted after the tile data has been latched.
+  latch_busy : process (clk, reset, state)
+  begin
+    if reset = '1' or state = LATCH then
+      busy <= '0';
+    elsif rising_edge(clk) then
+      if cen = '1' then
+        if ram_cs_rising = '1' then
+          busy <= '1';
+        end if;
+      end if;
+    end if;
+  end process;
+
   -- Set the logical postion
   --
   -- The video position is inverted when the screen is flipped.
@@ -334,7 +360,4 @@ begin
 
   -- enable reading from the frame buffer when video output is enabled
   frame_buffer_re_b <= cen and video.enable;
-
-  -- set busy signal
-  busy <= '0';
 end architecture arch;

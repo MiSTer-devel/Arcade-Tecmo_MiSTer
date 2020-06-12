@@ -52,7 +52,7 @@ entity palette is
     cen : in std_logic;
 
     -- control signals
-    busy : out std_logic;
+    busy : buffer std_logic;
 
     -- palette RAM
     ram_cs   : in std_logic;
@@ -98,7 +98,7 @@ begin
     -- CPU interface
     clk_a  => clk,
     cs_a   => ram_cs,
-    we_a   => ram_we,
+    we_a   => ram_we and not busy,
     addr_a => ram_addr,
     din_a  => ram_din,
     dout_a => ram_dout,

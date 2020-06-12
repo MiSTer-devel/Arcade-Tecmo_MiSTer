@@ -61,7 +61,7 @@ entity char_layer is
     config : in tile_config_t;
 
     -- control signals
-    busy : out std_logic;
+    busy : buffer std_logic;
     flip : in std_logic;
 
     -- char RAM
@@ -86,6 +86,8 @@ end char_layer;
 architecture arch of char_layer is
   signal ram_addr_b : unsigned(CHAR_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
   signal ram_dout_b : std_logic_vector(CHAR_RAM_GPU_DATA_WIDTH-1 downto 0);
+
+  signal ram_cs_rising : std_logic;
 
   -- tile signals
   signal tile     : tile_t;
@@ -125,7 +127,7 @@ begin
     -- CPU interface
     clk_a  => clk,
     cs_a   => ram_cs,
-    we_a   => ram_we,
+    we_a   => ram_we and not busy,
     addr_a => ram_addr,
     din_a  => ram_din,
     dout_a => ram_dout,
@@ -159,6 +161,15 @@ begin
     -- port B (read)
     addr_b => line_buffer_addr_b,
     dout_b => line_buffer_dout_b
+  );
+
+  -- detect rising edges of the RAM_CS signal
+  ram_cs_edge_detector : entity work.edge_detector
+  generic map (RISING => true)
+  port map (
+    clk  => clk,
+    data => video.enable,
+    q    => ram_cs_rising
   );
 
   -- Load tile data from the character RAM.
@@ -208,6 +219,21 @@ begin
     end if;
   end process;
 
+  -- The busy signal is asserted when the CPU tries to access the VRAM. It is
+  -- deasserted after the tile data has been latched.
+  latch_busy : process (clk, reset, offset_x)
+  begin
+    if reset = '1' or to_integer(offset_x) = 1 then
+      busy <= '0';
+    elsif rising_edge(clk) then
+      if cen = '1' then
+        if ram_cs_rising = '1' then
+          busy <= '1';
+        end if;
+      end if;
+    end if;
+  end process;
+
   -- set flipped vertical position to be one scanline ahead/behind
   flip_y <= (not video.pos.y(7 downto 0))-1 when flip = '1' else
             video.pos.y(7 downto 0)+1;
@@ -232,7 +258,4 @@ begin
 
   -- read line buffer two pixels ahead
   line_buffer_addr_b <= video.pos.x(7 downto 0)+2;
-
-  -- set busy signal
-  busy <= '0';
 end architecture arch;
