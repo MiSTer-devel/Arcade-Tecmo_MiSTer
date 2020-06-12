@@ -368,10 +368,10 @@ begin
     busy => gpu_busy,
 
     -- RAM interface
+    ram_we   => not cpu_wr_n,
     ram_addr => cpu_addr,
     ram_din  => cpu_dout,
     ram_dout => gpu_dout,
-    ram_we   => not cpu_wr_n,
 
     -- tile ROM interface
     char_rom_addr   => char_rom_addr,

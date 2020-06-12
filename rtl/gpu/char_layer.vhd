@@ -47,7 +47,6 @@ use work.types.all;
 entity char_layer is
   generic (
     RAM_ADDR_WIDTH : natural;
-    RAM_DATA_WIDTH : natural;
     ROM_ADDR_WIDTH : natural;
     ROM_DATA_WIDTH : natural
   );
@@ -64,8 +63,11 @@ entity char_layer is
     flip : in std_logic;
 
     -- char RAM
-    ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
-    ram_data : in std_logic_vector(RAM_DATA_WIDTH-1 downto 0);
+    ram_cs   : in std_logic;
+    ram_we   : in std_logic;
+    ram_addr : in unsigned(RAM_ADDR_WIDTH-1 downto 0);
+    ram_din  : in byte_t;
+    ram_dout : out byte_t;
 
     -- tile ROM
     rom_addr : out unsigned(ROM_ADDR_WIDTH-1 downto 0);
@@ -80,6 +82,9 @@ entity char_layer is
 end char_layer;
 
 architecture arch of char_layer is
+  signal ram_addr_b : unsigned(CHAR_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
+  signal ram_dout_b : std_logic_vector(CHAR_RAM_GPU_DATA_WIDTH-1 downto 0);
+
   -- tile signals
   signal tile     : tile_t;
   signal color    : color_t;
@@ -106,6 +111,29 @@ architecture arch of char_layer is
   alias offset_x : unsigned(2 downto 0) is dest_pos.x(2 downto 0);
   alias offset_y : unsigned(2 downto 0) is dest_pos.y(2 downto 0);
 begin
+  -- The character RAM (2kB) contains the code and colour of each tile in the
+  -- tilemap.
+  char_ram : entity work.true_dual_port_ram
+  generic map (
+    ADDR_WIDTH_A => RAM_ADDR_WIDTH,
+    ADDR_WIDTH_B => CHAR_RAM_GPU_ADDR_WIDTH,
+    DATA_WIDTH_B => CHAR_RAM_GPU_DATA_WIDTH
+  )
+  port map (
+    -- CPU interface
+    clk_a  => clk,
+    cs_a   => ram_cs,
+    we_a   => ram_we,
+    addr_a => ram_addr,
+    din_a  => ram_din,
+    dout_a => ram_dout,
+
+    -- GPU interface
+    clk_b  => clk,
+    addr_b => ram_addr_b,
+    dout_b => ram_dout_b
+  );
+
   -- A line buffer is used to cache pixel data for the next scanline.
   --
   -- It is not present in the original arcade hardware, but it hugely
@@ -149,11 +177,11 @@ begin
         case to_integer(offset_x) is
           when 0 =>
             -- load next tile
-            ram_addr <= row & (col+1);
+            ram_addr_b <= row & (col+1);
 
           when 1 =>
             -- latch tile
-            tile <= decode_tile(config, ram_data);
+            tile <= decode_tile(config, ram_dout_b);
 
           when 7 =>
             -- latch row data
