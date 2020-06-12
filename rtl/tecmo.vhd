@@ -127,7 +127,7 @@ architecture arch of tecmo is
   signal cpu_rd_n    : std_logic;
   signal cpu_wr_n    : std_logic;
   signal cpu_rfsh_n  : std_logic;
-  signal cpu_int_n   : std_logic := '1';
+  signal cpu_int_n   : std_logic;
   signal cpu_m1_n    : std_logic;
 
   -- chip select signals
@@ -417,17 +417,17 @@ begin
     audio => audio
   );
 
-  -- Trigger an interrupt on the falling edge of the VBLANK signal.
+  -- Trigger an interrupt on the falling edge of the VBLANK signal
   --
   -- Once the interrupt request has been accepted by the CPU, it is
   -- acknowledged by activating the IORQ signal during the M1 cycle. This
   -- disables the interrupt signal, and the cycle starts over.
-  irq : process (clk)
+  irq : process (clk, reset, cpu_m1_n, cpu_ioreq_n)
   begin
-    if rising_edge(clk) then
-      if cpu_m1_n = '0' and cpu_ioreq_n = '0' then
-        cpu_int_n <= '1';
-      elsif vblank_falling = '1' then
+    if reset = '1' or (cpu_m1_n = '0' and cpu_ioreq_n = '0') then
+      cpu_int_n <= '1';
+    elsif rising_edge(clk) then
+      if vblank_falling = '1' then
         cpu_int_n <= '0';
       end if;
     end if;
