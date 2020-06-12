@@ -123,9 +123,7 @@ architecture arch of gpu is
   signal sprite_ram_dout : byte_t;
 
   -- palette RAM
-  signal palette_ram_cpu_dout : byte_t;
-  signal palette_ram_gpu_addr : unsigned(PALETTE_RAM_GPU_ADDR_WIDTH-1 downto 0);
-  signal palette_ram_gpu_dout : std_logic_vector(PALETTE_RAM_GPU_DATA_WIDTH-1 downto 0);
+  signal palette_ram_dout : byte_t;
 
   -- layer output signals
   signal char_data   : byte_t := (others => '0');
@@ -149,29 +147,6 @@ begin
     clk   => clk,
     cen   => cen,
     video => video
-  );
-
-  -- The palette RAM contains 1024 16-bit RGB colour values, stored in
-  -- RRRRGGGGXXXXBBBB format.
-  palette_ram : entity work.true_dual_port_ram
-  generic map (
-    ADDR_WIDTH_A => PALETTE_RAM_CPU_ADDR_WIDTH,
-    ADDR_WIDTH_B => PALETTE_RAM_GPU_ADDR_WIDTH,
-    DATA_WIDTH_B => PALETTE_RAM_GPU_DATA_WIDTH
-  )
-  port map (
-    -- CPU interface
-    clk_a  => clk,
-    cs_a   => palette_ram_cs,
-    addr_a => ram_addr(PALETTE_RAM_CPU_ADDR_WIDTH-1 downto 0),
-    din_a  => ram_din,
-    dout_a => palette_ram_cpu_dout,
-    we_a   => ram_we,
-
-    -- GPU interface
-    clk_b  => clk,
-    addr_b => palette_ram_gpu_addr,
-    dout_b => palette_ram_gpu_dout
   );
 
   char_layer_gen : if CHAR_LAYER_ENABLE generate
@@ -339,8 +314,11 @@ begin
     busy => palette_busy,
 
     -- RAM interface
-    ram_addr => palette_ram_gpu_addr,
-    ram_data => palette_ram_gpu_dout,
+    ram_cs   => palette_ram_cs,
+    ram_we   => ram_we,
+    ram_addr => ram_addr(PALETTE_RAM_CPU_ADDR_WIDTH-1 downto 0),
+    ram_din  => ram_din,
+    ram_dout => palette_ram_dout,
 
     -- layer data
     char_data   => char_data,
@@ -373,7 +351,7 @@ begin
               char_ram_dout or
               fg_ram_dout or
               bg_ram_dout or
-              palette_ram_cpu_dout;
+              palette_ram_dout;
 
   -- Set busy signal
   --
