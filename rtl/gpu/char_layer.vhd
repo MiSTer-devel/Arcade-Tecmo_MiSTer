@@ -50,6 +50,9 @@ entity char_layer is
     ROM_DATA_WIDTH : natural
   );
   port (
+    -- reset
+    reset : in std_logic;
+
     -- clock signals
     clk : in std_logic;
     cen : in std_logic;
@@ -144,7 +147,7 @@ begin
     DATA_WIDTH => LINE_BUFFER_DATA_WIDTH
   )
   port map (
-    clk   => clk,
+    clk => clk,
 
     swap => line_buffer_swap,
 

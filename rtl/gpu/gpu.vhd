@@ -156,6 +156,9 @@ begin
       ROM_DATA_WIDTH => CHAR_ROM_DATA_WIDTH
     )
     port map (
+      -- reset
+      reset => reset,
+
       -- clock signals
       clk => clk,
       cen => cen,
@@ -192,6 +195,9 @@ begin
       ROM_DATA_WIDTH => FG_ROM_DATA_WIDTH
     )
     port map (
+      -- reset
+      reset => reset,
+
       -- clock signals
       clk => clk,
       cen => cen,
@@ -229,6 +235,9 @@ begin
       ROM_DATA_WIDTH => BG_ROM_DATA_WIDTH
     )
     port map (
+      -- reset
+      reset => reset,
+
       -- clock signals
       clk => clk,
       cen => cen,
@@ -266,6 +275,9 @@ begin
       ROM_DATA_WIDTH => SPRITE_ROM_DATA_WIDTH
     )
     port map (
+      -- reset
+      reset => reset,
+
       -- clock signals
       clk => clk,
       cen => cen,
