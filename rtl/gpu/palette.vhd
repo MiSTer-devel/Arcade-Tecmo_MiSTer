@@ -142,5 +142,5 @@ begin
   rgb.b <= pixel_reg.b when video.enable = '1' else (others => '0');
 
   -- set busy signal
-  busy <= video.enable;
+  busy <= ram_cs and video.enable;
 end arch;

@@ -339,19 +339,11 @@ begin
   bg_ram_addr   <= rotate_left(ram_addr(SCROLL_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
 
   -- mux GPU data output
-  ram_dout <= sprite_ram_dout or
-              char_ram_dout or
-              fg_ram_dout or
-              bg_ram_dout or
-              palette_ram_dout;
+  ram_dout <= sprite_ram_dout or char_ram_dout or fg_ram_dout or bg_ram_dout or palette_ram_dout;
 
   -- Set busy signal
   --
   -- The busy signal is asserted when the GPU needs to prevent the CPU from
   -- writing to shared memory.
-  busy <= (char_ram_cs and char_busy) or
-          (fg_ram_cs and fg_busy) or
-          (bg_ram_cs and bg_busy) or
-          (sprite_ram_cs and sprite_busy) or
-          (palette_ram_cs and palette_busy);
+  busy <= char_busy or fg_busy or bg_busy or sprite_busy or palette_busy;
 end architecture arch;
