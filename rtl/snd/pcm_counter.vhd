@@ -78,7 +78,7 @@ architecture rtl of pcm_counter is
   signal ctr_end : unsigned(7 downto 0);
 begin
   -- detect falling edges of the VCK signal
-  vck_edge_detector : entity work.my_edge_detector
+  vck_edge_detector : entity work.edge_detector
   generic map (FALLING => true)
   port map (
     clk  => clk,

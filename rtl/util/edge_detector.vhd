@@ -39,7 +39,7 @@ use ieee.numeric_std.all;
 
 -- Generates a pulse when a rising or falling edge is detected for the input
 -- signal.
-entity my_edge_detector is
+entity edge_detector is
   generic (
     RISING  : boolean := false;
     FALLING : boolean := false
@@ -54,9 +54,9 @@ entity my_edge_detector is
     -- output data
     q : out std_logic
   );
-end my_edge_detector;
+end edge_detector;
 
-architecture arch of my_edge_detector is
+architecture arch of edge_detector is
   signal t0 : std_logic;
   signal a, b : std_logic;
 begin

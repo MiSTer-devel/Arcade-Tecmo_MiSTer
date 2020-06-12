@@ -232,7 +232,7 @@ begin
   port map (clk => clk, cen => cen_384);
 
   -- detect falling edges of the VBLANK signal
-  vblank_edge_detector : entity work.my_edge_detector
+  vblank_edge_detector : entity work.edge_detector
   generic map (FALLING => true)
   port map (
     clk  => clk,
