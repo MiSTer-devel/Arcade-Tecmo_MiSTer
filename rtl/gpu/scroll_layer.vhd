@@ -148,7 +148,7 @@ begin
     if rising_edge(clk) then
       if cen = '1' then
         if video.hsync = '1' then
-          dest_pos.x <= scroll_pos.x;
+          dest_pos.x <= scroll_pos.x-4;
         else
           dest_pos.x <= dest_pos.x+1;
         end if;
