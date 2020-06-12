@@ -153,7 +153,6 @@ begin
     -- character layer
     char_layer : entity work.char_layer
     generic map (
-      RAM_ADDR_WIDTH => CHAR_RAM_CPU_ADDR_WIDTH,
       ROM_ADDR_WIDTH => CHAR_ROM_ADDR_WIDTH,
       ROM_DATA_WIDTH => CHAR_ROM_DATA_WIDTH
     )
@@ -190,7 +189,6 @@ begin
     -- foreground layer
     fg_layer : entity work.scroll_layer
     generic map (
-      RAM_ADDR_WIDTH => SCROLL_RAM_CPU_ADDR_WIDTH,
       ROM_ADDR_WIDTH => FG_ROM_ADDR_WIDTH,
       ROM_DATA_WIDTH => FG_ROM_DATA_WIDTH
     )
@@ -228,7 +226,6 @@ begin
     -- background layer
     bg_layer : entity work.scroll_layer
     generic map (
-      RAM_ADDR_WIDTH => SCROLL_RAM_CPU_ADDR_WIDTH,
       ROM_ADDR_WIDTH => BG_ROM_ADDR_WIDTH,
       ROM_DATA_WIDTH => BG_ROM_DATA_WIDTH
     )
@@ -266,7 +263,6 @@ begin
     -- sprite layer
     sprite_layer : entity work.sprite_layer
     generic map (
-      RAM_ADDR_WIDTH => SPRITE_RAM_CPU_ADDR_WIDTH,
       ROM_ADDR_WIDTH => SPRITE_ROM_ADDR_WIDTH,
       ROM_DATA_WIDTH => SPRITE_ROM_DATA_WIDTH
     )

@@ -57,7 +57,6 @@ use work.types.all;
 -- sprite tile ROM.
 entity sprite_layer is
   generic (
-    RAM_ADDR_WIDTH : natural;
     ROM_ADDR_WIDTH : natural;
     ROM_DATA_WIDTH : natural
   );
@@ -76,7 +75,7 @@ entity sprite_layer is
     -- sprite RAM
     ram_cs   : in std_logic;
     ram_we   : in std_logic;
-    ram_addr : in unsigned(RAM_ADDR_WIDTH-1 downto 0);
+    ram_addr : in unsigned(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
     ram_din  : in byte_t;
     ram_dout : out byte_t;
 
@@ -131,7 +130,7 @@ begin
   -- The sprite RAM (2kB) contains the sprite data.
   sprite_ram : entity work.true_dual_port_ram
   generic map (
-    ADDR_WIDTH_A => RAM_ADDR_WIDTH,
+    ADDR_WIDTH_A => SPRITE_RAM_CPU_ADDR_WIDTH,
     ADDR_WIDTH_B => SPRITE_RAM_GPU_ADDR_WIDTH,
     DATA_WIDTH_B => SPRITE_RAM_GPU_DATA_WIDTH
   )

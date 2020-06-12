@@ -55,7 +55,6 @@ use work.types.all;
 -- positions are used to set the position of the visible area.
 entity scroll_layer is
   generic (
-    RAM_ADDR_WIDTH : natural;
     ROM_ADDR_WIDTH : natural;
     ROM_DATA_WIDTH : natural
   );
@@ -74,7 +73,7 @@ entity scroll_layer is
     -- scroll RAM
     ram_cs   : in std_logic;
     ram_we   : in std_logic;
-    ram_addr : in unsigned(RAM_ADDR_WIDTH-1 downto 0);
+    ram_addr : in unsigned(SCROLL_RAM_CPU_ADDR_WIDTH-1 downto 0);
     ram_din  : in byte_t;
     ram_dout : out byte_t;
 
@@ -127,7 +126,7 @@ begin
   -- tilemap.
   scroll_ram : entity work.true_dual_port_ram
   generic map (
-    ADDR_WIDTH_A => RAM_ADDR_WIDTH,
+    ADDR_WIDTH_A => SCROLL_RAM_CPU_ADDR_WIDTH,
     ADDR_WIDTH_B => SCROLL_RAM_GPU_ADDR_WIDTH,
     DATA_WIDTH_B => SCROLL_RAM_GPU_DATA_WIDTH
   )
