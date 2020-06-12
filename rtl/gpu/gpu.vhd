@@ -111,16 +111,12 @@ architecture arch of gpu is
   signal char_ram_dout : byte_t;
 
   -- foreground RAM
-  signal fg_ram_cpu_addr : unsigned(FG_RAM_CPU_ADDR_WIDTH-1 downto 0);
-  signal fg_ram_cpu_dout : byte_t;
-  signal fg_ram_gpu_addr : unsigned(FG_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
-  signal fg_ram_gpu_dout : std_logic_vector(FG_RAM_GPU_DATA_WIDTH-1 downto 0);
+  signal fg_ram_addr : unsigned(SCROLL_RAM_CPU_ADDR_WIDTH-1 downto 0);
+  signal fg_ram_dout : byte_t;
 
   -- background RAM
-  signal bg_ram_cpu_addr : unsigned(BG_RAM_CPU_ADDR_WIDTH-1 downto 0);
-  signal bg_ram_cpu_dout : byte_t;
-  signal bg_ram_gpu_addr : unsigned(BG_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
-  signal bg_ram_gpu_dout : std_logic_vector(BG_RAM_GPU_DATA_WIDTH-1 downto 0);
+  signal bg_ram_addr : unsigned(SCROLL_RAM_CPU_ADDR_WIDTH-1 downto 0);
+  signal bg_ram_dout : byte_t;
 
   -- sprite RAM
   signal sprite_ram_cpu_addr : unsigned(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
@@ -155,52 +151,6 @@ begin
     clk   => clk,
     cen   => cen,
     video => video
-  );
-
-  -- The foreground RAM (1kB) contains the code and colour of each tile in the
-  -- foreground tilemap.
-  fg_ram : entity work.true_dual_port_ram
-  generic map (
-    ADDR_WIDTH_A => FG_RAM_CPU_ADDR_WIDTH,
-    ADDR_WIDTH_B => FG_RAM_GPU_ADDR_WIDTH,
-    DATA_WIDTH_B => FG_RAM_GPU_DATA_WIDTH
-  )
-  port map (
-    -- CPU interface
-    clk_a  => clk,
-    cs_a   => fg_ram_cs,
-    addr_a => fg_ram_cpu_addr,
-    din_a  => ram_din,
-    dout_a => fg_ram_cpu_dout,
-    we_a   => ram_we,
-
-    -- GPU interface
-    clk_b  => clk,
-    addr_b => fg_ram_gpu_addr,
-    dout_b => fg_ram_gpu_dout
-  );
-
-  -- The background RAM (1kB) contains the code and colour of each tile in the
-  -- background tilemap.
-  bg_ram : entity work.true_dual_port_ram
-  generic map (
-    ADDR_WIDTH_A => BG_RAM_CPU_ADDR_WIDTH,
-    ADDR_WIDTH_B => BG_RAM_GPU_ADDR_WIDTH,
-    DATA_WIDTH_B => BG_RAM_GPU_DATA_WIDTH
-  )
-  port map (
-    -- CPU interface
-    clk_a  => clk,
-    cs_a   => bg_ram_cs,
-    addr_a => bg_ram_cpu_addr,
-    din_a  => ram_din,
-    dout_a => bg_ram_cpu_dout,
-    we_a   => ram_we,
-
-    -- GPU interface
-    clk_b  => clk,
-    addr_b => bg_ram_gpu_addr,
-    dout_b => bg_ram_gpu_dout
   );
 
   -- The sprite RAM (2kB) contains the sprite data.
@@ -289,8 +239,7 @@ begin
     -- foreground layer
     fg_layer : entity work.scroll_layer
     generic map (
-      RAM_ADDR_WIDTH => FG_RAM_GPU_ADDR_WIDTH,
-      RAM_DATA_WIDTH => FG_RAM_GPU_DATA_WIDTH,
+      RAM_ADDR_WIDTH => SCROLL_RAM_CPU_ADDR_WIDTH,
       ROM_ADDR_WIDTH => FG_ROM_ADDR_WIDTH,
       ROM_DATA_WIDTH => FG_ROM_DATA_WIDTH
     )
@@ -307,8 +256,11 @@ begin
       flip => flip,
 
       -- RAM interface
-      ram_addr => fg_ram_gpu_addr,
-      ram_data => fg_ram_gpu_dout,
+      ram_cs   => fg_ram_cs,
+      ram_we   => ram_we,
+      ram_addr => fg_ram_addr,
+      ram_din  => ram_din,
+      ram_dout => fg_ram_dout,
 
       -- ROM interface
       rom_addr => fg_rom_addr,
@@ -325,8 +277,7 @@ begin
     -- background layer
     bg_layer : entity work.scroll_layer
     generic map (
-      RAM_ADDR_WIDTH => BG_RAM_GPU_ADDR_WIDTH,
-      RAM_DATA_WIDTH => BG_RAM_GPU_DATA_WIDTH,
+      RAM_ADDR_WIDTH => SCROLL_RAM_CPU_ADDR_WIDTH,
       ROM_ADDR_WIDTH => BG_ROM_ADDR_WIDTH,
       ROM_DATA_WIDTH => BG_ROM_DATA_WIDTH
     )
@@ -343,8 +294,11 @@ begin
       flip => flip,
 
       -- RAM interface
-      ram_addr => bg_ram_gpu_addr,
-      ram_data => bg_ram_gpu_dout,
+      ram_cs   => bg_ram_cs,
+      ram_we   => ram_we,
+      ram_addr => bg_ram_addr,
+      ram_din  => ram_din,
+      ram_dout => bg_ram_dout,
 
       -- ROM interface
       rom_addr => bg_rom_addr,
@@ -429,9 +383,9 @@ begin
   -- This allows tiles to be stored as 16-bit words (i.e. two contiguous bytes)
   -- in memory, rather than spliting them into high and low bytes stored in the
   -- upper and lower-half of the RAM.
-  char_ram_addr   <= rotate_left(ram_addr(CHAR_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
-  fg_ram_cpu_addr <= rotate_left(ram_addr(FG_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
-  bg_ram_cpu_addr <= rotate_left(ram_addr(BG_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
+  char_ram_addr <= rotate_left(ram_addr(CHAR_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
+  fg_ram_addr   <= rotate_left(ram_addr(SCROLL_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
+  bg_ram_addr   <= rotate_left(ram_addr(SCROLL_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
 
   -- set sprite RAM address
   sprite_ram_cpu_addr <= ram_addr(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
@@ -439,8 +393,8 @@ begin
   -- mux GPU data output
   ram_dout <= sprite_ram_cpu_dout or
               char_ram_dout or
-              fg_ram_cpu_dout or
-              bg_ram_cpu_dout or
+              fg_ram_dout or
+              bg_ram_dout or
               palette_ram_cpu_dout;
 
   -- Set busy signal

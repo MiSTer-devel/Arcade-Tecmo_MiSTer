@@ -110,12 +110,9 @@ package common is
   constant CHAR_RAM_CPU_ADDR_WIDTH    : natural := 11; -- 2kB
   constant CHAR_RAM_GPU_ADDR_WIDTH    : natural := 10;
   constant CHAR_RAM_GPU_DATA_WIDTH    : natural := 16;
-  constant FG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
-  constant FG_RAM_GPU_ADDR_WIDTH      : natural := 9;
-  constant FG_RAM_GPU_DATA_WIDTH      : natural := 16;
-  constant BG_RAM_CPU_ADDR_WIDTH      : natural := 10; -- 1kB
-  constant BG_RAM_GPU_ADDR_WIDTH      : natural := 9;
-  constant BG_RAM_GPU_DATA_WIDTH      : natural := 16;
+  constant SCROLL_RAM_CPU_ADDR_WIDTH  : natural := 10; -- 1kB
+  constant SCROLL_RAM_GPU_ADDR_WIDTH  : natural := 9;
+  constant SCROLL_RAM_GPU_DATA_WIDTH  : natural := 16;
   constant SPRITE_RAM_CPU_ADDR_WIDTH  : natural := 11; -- 2kB
   constant SPRITE_RAM_GPU_ADDR_WIDTH  : natural := 8;
   constant SPRITE_RAM_GPU_DATA_WIDTH  : natural := 64;
