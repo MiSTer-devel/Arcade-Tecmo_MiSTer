@@ -119,7 +119,6 @@ architecture arch of gpu is
   signal bg_ram_dout : byte_t;
 
   -- sprite RAM
-  signal sprite_ram_addr : unsigned(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
   signal sprite_ram_dout : byte_t;
 
   -- palette RAM
@@ -281,7 +280,7 @@ begin
       -- RAM interface
       ram_cs   => sprite_ram_cs,
       ram_we   => ram_we,
-      ram_addr => sprite_ram_addr,
+      ram_addr => ram_addr(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0),
       ram_din  => ram_din,
       ram_dout => sprite_ram_dout,
 
@@ -338,9 +337,6 @@ begin
   char_ram_addr <= rotate_left(ram_addr(CHAR_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
   fg_ram_addr   <= rotate_left(ram_addr(SCROLL_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
   bg_ram_addr   <= rotate_left(ram_addr(SCROLL_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
-
-  -- set sprite RAM address
-  sprite_ram_addr <= ram_addr(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
 
   -- mux GPU data output
   ram_dout <= sprite_ram_dout or
