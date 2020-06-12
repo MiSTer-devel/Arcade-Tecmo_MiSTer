@@ -58,7 +58,6 @@ use work.types.all;
 entity sprite_layer is
   generic (
     RAM_ADDR_WIDTH : natural;
-    RAM_DATA_WIDTH : natural;
     ROM_ADDR_WIDTH : natural;
     ROM_DATA_WIDTH : natural
   );
@@ -75,8 +74,11 @@ entity sprite_layer is
     flip : in std_logic;
 
     -- sprite RAM
-    ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
-    ram_data : in std_logic_vector(RAM_DATA_WIDTH-1 downto 0);
+    ram_cs   : in std_logic;
+    ram_we   : in std_logic;
+    ram_addr : in unsigned(RAM_ADDR_WIDTH-1 downto 0);
+    ram_din  : in byte_t;
+    ram_dout : out byte_t;
 
     -- tile ROM
     rom_addr : out unsigned(ROM_ADDR_WIDTH-1 downto 0);
@@ -99,6 +101,9 @@ architecture arch of sprite_layer is
 
   -- state signals
   signal state, next_state : state_t;
+
+  signal ram_addr_b : unsigned(SPRITE_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
+  signal ram_dout_b : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0);
 
   -- frame buffer
   signal frame_buffer_swap   : std_logic;
@@ -123,6 +128,28 @@ architecture arch of sprite_layer is
   signal blitter_start : std_logic;
   signal blitter_ready : std_logic;
 begin
+  -- The sprite RAM (2kB) contains the sprite data.
+  sprite_ram : entity work.true_dual_port_ram
+  generic map (
+    ADDR_WIDTH_A => RAM_ADDR_WIDTH,
+    ADDR_WIDTH_B => SPRITE_RAM_GPU_ADDR_WIDTH,
+    DATA_WIDTH_B => SPRITE_RAM_GPU_DATA_WIDTH
+  )
+  port map (
+    -- CPU interface
+    clk_a  => clk,
+    cs_a   => ram_cs,
+    we_a   => ram_we,
+    addr_a => ram_addr,
+    din_a  => ram_din,
+    dout_a => ram_dout,
+
+    -- GPU interface
+    clk_b  => clk,
+    addr_b => ram_addr_b,
+    dout_b => ram_dout_b
+  );
+
   sprite_frame_buffer : entity work.frame_buffer
   generic map (
     ADDR_WIDTH => FRAME_BUFFER_ADDR_WIDTH,
@@ -243,7 +270,7 @@ begin
     if rising_edge(clk) then
       if cen = '1' then
         if state = LATCH then
-          sprite <= decode_sprite(config, ram_data);
+          sprite <= decode_sprite(config, ram_dout_b);
         end if;
       end if;
     end if;
@@ -295,7 +322,7 @@ begin
                    ('0' & video.pos.y(7 downto 0));
 
   -- set sprite RAM address
-  ram_addr <= to_unsigned(sprite_counter, ram_addr'length);
+  ram_addr_b <= to_unsigned(sprite_counter, ram_addr_b'length);
 
   -- the frame is done when all the sprites have been blitted
   frame_done <= '1' when sprite_counter = sprite_counter'high else '0';

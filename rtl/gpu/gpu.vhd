@@ -119,10 +119,8 @@ architecture arch of gpu is
   signal bg_ram_dout : byte_t;
 
   -- sprite RAM
-  signal sprite_ram_cpu_addr : unsigned(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
-  signal sprite_ram_cpu_dout : byte_t;
-  signal sprite_ram_gpu_addr : unsigned(SPRITE_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
-  signal sprite_ram_gpu_dout : std_logic_vector(SPRITE_RAM_GPU_DATA_WIDTH-1 downto 0);
+  signal sprite_ram_addr : unsigned(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
+  signal sprite_ram_dout : byte_t;
 
   -- palette RAM
   signal palette_ram_cpu_dout : byte_t;
@@ -151,28 +149,6 @@ begin
     clk   => clk,
     cen   => cen,
     video => video
-  );
-
-  -- The sprite RAM (2kB) contains the sprite data.
-  sprite_ram : entity work.true_dual_port_ram
-  generic map (
-    ADDR_WIDTH_A => SPRITE_RAM_CPU_ADDR_WIDTH,
-    ADDR_WIDTH_B => SPRITE_RAM_GPU_ADDR_WIDTH,
-    DATA_WIDTH_B => SPRITE_RAM_GPU_DATA_WIDTH
-  )
-  port map (
-    -- CPU interface
-    clk_a  => clk,
-    cs_a   => sprite_ram_cs,
-    addr_a => sprite_ram_cpu_addr,
-    din_a  => ram_din,
-    dout_a => sprite_ram_cpu_dout,
-    we_a   => ram_we,
-
-    -- GPU interface
-    clk_b  => clk,
-    addr_b => sprite_ram_gpu_addr,
-    dout_b => sprite_ram_gpu_dout
   );
 
   -- The palette RAM contains 1024 16-bit RGB colour values, stored in
@@ -315,8 +291,7 @@ begin
     -- sprite layer
     sprite_layer : entity work.sprite_layer
     generic map (
-      RAM_ADDR_WIDTH => SPRITE_RAM_GPU_ADDR_WIDTH,
-      RAM_DATA_WIDTH => SPRITE_RAM_GPU_DATA_WIDTH,
+      RAM_ADDR_WIDTH => SPRITE_RAM_CPU_ADDR_WIDTH,
       ROM_ADDR_WIDTH => SPRITE_ROM_ADDR_WIDTH,
       ROM_DATA_WIDTH => SPRITE_ROM_DATA_WIDTH
     )
@@ -333,8 +308,11 @@ begin
       flip => flip,
 
       -- RAM interface
-      ram_addr => sprite_ram_gpu_addr,
-      ram_data => sprite_ram_gpu_dout,
+      ram_cs   => sprite_ram_cs,
+      ram_we   => ram_we,
+      ram_addr => sprite_ram_addr,
+      ram_din  => ram_din,
+      ram_dout => sprite_ram_dout,
 
       -- ROM interface
       rom_addr => sprite_rom_addr,
@@ -388,10 +366,10 @@ begin
   bg_ram_addr   <= rotate_left(ram_addr(SCROLL_RAM_CPU_ADDR_WIDTH-1 downto 0), 1);
 
   -- set sprite RAM address
-  sprite_ram_cpu_addr <= ram_addr(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
+  sprite_ram_addr <= ram_addr(SPRITE_RAM_CPU_ADDR_WIDTH-1 downto 0);
 
   -- mux GPU data output
-  ram_dout <= sprite_ram_cpu_dout or
+  ram_dout <= sprite_ram_dout or
               char_ram_dout or
               fg_ram_dout or
               bg_ram_dout or
