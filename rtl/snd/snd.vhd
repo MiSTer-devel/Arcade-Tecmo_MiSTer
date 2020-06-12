@@ -204,15 +204,13 @@ begin
     mix    => audio
   );
 
-  nmi : process (clk, reset)
+  nmi : process (clk, reset, req_off_cs)
   begin
-    if reset = '1' then
+    if reset = '1' or req_off_cs = '1' then
+      -- clear NMI
       cpu_nmi_n <= '1';
     elsif rising_edge(clk) then
-      if req_off_cs = '1' and cpu_wr_n = '0' then
-        -- clear NMI
-        cpu_nmi_n <= '1';
-      elsif req = '1' then
+      if req = '1' then
         -- set NMI
         cpu_nmi_n <= '0';
 
