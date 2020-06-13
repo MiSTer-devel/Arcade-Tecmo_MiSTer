@@ -175,7 +175,7 @@ wire  [7:0] ioctl_index;
 
 wire [10:0] ps2_key;
 
-wire  [8:0] joystick_0, joystick_1;
+wire  [9:0] joystick_0, joystick_1;
 
 hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 (
@@ -336,6 +336,7 @@ wire player_1_button_2 = key_alt   | joystick_0[5];
 wire player_1_button_3 = key_space | joystick_0[6];
 wire player_1_start    = key_1     | joystick_0[7];
 wire player_1_coin     = key_5     | joystick_0[8];
+wire player_1_pause    =             joystick_0[9];
 wire player_2_up       = key_r     | joystick_1[3];
 wire player_2_down     = key_f     | joystick_1[2];
 wire player_2_left     = key_d     | joystick_1[1];
@@ -345,6 +346,7 @@ wire player_2_button_2 = key_s     | joystick_1[5];
 wire player_2_button_3 = key_q     | joystick_1[6];
 wire player_2_start    = key_2     | joystick_1[7];
 wire player_2_coin     = key_6     | joystick_1[8];
+wire player_2_pause    =             joystick_0[9];
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
@@ -377,6 +379,7 @@ tecmo #(.CLK_FREQ(96.0)) tecmo
   .buttons_1({2'b0, player_1_button_3, player_1_button_2, player_1_button_1}),
   .buttons_2({2'b0, player_2_button_3, player_2_button_2, player_2_button_1}),
   .sys({player_1_coin, player_2_coin, player_1_start, player_2_start}),
+  .pause(player_1_pause | player_2_pause),
 
   .dip_1(sw[0]),
   .dip_2(sw[1]),

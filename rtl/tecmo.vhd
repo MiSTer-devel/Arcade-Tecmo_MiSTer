@@ -68,6 +68,7 @@ entity tecmo is
     buttons_1 : in nibble_t;
     buttons_2 : in nibble_t;
     sys       : in nibble_t;
+    pause     : in std_logic;
 
     -- DIP switches
     dip_1 : in byte_t;
@@ -184,12 +185,14 @@ architecture arch of tecmo is
   signal bg_scroll_pos_reg : pos_t := (x => (others => '0'), y => (others => '0'));
   signal flip_reg          : std_logic;
   signal bank_reg          : unsigned(BANK_REG_WIDTH-1 downto 0);
+  signal pause_reg         : std_logic;
 
   -- video signals
   signal video : video_t;
 
   -- control signals
   signal vblank_falling : std_logic;
+  signal pause_rising   : std_logic;
 
   -- RGB data
   signal rgb : rgb_t;
@@ -238,6 +241,15 @@ begin
     clk  => clk,
     data => video.vblank,
     q    => vblank_falling
+  );
+
+  -- detect rising edges of the PAUSE signal
+  pause_edge_detector : entity work.edge_detector
+  generic map (RISING => true)
+  port map (
+    clk  => clk,
+    data => pause,
+    q    => pause_rising
   );
 
   -- work RAM
@@ -320,6 +332,7 @@ begin
     RESET_n     => not reset,
     CLK         => clk,
     CEN         => cpu_cen,
+    WAIT_n      => not pause_reg,
     INT_n       => cpu_int_n,
     M1_n        => cpu_m1_n,
     MREQ_n      => cpu_mreq_n,
@@ -487,6 +500,18 @@ begin
           when "101"  => bg_scroll_pos_reg.y(7 downto 0) <= unsigned(cpu_dout(7 downto 0));
           when others => null;
         end case;
+      end if;
+    end if;
+  end process;
+
+  -- toggles the pause state when the pause button is pressed
+  toggle_pause_register : process (clk, reset)
+  begin
+    if reset = '1' then
+      pause_reg <= '0';
+    elsif rising_edge(clk) then
+      if pause_rising = '1' then
+        pause_reg <= not pause_reg;
       end if;
     end if;
   end process;
