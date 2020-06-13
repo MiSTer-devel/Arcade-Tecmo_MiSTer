@@ -8,7 +8,7 @@
   <category>Shooter</category>
   <rbf>tecmo</rbf>
 
-  <buttons names="Fire 1,Fire 2,-,Start,Coin" default="A,B,R,L" />
+  <buttons names="Fire 1,Fire 2,-,Start,Coin,Pause" default="A,B,R,L,Start" />
 
   <switches default="00,00">
     <dip bits="0,1,2" name="Coinage" ids="1c/1cr,1c/2cr,1c/3cr,1c/4cr" />
