@@ -141,7 +141,7 @@ package common is
   function addr_in_range (addr : unsigned(CPU_ADDR_WIDTH-1 downto 0); addr_range : addr_range_t) return boolean;
 
   -- calculates the sprite size (8x8, 16x16, 32x32, 64x64)
-  function sprite_size_in_pixels (size : std_logic_vector(1 downto 0)) return natural;
+  function sprite_size_in_pixels (size : unsigned(1 downto 0)) return natural;
 
   -- decodes a tile from a 16-bit vector
   function decode_tile (config : tile_config_t; data : std_logic_vector(15 downto 0)) return tile_t;
@@ -181,7 +181,7 @@ package body common is
     end if;
   end addr_in_range;
 
-  function sprite_size_in_pixels (size : std_logic_vector(1 downto 0)) return natural is
+  function sprite_size_in_pixels (size : unsigned(1 downto 0)) return natural is
   begin
     case size is
       when "00" => return 8;
@@ -205,13 +205,19 @@ package body common is
   end decode_tile;
 
   function decode_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t is
-    variable hi_code : std_logic_vector(4 downto 0);
-    variable lo_code : byte_t;
+    variable size     : unsigned(1 downto 0);
+    variable priority : std_logic_vector(1 downto 0);
+    variable hi_code  : std_logic_vector(4 downto 0);
+    variable lo_mask  : byte_t;
+    variable lo_code  : byte_t;
     variable lo_pos_x : byte_t;
     variable lo_pos_y : byte_t;
   begin
+    size     := unsigned(mask_bits(data, config.size_msb, config.size_lsb, 2));
+    priority := mask_bits(data, config.priority_msb, config.priority_lsb, 2);
     hi_code  := mask_bits(data, config.hi_code_msb, config.hi_code_lsb, 5);
-    lo_code  := mask_bits(data, config.lo_code_msb, config.lo_code_lsb, 8);
+    lo_mask  := not std_logic_vector(shift_left(to_unsigned(1, 8), to_integer(size))-1);
+    lo_code  := mask_bits(data, config.lo_code_msb, config.lo_code_lsb, 8) and lo_mask;
     lo_pos_x := mask_bits(data, config.lo_pos_x_msb, config.lo_pos_x_lsb, 8);
     lo_pos_y := mask_bits(data, config.lo_pos_y_msb, config.lo_pos_y_lsb, 8);
 
@@ -222,8 +228,8 @@ package body common is
       flip_x   => data(config.flip_x_bit),
       flip_y   => data(config.flip_y_bit),
       pos      => (unsigned(data(config.hi_pos_x_bit) & lo_pos_x), unsigned(data(config.hi_pos_y_bit) & lo_pos_y)),
-      priority => mask_bits(data, config.priority_msb, config.priority_lsb, 2),
-      size     => to_unsigned(sprite_size_in_pixels(mask_bits(data, config.size_msb, config.size_lsb, 2)), 6)
+      priority => priority,
+      size     => to_unsigned(sprite_size_in_pixels(size), 6)
     );
   end decode_sprite;
 
