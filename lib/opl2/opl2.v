@@ -54,7 +54,7 @@ module opl2 #(
   output reg irq_n,
 
   // audio output
-  output signed [15:0] sample
+  output reg signed [15:0] sample
 );
 
 localparam OPERATOR_PIPELINE_DELAY = 7;
@@ -136,7 +136,25 @@ reg signed [`SAMPLE_WIDTH-1:0] channel_2_op[8:0];
 reg signed [`CHANNEL_ACCUMULATOR_WIDTH-1:0] channel_acc_pre_clamp = 0;
 reg signed [`CHANNEL_ACCUMULATOR_WIDTH-1:0] channel_acc_pre_clamp_p[8:0];
 
-reg signed [`SAMPLE_WIDTH-1:0] sample_reg;
+wire read  = !cs_n && !a0;
+wire write = !cs_n && !wr_n;
+
+wire addr_write = (!a0 && write);
+wire reg_write = (a0 && write);
+
+/*
+ * set data out if we're reading
+ */
+assign dout = read ? {timer1_overflow | timer2_overflow, timer1_overflow, timer2_overflow, 5'd0} : 8'h00;
+
+/*
+ * set register index
+ */
+reg [7:0] index;
+always @(posedge clk, posedge rst) begin
+  if (rst) index <= 0;
+  else if (addr_write) index <= {din};
+end
 
 genvar i;
 generate
@@ -144,7 +162,7 @@ generate
     always @ (posedge clk, posedge rst)
       if (rst)
         opl2_reg[i] <= 8'd0;
-      else if (io_write && index == i)
+      else if (reg_write && index == i)
         opl2_reg[i] <= din;
   end
 endgenerate
@@ -157,7 +175,7 @@ always @(posedge clk, posedge rst)
     sample_clk_en <= 1'b0;
   end else begin
     // NOTE: A "real" opl3 uses a sampling rate of 49.7159kHz.
-    cntr <= cntr == CNTR_MAX ? 12'd0 : cntr + 1'b1;
+    cntr <= cntr == CNTR_MAX-1 ? 12'd0 : cntr + 1'b1;
     sample_clk_en <= cntr == 12'd0;
   end
 
@@ -650,63 +668,47 @@ always @(posedge clk)
 always @(posedge clk)
   if (sample_clk_en)
     if (channel_acc_pre_clamp > 2**15 - 1)
-      sample_reg <= 2**15 - 1;
+      sample <= 2**15 - 1;
     else if (channel_acc_pre_clamp < -2**15)
-      sample_reg <= -2**15;
+      sample <= -2**15;
     else
-      sample_reg <= channel_acc_pre_clamp;
-
-assign sample = sample_reg;
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-
-wire [7:0] io_readdata = {timer1_overflow | timer2_overflow, timer1_overflow, timer2_overflow, 5'd0};
-assign dout = !cs_n && !a0 ? io_readdata : 8'h00;
-
-//------------------------------------------------------------------------------
-
-wire write = !cs_n && !wr_n;
-
-reg [7:0] index;
-always @(posedge clk, posedge rst) begin
-  if (rst) index <= 0;
-  else if (~a0 && write) index <= {din};
-end
-
-wire       io_write     = (a0 && write);
-wire [7:0] io_writedata = din;
+      sample <= channel_acc_pre_clamp;
 
 //------------------------------------------------------------------------------ timer 1
 
 reg [7:0] timer1_preset;
 always @(posedge clk, posedge rst) begin
   if (rst)                  timer1_preset <= 0;
-  else if (io_write && index == 2) timer1_preset <= io_writedata;
+  else if (reg_write && index == 2) timer1_preset <= din;
 end
 
 reg timer1_mask;
 reg timer1_active;
 always @(posedge clk, posedge rst) begin
   if (rst) {timer1_mask, timer1_active} <= 0;
-  else if (io_write && index == 4 && ~io_writedata[7]) {timer1_mask, timer1_active} <= {io_writedata[6], io_writedata[0]};
+  else if (reg_write && index == 4 && ~din[7]) {timer1_mask, timer1_active} <= {din[6], din[0]};
 end
 
 localparam integer TIMER1_MAX = CLK_FREQ*`TIMER1_TICK_INTERVAL;
 localparam integer TIMER2_MAX = CLK_FREQ*`TIMER2_TICK_INTERVAL;
 
 wire timer1_pulse;
-timer timer1(clk, TIMER1_MAX, timer1_preset, timer1_active, timer1_pulse);
+
+timer #(
+  .MAX_VALUE(TIMER1_MAX)
+) timer1(
+  .clk(clk),
+  .init(timer1_preset),
+  .start(timer1_active),
+  .overflow(timer1_pulse)
+);
 
 reg timer1_overflow;
 always @(posedge clk, posedge rst) begin
   if (rst) timer1_overflow <= 0;
   else begin
-    if (io_write && index == 4 && io_writedata[7]) timer1_overflow <= 0;
-    if (timer1_pulse)                 						 timer1_overflow <= 1;
+    if (reg_write && index == 4 && din[7]) timer1_overflow <= 0;
+    if (timer1_pulse)                 		 timer1_overflow <= 1;
   end
 end
 
@@ -716,25 +718,31 @@ end
 reg [7:0] timer2_preset;
 always @(posedge clk, posedge rst) begin
   if (rst) timer2_preset <= 0;
-  else if (io_write && index == 3) timer2_preset <= io_writedata;
+  else if (reg_write && index == 3) timer2_preset <= din;
 end
 
 reg timer2_mask;
 reg timer2_active;
 always @(posedge clk, posedge rst) begin
   if (rst) {timer2_mask, timer2_active} <= 0;
-  else if (io_write && index == 4 && ~io_writedata[7]) {timer2_mask, timer2_active} <= {io_writedata[5], io_writedata[1]};
+  else if (reg_write && index == 4 && ~din[7]) {timer2_mask, timer2_active} <= {din[5], din[1]};
 end
 
 wire timer2_pulse;
-timer timer2(clk, TIMER2_MAX, timer2_preset, timer2_active, timer2_pulse);
+
+timer #(.MAX_VALUE(TIMER2_MAX)) timer2 (
+  .clk(clk),
+  .init(timer2_preset),
+  .start(timer2_active),
+  .overflow(timer2_pulse)
+);
 
 reg timer2_overflow;
 always @(posedge clk, posedge rst) begin
   if (rst) timer2_overflow <= 0;
   else begin
-    if (io_write && index == 4 && io_writedata[7]) timer2_overflow <= 0;
-    if (timer2_pulse)                              timer2_overflow <= 1;
+    if (reg_write && index == 4 && din[7]) timer2_overflow <= 0;
+    if (timer2_pulse)                      timer2_overflow <= 1;
   end
 end
 
@@ -744,44 +752,9 @@ end
 always @(posedge clk, posedge rst) begin
   if (rst) irq_n <= 1;
   else begin
-    if (io_write && index == 4 && io_writedata[7]) irq_n <= 1;
-    if (~timer1_mask && timer1_pulse)              irq_n <= 0;
-    if (~timer2_mask && timer2_pulse)              irq_n <= 0;
-  end
-end
-
-endmodule
-
-module timer(
-input         clk,
-input  [14:0] resolution,
-input   [7:0] init,
-input         active,
-output reg    overflow_pulse
-);
-
-always @(posedge clk) begin
-  reg  [7:0] counter     = 0;
-  reg [14:0] sub_counter = 0;
-  reg        old_act;
-
-  old_act <= active;
-  overflow_pulse <= 0;
-
-  if (~old_act && active) begin
-    counter <= init;
-    sub_counter <= resolution;
-  end
-  else if (active) begin
-    sub_counter <= sub_counter - 1'd1;
-    if (!sub_counter) begin
-      sub_counter <= resolution;
-      counter     <= counter + 1'd1;
-      if (&counter) begin
-        overflow_pulse <= 1;
-        counter <= init;
-      end
-    end
+    if (reg_write && index == 4 && din[7]) irq_n <= 1;
+    if (~timer1_mask && timer1_pulse)      irq_n <= 0;
+    if (~timer2_mask && timer2_pulse)      irq_n <= 0;
   end
 end
 
