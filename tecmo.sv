@@ -138,7 +138,7 @@ localparam CONF_STR = {
   "DIP;",
   "-;",
   "R0,Reset;",
-  "J1,B0,B1,Start,Coin;",
+  "J1,B0,B1,B2,Start,Coin,Pause;",
   "V,v",`BUILD_DATE
 };
 
