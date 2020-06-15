@@ -55,12 +55,13 @@ use work.types.all;
 -- positions are used to set the position of the visible area.
 entity scroll_layer is
   generic (
-    RAM_ADDR_WIDTH : natural;
-    RAM_DATA_WIDTH : natural;
     ROM_ADDR_WIDTH : natural;
     ROM_DATA_WIDTH : natural
   );
   port (
+    -- reset
+    reset : in std_logic;
+
     -- clock signals
     clk : in std_logic;
     cen : in std_logic;
@@ -68,12 +69,16 @@ entity scroll_layer is
     -- configuration
     config : in tile_config_t;
 
-    -- flip screen
+    -- control signals
+    busy : buffer std_logic;
     flip : in std_logic;
 
     -- scroll RAM
-    ram_addr : out unsigned(RAM_ADDR_WIDTH-1 downto 0);
-    ram_data : in std_logic_vector(RAM_DATA_WIDTH-1 downto 0);
+    ram_cs   : in std_logic;
+    ram_we   : in std_logic;
+    ram_addr : in unsigned(SCROLL_RAM_CPU_ADDR_WIDTH-1 downto 0);
+    ram_din  : in byte_t;
+    ram_dout : out byte_t;
 
     -- tile ROM
     rom_addr : out unsigned(ROM_ADDR_WIDTH-1 downto 0);
@@ -91,6 +96,11 @@ entity scroll_layer is
 end scroll_layer;
 
 architecture arch of scroll_layer is
+  signal ram_addr_b : unsigned(SCROLL_RAM_GPU_ADDR_WIDTH-1 downto 0) := (others => '0');
+  signal ram_dout_b : std_logic_vector(SCROLL_RAM_GPU_DATA_WIDTH-1 downto 0);
+
+  signal ram_cs_rising : std_logic;
+
   -- tile signals
   signal tile     : tile_t;
   signal color    : color_t;
@@ -117,6 +127,29 @@ architecture arch of scroll_layer is
   alias offset_x : unsigned(3 downto 0) is dest_pos.x(3 downto 0);
   alias offset_y : unsigned(3 downto 0) is dest_pos.y(3 downto 0);
 begin
+  -- The scroll RAM (1kB) contains the code and colour of each tile in the
+  -- tilemap.
+  scroll_ram : entity work.true_dual_port_ram
+  generic map (
+    ADDR_WIDTH_A => SCROLL_RAM_CPU_ADDR_WIDTH,
+    ADDR_WIDTH_B => SCROLL_RAM_GPU_ADDR_WIDTH,
+    DATA_WIDTH_B => SCROLL_RAM_GPU_DATA_WIDTH
+  )
+  port map (
+    -- CPU interface
+    clk_a  => clk,
+    cs_a   => ram_cs,
+    we_a   => ram_we and not busy,
+    addr_a => ram_addr,
+    din_a  => ram_din,
+    dout_a => ram_dout,
+
+    -- GPU interface
+    clk_b  => clk,
+    addr_b => ram_addr_b,
+    dout_b => ram_dout_b
+  );
+
   -- A line buffer is used to cache pixel data for the next scanline.
   --
   -- It is not present in the original arcade hardware, but it hugely
@@ -128,7 +161,7 @@ begin
     DATA_WIDTH => LINE_BUFFER_DATA_WIDTH
   )
   port map (
-    clk   => clk,
+    clk => clk,
 
     swap => line_buffer_swap,
 
@@ -140,6 +173,15 @@ begin
     -- port B (read)
     addr_b => line_buffer_addr_b,
     dout_b => line_buffer_dout_b
+  );
+
+  -- detect rising edges of the RAM_CS signal
+  ram_cs_edge_detector : entity work.edge_detector
+  generic map (RISING => true)
+  port map (
+    clk  => clk,
+    data => video.enable,
+    q    => ram_cs_rising
   );
 
   -- update position counter
@@ -178,11 +220,11 @@ begin
 
           when 8 =>
             -- load next tile
-            ram_addr <= row & (col+1);
+            ram_addr_b <= row & (col+1);
 
           when 9 =>
             -- latch tile
-            tile <= decode_tile(config, ram_data);
+            tile <= decode_tile(config, ram_dout_b);
 
           when 15 =>
             -- latch row data
@@ -203,6 +245,21 @@ begin
     if rising_edge(clk) then
       if cen = '1' then
         data <= line_buffer_dout_b;
+      end if;
+    end if;
+  end process;
+
+  -- The busy signal is asserted when the CPU tries to access the VRAM. It is
+  -- deasserted after the tile data has been latched.
+  latch_busy : process (clk, reset, offset_x)
+  begin
+    if reset = '1' or to_integer(offset_x) = 9 then
+      busy <= '0';
+    elsif rising_edge(clk) then
+      if cen = '1' then
+        if ram_cs_rising = '1' then
+          busy <= '1';
+        end if;
       end if;
     end if;
   end process;

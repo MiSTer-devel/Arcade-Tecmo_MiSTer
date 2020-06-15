@@ -51,9 +51,15 @@ entity palette is
     clk : in std_logic;
     cen : in std_logic;
 
+    -- control signals
+    busy : buffer std_logic;
+
     -- palette RAM
-    ram_addr : out unsigned(PALETTE_RAM_GPU_ADDR_WIDTH-1 downto 0);
-    ram_data : in std_logic_vector(PALETTE_RAM_GPU_DATA_WIDTH-1 downto 0);
+    ram_cs   : in std_logic;
+    ram_we   : in std_logic;
+    ram_addr : in unsigned(PALETTE_RAM_CPU_ADDR_WIDTH-1 downto 0);
+    ram_din  : in byte_t;
+    ram_dout : out byte_t;
 
     -- layer data
     char_data   : in byte_t;
@@ -71,12 +77,38 @@ entity palette is
 end palette;
 
 architecture arch of palette is
+  signal ram_addr_b : unsigned(PALETTE_RAM_GPU_ADDR_WIDTH-1 downto 0);
+  signal ram_dout_b : std_logic_vector(PALETTE_RAM_GPU_DATA_WIDTH-1 downto 0);
+
   -- current layer
   signal layer : layer_t;
 
   -- pixel register
   signal pixel_reg : rgb_t;
 begin
+  -- The palette RAM contains 1024 16-bit RGB colour values, stored in
+  -- RRRRGGGGXXXXBBBB format.
+  palette_ram : entity work.true_dual_port_ram
+  generic map (
+    ADDR_WIDTH_A => PALETTE_RAM_CPU_ADDR_WIDTH,
+    ADDR_WIDTH_B => PALETTE_RAM_GPU_ADDR_WIDTH,
+    DATA_WIDTH_B => PALETTE_RAM_GPU_DATA_WIDTH
+  )
+  port map (
+    -- CPU interface
+    clk_a  => clk,
+    cs_a   => ram_cs,
+    we_a   => ram_we and not busy,
+    addr_a => ram_addr,
+    din_a  => ram_din,
+    dout_a => ram_dout,
+
+    -- GPU interface
+    clk_b  => clk,
+    addr_b => ram_addr_b,
+    dout_b => ram_dout_b
+  );
+
   -- latch RGB data from the palette RAM
   latch_rgb_data : process (clk, reset)
   begin
@@ -86,9 +118,9 @@ begin
       pixel_reg.b <= (others => '0');
     elsif rising_edge(clk) then
       if cen = '1' then
-        pixel_reg.r <= ram_data(15 downto 12);
-        pixel_reg.g <= ram_data(11 downto 8);
-        pixel_reg.b <= ram_data(3 downto 0);
+        pixel_reg.r <= ram_dout_b(15 downto 12);
+        pixel_reg.g <= ram_dout_b(11 downto 8);
+        pixel_reg.b <= ram_dout_b(3 downto 0);
       end if;
     end if;
   end process;
@@ -98,14 +130,17 @@ begin
 
   -- set palette RAM address
   with layer select
-    ram_addr <= "00" & unsigned(sprite_data) when SPRITE_LAYER,
-                "01" & unsigned(char_data)   when CHAR_LAYER,
-                "10" & unsigned(fg_data)     when FG_LAYER,
-                "11" & unsigned(bg_data)     when BG_LAYER,
-                "0100000000"                 when FILL_LAYER;
+    ram_addr_b <= "00" & unsigned(sprite_data) when SPRITE_LAYER,
+                  "01" & unsigned(char_data)   when CHAR_LAYER,
+                  "10" & unsigned(fg_data)     when FG_LAYER,
+                  "11" & unsigned(bg_data)     when BG_LAYER,
+                  "0100000000"                 when FILL_LAYER;
 
   -- set RGB data
   rgb.r <= pixel_reg.r when video.enable = '1' else (others => '0');
   rgb.g <= pixel_reg.g when video.enable = '1' else (others => '0');
   rgb.b <= pixel_reg.b when video.enable = '1' else (others => '0');
+
+  -- set busy signal
+  busy <= ram_cs and video.enable;
 end arch;
