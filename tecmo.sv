@@ -298,6 +298,7 @@ reg key_r     = 0;
 reg key_f     = 0;
 reg key_d     = 0;
 reg key_g     = 0;
+reg key_p	  = 0;
 
 always @(posedge clk_sys) begin
   reg old_state;
@@ -323,6 +324,7 @@ always @(posedge clk_sys) begin
       'h2B: key_f     <= pressed;
       'h23: key_d     <= pressed;
       'h34: key_g     <= pressed;
+		'h04d: key_p	 <= pressed;
     endcase
   end
 end
@@ -336,7 +338,7 @@ wire player_1_button_2 = key_alt   | joystick_0[5];
 wire player_1_button_3 = key_space | joystick_0[6];
 wire player_1_start    = key_1     | joystick_0[7];
 wire player_1_coin     = key_5     | joystick_0[8];
-wire player_1_pause    =             joystick_0[9];
+wire player_1_pause    = key_p     | joystick_0[9];
 wire player_2_up       = key_r     | joystick_1[3];
 wire player_2_down     = key_f     | joystick_1[2];
 wire player_2_left     = key_d     | joystick_1[1];
