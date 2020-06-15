@@ -211,7 +211,7 @@ wire       ce_pix;
 wire [3:0] r, g, b;
 wire       hsync, vsync;
 wire       hblank, vblank;
-wire       no_rotate = status[2] & ~direct_video;
+wire       no_rotate = ~status[2] & ~direct_video;
 
 arcade_video #(256, 224, 12) arcade_video
 (
