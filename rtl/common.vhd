@@ -202,24 +202,30 @@ package body common is
   end decode_tile;
 
   function decode_sprite (config : sprite_config_t; data : std_logic_vector(63 downto 0)) return sprite_t is
-    variable size     : unsigned(1 downto 0);
-    variable priority : std_logic_vector(1 downto 0);
+    variable mask     : std_logic_vector(12 downto 0);
     variable hi_code  : std_logic_vector(4 downto 0);
-    variable lo_mask  : byte_t;
     variable lo_code  : byte_t;
     variable lo_pos_x : byte_t;
     variable lo_pos_y : byte_t;
+    variable priority : std_logic_vector(1 downto 0);
+    variable size     : unsigned(1 downto 0);
   begin
     size     := unsigned(mask_bits(data, config.size_msb, config.size_lsb, 2));
     priority := mask_bits(data, config.priority_msb, config.priority_lsb, 2);
     hi_code  := mask_bits(data, config.hi_code_msb, config.hi_code_lsb, 5);
-    lo_mask  := not std_logic_vector(shift_left(to_unsigned(1, 8), to_integer(size))-1);
-    lo_code  := mask_bits(data, config.lo_code_msb, config.lo_code_lsb, 8) and lo_mask;
+    lo_code  := mask_bits(data, config.lo_code_msb, config.lo_code_lsb, 8);
     lo_pos_x := mask_bits(data, config.lo_pos_x_msb, config.lo_pos_x_lsb, 8);
     lo_pos_y := mask_bits(data, config.lo_pos_y_msb, config.lo_pos_y_lsb, 8);
 
+    -- Depending on the sprite size, the lower bits of the code should be masked off.
+    --
+    -- For a 16x16 sprite, the lower two bits should be masked off.
+    -- For a 32x32 sprite, the lower four bits should be masked off.
+    -- For a 64x64 sprite, the lower six bits should be masked off.
+    mask  := not std_logic_vector(shift_left(to_unsigned(1, 13), to_integer(size*2))-1);
+
     return (
-      code     => unsigned(hi_code & lo_code),
+      code     => unsigned((hi_code & lo_code) and mask),
       color    => mask_bits(data, config.color_msb, config.color_lsb, 4),
       enable   => data(config.enable_bit),
       flip_x   => data(config.flip_x_bit),
