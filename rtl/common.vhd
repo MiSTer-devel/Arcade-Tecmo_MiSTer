@@ -226,7 +226,7 @@ package body common is
       flip_y   => data(config.flip_y_bit),
       pos      => (unsigned(data(config.hi_pos_x_bit) & lo_pos_x), unsigned(data(config.hi_pos_y_bit) & lo_pos_y)),
       priority => priority,
-      size     => to_unsigned(sprite_size_in_pixels(size), 6)
+      size     => to_unsigned(sprite_size_in_pixels(size), 7)
     );
   end decode_sprite;
 

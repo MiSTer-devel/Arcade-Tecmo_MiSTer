@@ -111,7 +111,7 @@ package types is
     flip_y   : std_logic;
     pos      : pos_t;
     priority : priority_t;
-    size     : unsigned(5 downto 0);
+    size     : unsigned(6 downto 0);
   end record sprite_t;
 
   -- memory map
