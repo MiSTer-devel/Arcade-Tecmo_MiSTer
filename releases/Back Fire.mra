@@ -1,0 +1,58 @@
+<misterromdescription>
+  <name>Back Fire</name>
+  <mameversion>0220</mameversion>
+  <setname>backfirt</setname>
+  <mratimestamp>20200531</mratimestamp>
+  <year>1988</year>
+  <manufacturer>Tecmo</manufacturer>
+  <category>Shooter</category>
+  <rbf>tecmo</rbf>
+
+  <buttons names="Fire 1,Fire 2,-,Start,Coin" default="A,B,R,L" />
+
+  <switches default="80,30">
+    <dip bits="0,1" name="Coinage" ids="2c/1cr,1c/1cr,1c/2cr,1c/3cr" values="1,0,2,3" />
+    <dip bits="4,5" name="Lives" ids="2,3,4,5" values="3,0,1,2" />
+    <dip bits="7" name="Demo Sounds" ids="No,Yes" />
+    <dip bits="8,9" name="Bonus Life" ids="50K 200K 500K,100K 300K 800K,50K 200K,100K 300K" />
+    <dip bits="13,14" name="Difficulty" ids="Easy,Normal,Hard,Hardest" />
+    <dip bits="15" name="Allow Continue" ids="No,Yes" values="1,0" />
+  </switches>
+
+  <!-- select game -->
+  <rom index="1">
+    <part>1</part>
+  </rom>
+
+  <!-- ROM data -->
+  <rom index="0" zip="backfirt.zip" md5="254eef77d72cf2738eeb14299a74d31d">
+    <!-- main cpu -->
+    <part crc="0ab3bd4d" name="b5-e3.bin" length="0xc000" />
+    <part crc="150b6949" name="b4-f3.bin" />
+
+    <!-- sound cpu -->
+    <part crc="9b2ac54f" name="b2-e10.bin" />
+
+    <!-- char -->
+    <part crc="08ce729f" name="b3-c10.bin" />
+
+    <!-- sprite -->
+    <part crc="c8c25e45" name="b6-c2.bin" />
+    <part crc="25fb6a57" name="b7-d2.bin" />
+    <part crc="6bccac4e" name="b8-e2.bin" />
+    <part crc="566a99b8" name="b9-h2.bin" />
+
+    <!-- fg -->
+    <part crc="8c7138bb" name="b13-p1.bin" />
+    <part crc="6c03c476" name="b12-p2.bin" />
+    <part crc="0bc84b4b" name="b11-p2.bin" />
+    <part crc="ec149ec3" name="b10-p3.bin" />
+
+    <!-- bg -->
+    <part crc="409df64b" name="b17-s1.bin" />
+    <part crc="6e4052c9" name="b16-s2.bin" />
+    <part crc="2b6cc20e" name="b15-s2.bin" />
+    <part crc="4d29637a" name="b14-s3.bin" />
+    <part repeat="0x8000">00</part>
+  </rom>
+</misterromdescription>
