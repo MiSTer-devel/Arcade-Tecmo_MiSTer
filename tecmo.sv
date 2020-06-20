@@ -354,7 +354,7 @@ wire player_2_pause    =             joystick_0[9];
 // GAME
 ////////////////////////////////////////////////////////////////////////////////
 
-wire reset = RESET | status[0] | buttons[1];
+wire reset = RESET | status[0] | buttons[1] | ~locked;
 reg [7:0] sw[8];
 reg [3:0] game_index = 0;
 
