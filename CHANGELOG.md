@@ -1,5 +1,10 @@
 # Changelog
 
+## 20200620
+
+* Reset core unless PLL is locked
+* Update sys
+
 ## 20200616
 
 * Fix Gemini Wing sprite issue
