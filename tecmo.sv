@@ -65,6 +65,23 @@ module emu
   output        VGA_F1,
   output [1:0]  VGA_SL,
 
+  // Use framebuffer from DDRAM (USE_FB=1 in qsf)
+  // FB_FORMAT:
+  //    [2:0] : 011=8bpp(palette) 100=16bpp 101=24bpp 110=32bpp
+  //    [3]   : 0=16bits 565 1=16bits 1555
+  //    [4]   : 0=RGB  1=BGR (for 16/24/32 modes)
+  //
+  // FB_STRIDE either 0 (rounded to 256 bytes) or multiple of 16 bytes.
+
+  output        FB_EN,
+  output  [4:0] FB_FORMAT,
+  output [11:0] FB_WIDTH,
+  output [11:0] FB_HEIGHT,
+  output [31:0] FB_BASE,
+  output [13:0] FB_STRIDE,
+  input         FB_VBL,
+  input         FB_LL,
+
   output        LED_USER,  // 1 - ON, 0 - OFF.
 
   // b[1]: 0 - LED status is system status OR'd with b[0]
@@ -78,6 +95,19 @@ module emu
   output [15:0] AUDIO_R,
   output        AUDIO_S,   // 1 - signed audio samples, 0 - unsigned
   output  [1:0] AUDIO_MIX, // 0 - no mix, 1 - 25%, 2 - 50%, 3 - 100% (mono)
+
+  //High latency DDR3 RAM interface
+  //Use for non-critical time purposes
+  output        DDRAM_CLK,
+  input         DDRAM_BUSY,
+  output  [7:0] DDRAM_BURSTCNT,
+  output [28:0] DDRAM_ADDR,
+  input  [63:0] DDRAM_DOUT,
+  input         DDRAM_DOUT_READY,
+  output        DDRAM_RD,
+  output [63:0] DDRAM_DIN,
+  output  [7:0] DDRAM_BE,
+  output        DDRAM_WE,
 
   //SDRAM interface with lower latency
   output        SDRAM_CLK,
@@ -200,6 +230,7 @@ wire       ce_pix;
 wire [3:0] r, g, b;
 wire       hsync, vsync;
 wire       hblank, vblank;
+wire       no_rotate = ~status[2] & ~direct_video;
 
 arcade_video #(.WIDTH(256), .DW(12)) arcade_video
 (
@@ -212,6 +243,13 @@ arcade_video #(.WIDTH(256), .DW(12)) arcade_video
   .HSync(hsync),
   .VSync(vsync),
   .fx(status[6:4])
+);
+
+screen_rotate screen_rotate
+(
+  .*,
+  .rotate_ccw(0),
+  .no_rotate(no_rotate)
 );
 
 ////////////////////////////////////////////////////////////////////////////////
