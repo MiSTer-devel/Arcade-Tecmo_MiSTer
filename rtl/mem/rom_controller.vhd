@@ -181,9 +181,7 @@ architecture arch of rom_controller is
   signal download_req  : std_logic;
 
   -- control signals
-  signal ctrl_req       : std_logic;
-  signal sound_rom_1_we : std_logic;
-  signal sound_rom_2_we : std_logic;
+  signal ctrl_req : std_logic;
 begin
   -- The SDRAM controller has a 32-bit interface, so we need to buffer the
   -- bytes received from the IOCTL interface in order to write 32-bit words to
@@ -446,8 +444,4 @@ begin
   -- we need to divide the address by four, because we're converting from
   -- a 8-bit IOCTL address to a 32-bit SDRAM address
   download_addr <= resize(shift_right(ioctl_addr, 2), download_addr'length);
-
-  -- assert the write-enable signal for the sound ROMs when the IOCTL address is matching
-  sound_rom_1_we <= '1' when ioctl_addr >= SOUND_ROM_1_OFFSET and ioctl_addr <= SOUND_ROM_1_OFFSET+SOUND_ROM_1_SIZE else '0';
-  sound_rom_2_we <= '1' when ioctl_addr >= SOUND_ROM_2_OFFSET and ioctl_addr <= SOUND_ROM_2_OFFSET+SOUND_ROM_2_SIZE else '0';
 end architecture arch;
