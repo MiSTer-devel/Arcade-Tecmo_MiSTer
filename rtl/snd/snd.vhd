@@ -155,13 +155,12 @@ begin
 
   -- FM player
   fm : entity work.fm
-  generic map (CLK_FREQ => CLK_FREQ)
   port map (
     reset  => reset,
     clk    => clk,
     irq_n  => cpu_int_n,
     cs     => fm_cs,
-    a0     => cpu_addr(0),
+    addr   => cpu_addr(0),
     din    => cpu_dout,
     dout   => fm_data,
     we     => not cpu_wr_n,

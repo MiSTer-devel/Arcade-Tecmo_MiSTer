@@ -39,20 +39,16 @@ use ieee.numeric_std.all;
 
 -- FM sound is handled by the YM3812 (OPL2)
 entity fm is
-  generic (
-    -- clock frequency (in MHz)
-    CLK_FREQ : real
-  );
   port (
     reset : in std_logic;
     clk   : in std_logic;
 
+    addr : in std_logic;
     din  : in std_logic_vector(7 downto 0);
     dout : out std_logic_vector(7 downto 0);
 
     cs : in std_logic;
     we : in std_logic;
-    a0 : in std_logic;
 
     irq_n : out std_logic;
 
@@ -61,40 +57,40 @@ entity fm is
 end entity fm;
 
 architecture arch of fm is
-  component opl2 is
-    generic (CLK_FREQ : real);
+  component jtopl is
     port (
       rst : in std_logic;
       clk : in std_logic;
+      cen : in std_logic;
 
       dout : out std_logic_vector(7 downto 0);
       din  : in std_logic_vector(7 downto 0);
 
       cs_n : in std_logic;
       wr_n : in std_logic;
-      a0   : in std_logic;
+      addr : in std_logic;
 
       irq_n : out std_logic;
 
-      sample : out signed(15 downto 0)
+      snd : out signed(15 downto 0)
     );
-  end component opl2;
+  end component jtopl;
 begin
-  opl2_inst : component opl2
-  generic map (CLK_FREQ => CLK_FREQ)
+  opl2_inst : component jtopl
   port map (
     rst => reset,
     clk => clk,
+    cen => '1',
 
     din  => din,
     dout => dout,
 
     cs_n => not cs,
     wr_n => not we,
-    a0   => a0,
+    addr => addr,
 
     irq_n => irq_n,
 
-    sample => sample
+    snd => sample
   );
 end architecture arch;
