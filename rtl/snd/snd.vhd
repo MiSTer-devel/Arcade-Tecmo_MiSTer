@@ -56,6 +56,7 @@ entity snd is
     -- clock signals
     clk     : in std_logic;
     cen_4   : in std_logic;
+    cen_50  : in std_logic;
     cen_384 : in std_logic;
 
     -- memory map
@@ -158,6 +159,7 @@ begin
   port map (
     reset  => reset,
     clk    => clk,
+    cen    => cen_4,
     irq_n  => cpu_int_n,
     cs     => fm_cs,
     addr   => cpu_addr(0),

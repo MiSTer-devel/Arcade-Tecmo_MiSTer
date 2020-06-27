@@ -42,6 +42,7 @@ entity fm is
   port (
     reset : in std_logic;
     clk   : in std_logic;
+    cen   : in std_logic;
 
     addr : in std_logic;
     din  : in std_logic_vector(7 downto 0);
@@ -80,7 +81,7 @@ begin
   port map (
     rst => reset,
     clk => clk,
-    cen => '1',
+    cen => cen,
 
     din  => din,
     dout => dout,

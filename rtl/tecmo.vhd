@@ -54,6 +54,7 @@ entity tecmo is
     clk     : in std_logic;
     cen_6   : buffer std_logic; -- 6MHz
     cen_4   : buffer std_logic; -- 4MHz
+    cen_50  : buffer std_logic; -- 50KHz
     cen_384 : buffer std_logic; -- 384KHz
 
     -- debug mode
@@ -229,6 +230,11 @@ begin
   clock_divider_4 : entity work.clock_divider
   generic map (DIVISOR => natural(CLK_FREQ/4.0))
   port map (clk => clk, cen => cen_4);
+
+  -- generate a 50KHz clock enable signal
+  clock_divider_50 : entity work.clock_divider
+  generic map (DIVISOR => natural(CLK_FREQ/0.5))
+  port map (clk => clk, cen => cen_50);
 
   -- generate a 384KHz clock enable signal
   clock_divider_384 : entity work.clock_divider
@@ -409,6 +415,7 @@ begin
     -- clock signals
     clk     => clk,
     cen_4   => cen_4,
+    cen_50  => cen_50,
     cen_384 => cen_384,
 
     -- configuration
