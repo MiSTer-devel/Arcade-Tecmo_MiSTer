@@ -82,7 +82,8 @@ wire          op, con_I, op_out, con_out;
 wire signed [12:0] op_result;
 
 assign          write   = !cs_n && !wr_n;
-assign          dout    = { ~irq_n, flag_A, flag_B, 5'd6 };
+assign          read    = !cs_n && !addr;
+assign          dout    = read ? { ~irq_n, flag_A, flag_B, 5'd6 } : 8'd0;
 assign          eg_stop = 0;
 
 jtopl_mmr u_mmr(
@@ -178,7 +179,7 @@ jtopl_pg u_pg(
     .viben_I    ( viben_I       ),
     // phase operation
     .pg_rst_II  ( pg_rst_II     ),
-    
+
     .keycode_II ( keycode_II    ),
     .phase_IV   ( phase_IV      )
 );
@@ -224,7 +225,7 @@ jtopl_op u_op(
     .pg_phase_I ( phase_IV      ),
     .eg_atten_II( eg_V          ), // output from envelope generator
     .fb_I       ( fb_I          ), // voice feedback
-    
+
     .con_I      ( con_I         ),
     .op_result  ( op_result     ),
     .op_out     ( op_out        ),
@@ -243,4 +244,3 @@ jtopl_acc u_acc(
 );
 
 endmodule
-    
