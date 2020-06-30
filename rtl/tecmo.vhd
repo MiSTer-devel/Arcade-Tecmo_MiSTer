@@ -119,7 +119,6 @@ architecture arch of tecmo is
   signal game_config : game_config_t;
 
   -- CPU signals
-  signal cpu_cen     : std_logic;
   signal cpu_addr    : unsigned(CPU_ADDR_WIDTH-1 downto 0);
   signal cpu_din     : byte_t;
   signal cpu_dout    : byte_t;
@@ -332,7 +331,7 @@ begin
   port map (
     RESET_n     => not reset,
     CLK         => clk,
-    CEN         => cpu_cen,
+    CEN         => cen_6,
     WAIT_n      => not (gpu_busy or pause_reg),
     INT_n       => cpu_int_n,
     M1_n        => cpu_m1_n,
@@ -522,12 +521,6 @@ begin
 
   -- set game config
   game_config <= select_game_config(to_integer(game_index));
-
-  -- Set CPU clock enable
-  --
-  -- Different games run the CPU clock at different frequencies (i.e. 4Mhz or
-  -- 6Mhz).
-  cpu_cen <= cen_6 when game_config.cpu_freq = 6 else cen_4;
 
   -- set chip select signals
   prog_rom_1_cs  <= '1' when addr_in_range(cpu_addr, game_config.mem_map.prog_rom_1)  else '0';

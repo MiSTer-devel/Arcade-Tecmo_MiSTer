@@ -234,21 +234,18 @@ package config is
   );
 
   constant RYGAR_GAME_CONFIG : game_config_t := (
-    cpu_freq   => 4,
     mem_map    => RYGAR_MEM_MAP,
     snd_map    => RYGAR_SND_MAP,
     gpu_config => (DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_SPRITE_CONFIG)
   );
 
   constant GEMINI_GAME_CONFIG : game_config_t := (
-    cpu_freq   => 6,
     mem_map    => GEMINI_MEM_MAP,
     snd_map    => GEMINI_SND_MAP,
     gpu_config => (DEFAULT_TILE_CONFIG, GEMINI_TILE_CONFIG, GEMINI_TILE_CONFIG, GEMINI_SPRITE_CONFIG)
   );
 
   constant SILKWORM_GAME_CONFIG : game_config_t := (
-    cpu_freq   => 6,
     mem_map    => SILKWORM_MEM_MAP,
     snd_map    => GEMINI_SND_MAP,
     gpu_config => (DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, GEMINI_SPRITE_CONFIG)

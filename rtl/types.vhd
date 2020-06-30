@@ -192,7 +192,6 @@ package types is
 
   -- game configuration
   type game_config_t is record
-    cpu_freq   : natural;
     mem_map    : mem_map_t;
     snd_map    : snd_map_t;
     gpu_config : gpu_config_t;
