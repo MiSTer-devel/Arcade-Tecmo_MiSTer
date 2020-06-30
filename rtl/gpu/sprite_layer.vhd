@@ -201,7 +201,7 @@ begin
   generic map (RISING => true)
   port map (
     clk  => clk,
-    data => video.enable,
+    data => ram_cs,
     q    => ram_cs_rising
   );
 
@@ -328,13 +328,15 @@ begin
 
   -- The busy signal is asserted when the CPU tries to access the VRAM. It is
   -- deasserted after the tile data has been latched.
-  latch_busy : process (clk, reset, state)
+  latch_busy : process (clk, reset)
   begin
-    if reset = '1' or state = LATCH then
+    if reset = '1' then
       busy <= '0';
     elsif rising_edge(clk) then
       if cen = '1' then
-        if ram_cs_rising = '1' then
+        if state = LATCH then
+          busy <= '0';
+        elsif ram_cs_rising = '1' then
           busy <= '1';
         end if;
       end if;
