@@ -219,10 +219,12 @@ package body common is
 
     -- Depending on the sprite size, the lower bits of the code should be masked off.
     --
-    -- For a 16x16 sprite, the lower two bits should be masked off.
-    -- For a 32x32 sprite, the lower four bits should be masked off.
-    -- For a 64x64 sprite, the lower six bits should be masked off.
-    mask  := not std_logic_vector(shift_left(to_unsigned(1, 13), to_integer(size*2))-1);
+    -- For example:
+    --
+    -- * 16x16 sprites should have the lower two bits masked off.
+    -- * 32x32 sprites should have the lower four bits masked off.
+    -- * 64x64 sprites should have the lower six bits masked off.
+    mask := not std_logic_vector(shift_left(to_unsigned(1, 13), to_integer(size*2))-1);
 
     return (
       code     => unsigned((hi_code & lo_code) and mask),
