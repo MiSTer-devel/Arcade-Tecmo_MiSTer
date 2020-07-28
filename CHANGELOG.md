@@ -1,5 +1,12 @@
 # Changelog
 
+## 20200728
+
+* Run Rygar CPU at 6MHz
+* Fix layer DMA timing
+* Add reset signal to PLL
+* Tweak SDRAM phase shift
+
 ## 20200620
 
 * Reset core unless PLL is locked
