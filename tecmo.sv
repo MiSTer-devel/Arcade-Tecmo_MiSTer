@@ -145,6 +145,8 @@ assign VIDEO_ARY = status[1] ? 8'd9  : status[2] ? 8'd4 : 8'd3;
 
 assign SDRAM_CLK = clk_sdram;
 
+assign USER_OUT = '1;
+
 `include "build_id.v"
 localparam CONF_STR = {
   "A.Tecmo;;",
