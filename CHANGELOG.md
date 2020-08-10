@@ -1,5 +1,9 @@
 # Changelog
 
+## 20200810
+
+* Add bliss box support
+
 ## 20200728
 
 * Run Rygar CPU at 6MHz
