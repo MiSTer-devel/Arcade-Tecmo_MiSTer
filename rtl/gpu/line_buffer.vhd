@@ -117,14 +117,14 @@ begin
     re_b   => page_2.re
   );
 
-  page_1.addr <= addr_b when swap = '0' else addr_a;
-  page_2.addr <= addr_b when swap = '1' else addr_a;
-
   page_1.re <= re_b;
   page_2.re <= re_b;
 
   page_1.we <= we_a and swap;
   page_2.we <= we_a and not swap;
+
+  page_1.addr <= addr_a when swap = '1' else addr_b;
+  page_2.addr <= addr_a when swap = '0' else addr_b;
 
   page_1.din <= din_a;
   page_2.din <= din_a;
