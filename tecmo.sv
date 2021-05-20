@@ -160,6 +160,8 @@ localparam CONF_STR = {
   "-;",
   "R0,Reset;",
   "J1,B0,B1,B2,Start,Coin,Pause;",
+	"jn,A,B,X,Start,R,L;",
+	"jp,B,A,R,Start,Select,;",
   "V,v",`BUILD_DATE
 };
 
