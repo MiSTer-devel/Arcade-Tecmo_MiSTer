@@ -236,11 +236,11 @@ begin
           next_cmd <= CMD_DESELECT;
         elsif wait_counter = INIT_WAIT-1 then
           next_cmd <= CMD_PRECHARGE;
-        elsif wait_counter = INIT_WAIT+PRECHARGE_WAIT-1 then
+        elsif wait_counter = PRECHARGE_WAIT-1 then
           next_cmd <= CMD_AUTO_REFRESH;
-        elsif wait_counter = INIT_WAIT+PRECHARGE_WAIT+REFRESH_WAIT-1 then
+        elsif wait_counter = PRECHARGE_WAIT+REFRESH_WAIT-1 then
           next_cmd <= CMD_AUTO_REFRESH;
-        elsif wait_counter = INIT_WAIT+PRECHARGE_WAIT+REFRESH_WAIT+REFRESH_WAIT-1 then
+        elsif wait_counter = PRECHARGE_WAIT+REFRESH_WAIT+REFRESH_WAIT-1 then
           next_state <= MODE;
           next_cmd   <= CMD_LOAD_MODE;
         end if;
