@@ -197,8 +197,8 @@ assign AUDIO_MIX = 0;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
 
-assign VIDEO_ARX = status[1] ? 8'd16 : status[2] ? 8'd3 : 8'd4;
-assign VIDEO_ARY = status[1] ? 8'd9  : status[2] ? 8'd4 : 8'd3;
+assign VIDEO_ARX = status[1] ? 8'd16 : status[2] ? 12'd2191 : 12'd2560;
+assign VIDEO_ARY = status[1] ? 8'd9  : status[2] ? 12'd2560 : 12'd2191;
 
 assign SDRAM_CLK = clk_sdram;
 
