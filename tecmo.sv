@@ -189,6 +189,8 @@ module emu
 );
 
 assign VGA_F1 = 0;
+assign FB_FORCE_BLANK = 0;
+assign VGA_DISABLE = 0;
 
 assign AUDIO_S   = 1;
 assign AUDIO_R   = AUDIO_L;
@@ -196,11 +198,18 @@ assign AUDIO_MIX = 0;
 
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
+assign LED_USER  = ioctl_download;
 
 assign VIDEO_ARX = status[1] ? 8'd16 : status[2] ? 12'd2191 : 12'd2560;
 assign VIDEO_ARY = status[1] ? 8'd9  : status[2] ? 12'd2560 : 12'd2191;
 
+assign BUTTONS = 0;
+
+
 assign SDRAM_CLK = clk_sdram;
+
+assign {UART_RTS, UART_TXD, UART_DTR} = 0;
+assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
 
 assign USER_OUT = '1;
 
