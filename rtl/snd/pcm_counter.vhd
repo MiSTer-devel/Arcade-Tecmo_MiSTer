@@ -113,7 +113,7 @@ begin
 
   -- set the address and nibble
   addr   <= ctr(ADDR_WIDTH downto 1);
-  nibble <= ctr(0);
+  nibble <= not ctr(0);
 
   -- set the done signal
   done <= '1' when ctr_end = ctr(ADDR_WIDTH+1 downto ADDR_WIDTH-6) else '0';
