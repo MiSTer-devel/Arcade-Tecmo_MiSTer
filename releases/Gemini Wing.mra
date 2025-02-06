@@ -14,7 +14,7 @@
 	<setname>gemini</setname>
 	<parent>gemini</parent>
 	<mameversion>0220</mameversion>
-	<rbf>tecmo</rbf>
+	<rbf>Tecmo</rbf>
 	<about></about>
 
 	<resolution>15kHz</resolution>
