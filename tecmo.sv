@@ -229,7 +229,9 @@ localparam CONF_STR = {
   "DIP;",
   "-;",
   "R0,Reset;",
-  "J1,B0,B1,B2,Start,Coin,Pause;",
+  "J1,B0,B1,B2,1P Start,2P Start,Coin,Pause;",
+  "jn,A,B,X,R,Select,L,Start;",
+  "v,1;", // change version here because of changes to conf_str could break compatibility with older cfg files
   "V,v",`BUILD_DATE
 };
 
@@ -267,7 +269,7 @@ wire  [7:0] ioctl_index;
 
 wire [10:0] ps2_key;
 
-wire  [9:0] joystick_0, joystick_1;
+wire  [10:0] joystick_0, joystick_1;
 
 hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
@@ -424,9 +426,9 @@ wire player_1_right    = key_right | joystick_0[0];
 wire player_1_button_1 = key_ctrl  | joystick_0[4];
 wire player_1_button_2 = key_alt   | joystick_0[5];
 wire player_1_button_3 = key_space | joystick_0[6];
-wire player_1_start    = key_1     | joystick_0[7];
-wire player_1_coin     = key_5     | joystick_0[8];
-wire player_1_pause    = key_p     | joystick_0[9];
+wire player_1_start    = key_1     | joystick_0[7] | joystick_1[7];
+wire player_1_coin     = key_5     | joystick_0[9];
+wire player_1_pause    = key_p     | joystick_0[10];
 wire player_2_up       = key_r     | joystick_1[3];
 wire player_2_down     = key_f     | joystick_1[2];
 wire player_2_left     = key_d     | joystick_1[1];
@@ -434,9 +436,9 @@ wire player_2_right    = key_g     | joystick_1[0];
 wire player_2_button_1 = key_a     | joystick_1[4];
 wire player_2_button_2 = key_s     | joystick_1[5];
 wire player_2_button_3 = key_q     | joystick_1[6];
-wire player_2_start    = key_2     | joystick_1[7];
-wire player_2_coin     = key_6     | joystick_1[8];
-wire player_2_pause    =             joystick_0[9];
+wire player_2_start    = key_2     | joystick_1[8] | joystick_0[8];
+wire player_2_coin     = key_6     | joystick_1[9];
+wire player_2_pause    =             joystick_1[10];
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
