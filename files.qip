@@ -3,9 +3,9 @@ set_global_assignment -name QIP_FILE lib/jt5205/jt5205.qip
 set_global_assignment -name QIP_FILE lib/opl2/opl2.qip
 set_global_assignment -name QIP_FILE lib/t80/t80.qip
 set_global_assignment -name SDC_FILE rtl/sdram.sdc
-set_global_assignment -name SYSTEMVERILOG_FILE tecmo.sv
-set_global_assignment -name VHDL_FILE lib/fixed_float_types_c.vhd
-set_global_assignment -name VHDL_FILE lib/fixed_pkg_c.vhd
+set_global_assignment -name SYSTEMVERILOG_FILE Arcade-Tecmo.sv
+set_global_assignment -name VHDL_FILE lib/fixed_pkg/fixed_float_types_c.vhd
+set_global_assignment -name VHDL_FILE lib/fixed_pkg/fixed_pkg_c.vhd
 set_global_assignment -name VHDL_FILE rtl/common.vhd
 set_global_assignment -name VHDL_FILE rtl/config.vhd
 set_global_assignment -name VHDL_FILE rtl/gpu/char_layer.vhd
