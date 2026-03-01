@@ -191,7 +191,7 @@ architecture arch of tecmo is
 
   -- control signals
   signal gpu_busy       : std_logic;
-  signal vblank_falling : std_logic;
+  signal vblank_rising  : std_logic;
   signal pause_rising   : std_logic;
 
   -- RGB data
@@ -234,13 +234,13 @@ begin
   generic map (DIVISOR => natural(CLK_FREQ/0.384))
   port map (clk => clk, cen => cen_384);
 
-  -- detect falling edges of the VBLANK signal
+  -- detect rising edges of the VBLANK signal
   vblank_edge_detector : entity work.edge_detector
-  generic map (FALLING => true)
+  generic map (RISING => true)
   port map (
     clk  => clk,
     data => video.vblank,
-    q    => vblank_falling
+    q    => vblank_rising
   );
 
   -- detect rising edges of the PAUSE signal
@@ -433,7 +433,7 @@ begin
     audio => audio
   );
 
-  -- Trigger an interrupt on the falling edge of the VBLANK signal
+  -- Trigger an interrupt on the rising edge of the VBLANK signal
   --
   -- Once the interrupt request has been accepted by the CPU, it is
   -- acknowledged by activating the IORQ signal during the M1 cycle. This
@@ -443,7 +443,7 @@ begin
     if reset = '1' or (cpu_m1_n = '0' and cpu_ioreq_n = '0') then
       cpu_int_n <= '1';
     elsif rising_edge(clk) then
-      if vblank_falling = '1' then
+      if vblank_rising = '1' then
         cpu_int_n <= '0';
       end if;
     end if;
