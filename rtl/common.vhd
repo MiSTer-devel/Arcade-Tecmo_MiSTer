@@ -122,6 +122,7 @@ package common is
 
   -- sound RAM
   constant SOUND_RAM_ADDR_WIDTH : natural := 11;
+  constant SOUND_SCRATCH_RAM_ADDR_WIDTH : natural := 7;
 
   -- line buffer
   constant LINE_BUFFER_ADDR_WIDTH : natural := 8;

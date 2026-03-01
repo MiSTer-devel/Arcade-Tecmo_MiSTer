@@ -116,6 +116,7 @@ package config is
 
   constant RYGAR_SND_MAP : snd_map_t := (
     prog_rom => (x"0000", x"3fff"),
+    scr_ram  => (x"ffff", x"0000"), -- no scratch ram
     work_ram => (x"4000", x"47ff"),
     fm       => (x"8000", x"8001"),
     req      => (x"c000", x"c000"),
@@ -127,6 +128,19 @@ package config is
 
   constant GEMINI_SND_MAP : snd_map_t := (
     prog_rom => (x"0000", x"7fff"),
+    scr_ram  => (x"ffff", x"0000"), -- no scratch ram
+    work_ram => (x"8000", x"87ff"),
+    fm       => (x"a000", x"a001"),
+    req      => (x"c000", x"c000"),
+    pcm_lo   => (x"c000", x"c000"),
+    pcm_hi   => (x"c400", x"c400"),
+    pcm_vol  => (x"c800", x"c800"),
+    req_off  => (x"cc00", x"cc00")
+  );
+
+  constant SILKWORM_SND_MAP : snd_map_t := (
+    prog_rom => (x"0000", x"7fff"),
+    scr_ram  => (x"2000", x"207f"),
     work_ram => (x"8000", x"87ff"),
     fm       => (x"a000", x"a001"),
     req      => (x"c000", x"c000"),
@@ -247,7 +261,7 @@ package config is
 
   constant SILKWORM_GAME_CONFIG : game_config_t := (
     mem_map    => SILKWORM_MEM_MAP,
-    snd_map    => GEMINI_SND_MAP,
+    snd_map    => SILKWORM_SND_MAP,
     gpu_config => (DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, DEFAULT_TILE_CONFIG, GEMINI_SPRITE_CONFIG)
   );
 end package config;

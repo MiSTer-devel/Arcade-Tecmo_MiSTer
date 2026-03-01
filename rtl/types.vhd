@@ -140,6 +140,7 @@ package types is
 
   type snd_map_t is record
     prog_rom : addr_range_t; -- program ROM
+    scr_ram  : addr_range_t; -- scratch ram
     work_ram : addr_range_t; -- work RAM
     fm       : addr_range_t; -- FM sound
     pcm_lo   : addr_range_t; -- PCM low
