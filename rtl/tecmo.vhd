@@ -362,6 +362,7 @@ begin
 
     -- flip screen
     flip => flip_reg xor flip,
+    flip_reg => flip_reg,
 
     -- wait
     busy => gpu_busy,
