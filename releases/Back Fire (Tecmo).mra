@@ -25,11 +25,12 @@
 	<joystick>8-way</joystick>
 	<special_controls></special_controls>
 	<num_buttons>2</num_buttons>
-	<buttons default="A,B,R,Select,L,Start" names="Fire 1,Fire 2,-,1P Start,2P Start,Coin,Pause"></buttons>
+	<buttons default="A,B,Start,R,Select,L" names="Fire 1,Fire 2,-,1P Start,2P Start,Coin,Pause"></buttons>
 
-	<switches default="00,40">
+	<switches default="40,40">
 		<dip bits="0,1" ids="1c/1cr,1c/2cr,1c/3cr,1c/6cr" name="Coin A"></dip>
 		<dip bits="2,3" ids="1c/1cr,2c/1cr,1c/2cr,1c/3cr" name="Coin B" values="0,4,8,12"></dip>
+		<dip bits="6" ids="Cocktail,Upright" name="Cabinet"></dip>
 		<dip bits="8,9,10" ids="50K 200K 500K,100K 300K 800K,50K 200K,100K 300K,50K,100K,200K,None" name="Bonus Life"></dip>
 		<dip bits="11,12,13" ids="0,1,2,3,4,5,6,7" name="Difficulty"></dip>
 		<dip bits="14" ids="Yes,No" name="Continue"></dip>
