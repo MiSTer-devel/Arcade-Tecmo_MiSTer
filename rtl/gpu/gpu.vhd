@@ -71,6 +71,7 @@ entity gpu is
     -- control signals
     busy : out std_logic;
     flip : in std_logic;
+    flip_reg : in std_logic;
 
     -- RAM interface
     ram_we   : in std_logic;
@@ -208,6 +209,7 @@ begin
       -- control signals
       busy => fg_busy,
       flip => flip,
+      flip_reg => flip_reg,
 
       -- RAM interface
       ram_cs   => fg_ram_cs,
@@ -248,6 +250,7 @@ begin
       -- control signals
       busy => bg_busy,
       flip => flip,
+      flip_reg => flip_reg,
 
       -- RAM interface
       ram_cs   => bg_ram_cs,

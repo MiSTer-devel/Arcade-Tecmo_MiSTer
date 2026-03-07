@@ -72,6 +72,7 @@ entity scroll_layer is
     -- control signals
     busy : buffer std_logic;
     flip : in std_logic;
+    flip_reg : in std_logic;
 
     -- scroll RAM
     ram_cs   : in std_logic;
@@ -190,7 +191,11 @@ begin
     if rising_edge(clk) then
       if cen = '1' then
         if video.hsync = '1' then
-          dest_pos.x <= scroll_pos.x-4;
+          if flip_reg = '1' then
+            dest_pos.x <= scroll_pos.x - (8 + 256 + 47 + 47);
+          else
+            dest_pos.x <= scroll_pos.x-8;
+          end if;
         else
           dest_pos.x <= dest_pos.x+1;
         end if;
