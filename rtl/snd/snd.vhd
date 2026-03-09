@@ -96,11 +96,13 @@ architecture arch of snd is
 
   -- chip select signals
   signal sound_ram_cs : std_logic;
+  signal scratch_ram_cs : std_logic;
   signal req_cs       : std_logic;
   signal req_off_cs   : std_logic;
 
   -- data signals
   signal sound_ram_data : byte_t;
+  signal scratch_ram_data : byte_t;
   signal req_data       : byte_t;
 
   -- registers
@@ -150,6 +152,17 @@ begin
     addr => cpu_addr(SOUND_RAM_ADDR_WIDTH-1 downto 0),
     din  => cpu_dout,
     dout => sound_ram_data,
+    we   => not cpu_wr_n
+  );
+
+  scratch_ram : entity work.single_port_ram
+  generic map (ADDR_WIDTH => SOUND_SCRATCH_RAM_ADDR_WIDTH)
+  port map (
+    clk  => clk,
+    cs   => scratch_ram_cs,
+    addr => cpu_addr(SOUND_SCRATCH_RAM_ADDR_WIDTH-1 downto 0),
+    din  => cpu_dout,
+    dout => scratch_ram_data,
     we   => not cpu_wr_n
   );
 
@@ -231,7 +244,8 @@ begin
   end process;
 
   -- set chip select signals
-  sound_rom_1_cs <= '1' when addr_in_range(cpu_addr, snd_map.prog_rom) and cpu_rfsh_n = '1' else '0';
+  sound_rom_1_cs <= '1' when addr_in_range(cpu_addr, snd_map.prog_rom) and scratch_ram_cs = '0'  and cpu_rfsh_n = '1' else '0';
+  scratch_ram_cs <= '1' when addr_in_range(cpu_addr, snd_map.scr_ram)  and cpu_rfsh_n = '1' else '0';
   sound_ram_cs   <= '1' when addr_in_range(cpu_addr, snd_map.work_ram) and cpu_rfsh_n = '1' else '0';
   fm_cs          <= '1' when addr_in_range(cpu_addr, snd_map.fm)       and cpu_rfsh_n = '1' else '0';
   req_cs         <= '1' when addr_in_range(cpu_addr, snd_map.req)      and cpu_rfsh_n = '1' else '0';
@@ -255,6 +269,7 @@ begin
   -- mux CPU data input
   cpu_din <= sound_rom_1_data or
              sound_ram_data or
+             scratch_ram_data or
              fm_data or
              req_data;
 
